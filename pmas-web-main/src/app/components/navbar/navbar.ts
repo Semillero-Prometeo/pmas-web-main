@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -11,4 +11,5 @@ export class Navbar {
   @Input() showSearch = false;
 
   auth = inject(AuthService);
+  mobileMenuOpen = signal(false);
 }
