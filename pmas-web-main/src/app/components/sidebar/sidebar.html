@@ -1,0 +1,43 @@
+<aside class="h-full w-64 fixed left-0 top-16 border-r border-slate-800/50 bg-slate-950 flex flex-col h-[calc(100vh-64px)] py-6 z-40">
+  <div class="px-6 mb-8">
+    <div class="flex items-center gap-3 mb-1">
+      <div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
+      <h2 class="text-secondary font-black font-label text-xs uppercase tracking-[0.1em]">Unit 01 - Active</h2>
+    </div>
+    <p class="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Lab Director Avatar</p>
+  </div>
+
+  <nav class="flex-1 space-y-1">
+    <a href="#"
+       [class]="activeItem === 'sensors' ? 'bg-blue-900/30 text-secondary border-l-4 border-secondary' : 'text-slate-500 hover:text-slate-100'"
+       class="px-4 py-3 flex items-center gap-3 transition-colors no-underline">
+      <span class="material-symbols-outlined">sensors</span>
+      <span class="font-label text-xs font-bold uppercase tracking-[0.1em]">Sensors</span>
+    </a>
+    <a href="#"
+       [class]="activeItem === 'actuators' ? 'bg-blue-900/30 text-secondary border-l-4 border-secondary' : 'text-slate-500 hover:text-slate-100'"
+       class="px-4 py-3 flex items-center gap-3 transition-colors no-underline">
+      <span class="material-symbols-outlined">precision_manufacturing</span>
+      <span class="font-label text-xs font-bold uppercase tracking-[0.1em]">Actuators</span>
+    </a>
+    <a href="#"
+       [class]="activeItem === 'telemetry' ? 'bg-blue-900/30 text-secondary border-l-4 border-secondary' : 'text-slate-500 hover:text-slate-100'"
+       class="px-4 py-3 flex items-center gap-3 transition-colors no-underline">
+      <span class="material-symbols-outlined">insights</span>
+      <span class="font-label text-xs font-bold uppercase tracking-[0.1em]">Telemetry</span>
+    </a>
+    <a href="#"
+       [class]="activeItem === 'logs' ? 'bg-blue-900/30 text-secondary border-l-4 border-secondary' : 'text-slate-500 hover:text-slate-100'"
+       class="px-4 py-3 flex items-center gap-3 transition-colors no-underline">
+      <span class="material-symbols-outlined">terminal</span>
+      <span class="font-label text-xs font-bold uppercase tracking-[0.1em]">Logs</span>
+    </a>
+  </nav>
+
+  <div class="px-4 mt-auto">
+    <button class="w-full bg-error-container text-on-error-container py-3 rounded-lg font-bold text-xs uppercase tracking-widest hover:bg-error hover:text-on-error transition-colors flex items-center justify-center gap-2 cursor-pointer">
+      <span class="material-symbols-outlined text-sm">emergency_home</span>
+      Emergency Stop
+    </button>
+  </div>
+</aside>

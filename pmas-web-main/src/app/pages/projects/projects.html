@@ -1,0 +1,186 @@
+<app-navbar />
+<app-sidebar activeItem="sensors" />
+
+<div class="flex pt-16">
+  <main class="flex-1 lg:ml-64 p-8 md:p-12 lg:p-16 bg-surface-container-lowest min-h-screen">
+
+    <!-- Header -->
+    <header class="max-w-7xl mx-auto mb-16">
+      <div class="flex flex-col md:flex-row justify-between items-end gap-8">
+        <div class="max-w-2xl">
+          <span class="text-secondary font-label text-xs font-bold uppercase tracking-[0.2em] mb-4 block">Research Repository</span>
+          <h1 class="text-5xl md:text-7xl font-headline font-bold tracking-tighter text-on-background leading-none mb-6">
+            Project <br/><span class="text-primary">Ecosystem.</span>
+          </h1>
+          <p class="text-on-surface-variant text-lg leading-relaxed max-w-xl">
+            Exploring the intersection of autonomous systems and cognitive hardware. Our semillero
+            focuses on high-fidelity prototypes and peer-reviewed robotic architectures.
+          </p>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-wrap gap-2 pb-2">
+          <button
+            (click)="setFilter('all')"
+            [class]="activeFilter() === 'all' ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'"
+            class="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all cursor-pointer">
+            All Projects
+          </button>
+          <button
+            (click)="setFilter('robotics')"
+            [class]="activeFilter() === 'robotics' ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'"
+            class="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all cursor-pointer">
+            Robotics
+          </button>
+          <button
+            (click)="setFilter('ai')"
+            [class]="activeFilter() === 'ai' ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'"
+            class="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all cursor-pointer">
+            AI
+          </button>
+          <button
+            (click)="setFilter('hardware')"
+            [class]="activeFilter() === 'hardware' ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'"
+            class="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all cursor-pointer">
+            Hardware
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Projects Bento Grid -->
+    <section class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6">
+
+      <!-- Feature Project (Wide) -->
+      <div class="md:col-span-8 group relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:bg-surface-container-highest hover:-translate-y-1">
+        <div class="aspect-video w-full relative">
+          <img
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8rn4hGL03vfyGCorcz2nqFpHALMWmaT8XgP15rE_W6fqUEK-mgW8TxKjqHDhyPS2yx-M4VSlrL6-lx_Vs4QNbSEl6wiikMLADvBYG6wYSHIXJh5zYfIsb_3z3mPieOundwdNoSC2KShsgZDcX0QLJ3uZTJprcD7Un62U2PjeLhNfpMI1B9i5Bo3508Zz_NGJLs_6Ywn86QkN4sEVhyIk8_O_WzEDZalM6V-61xR5oQNSllnAu-yEyhkBYxHGOF3sHk3jXcnzfxCY"
+            alt="Robotic arm in lab"
+            class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 opacity-60"
+          />
+          <div class="absolute inset-0 bg-linear-to-t from-surface-container-low via-transparent to-transparent"></div>
+          <div class="absolute top-6 left-6 flex gap-2">
+            <span class="px-3 py-1 rounded bg-secondary/20 backdrop-blur-md text-secondary text-[10px] font-bold uppercase tracking-widest border border-secondary/30">Robotics</span>
+            <span class="px-3 py-1 rounded bg-tertiary/20 backdrop-blur-md text-tertiary text-[10px] font-bold uppercase tracking-widest border border-tertiary/30">In Development</span>
+          </div>
+        </div>
+        <div class="p-8">
+          <div class="flex justify-between items-start mb-6">
+            <h3 class="text-3xl font-headline font-bold tracking-tight text-on-background">Aegis-7: Bipedal Equilibrium</h3>
+            <span class="text-slate-500 font-label text-[10px] tracking-widest uppercase">ID: 2024-AG7</span>
+          </div>
+          <p class="text-on-surface-variant mb-8 leading-relaxed max-w-2xl">
+            A research endeavor focused on dynamic stability algorithms for bipedal locomotion
+            in non-linear terrains. Utilizing real-time telemetry from 24 proprietary tactile sensors.
+          </p>
+          <button class="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-widest group cursor-pointer">
+            View Technical Paper
+            <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Neural-Synapse V2 -->
+      <div class="md:col-span-4 group relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:bg-surface-container-highest hover:-translate-y-1">
+        <div class="aspect-square w-full relative">
+          <img
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuATyrWPkdrVpF3s2VkyvFpQe3P5D9rFdC5oLS0eqOkMw0PmRz6qmVnnVFgmYXrBgJevyWezYwSrZcy41PH61I5cWAcTb1soMXqHCrQx6S70cccVQTucYWvapxJXHdRX7nPlHhkYMkS0FGtHolPLrhT7bQy6u0z57pBKTvkQe9wiTn2gEHmrEjQSLn7zXWCalmHqj5ahq0TjdxPJ2UM6TnrFTBCdF6etJtWoCJLPx24xb_DVWOtG3oEgT9KSr22Y1kD7YJPa-bflNTg"
+            alt="Circuit board with LEDs"
+            class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 opacity-40"
+          />
+          <div class="absolute inset-0 bg-linear-to-t from-surface-container-low to-transparent"></div>
+          <div class="absolute top-6 left-6">
+            <span class="px-3 py-1 rounded bg-primary/20 backdrop-blur-md text-primary text-[10px] font-bold uppercase tracking-widest border border-primary/30">AI</span>
+          </div>
+        </div>
+        <div class="p-8">
+          <span class="text-tertiary font-label text-[10px] tracking-widest uppercase mb-2 block">Completed</span>
+          <h3 class="text-xl font-headline font-bold tracking-tight text-on-background mb-4">Neural-Synapse V2</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed mb-6">
+            Hardware-accelerated neural network optimized for low-latency edge processing in mobile robotic units.
+          </p>
+          <button class="bg-surface-container-high w-full py-3 text-on-surface text-[10px] font-bold uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-all rounded cursor-pointer">
+            Access Dataset
+          </button>
+        </div>
+      </div>
+
+      <!-- Carbon-Frame Skeleton -->
+      <div class="md:col-span-4 group relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:bg-surface-container-highest hover:-translate-y-1">
+        <div class="aspect-square w-full relative">
+          <img
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-avnQEOuV382jj9sLJJjRlckSBE_oiVmgqVUxrR7uiKk7Byht7VvVcI2ni_Kx9jbxILjrFV3vuWSVTA_QvMAzXkSOjsM0dYCTx6harYGr9-1NkDUqLuiuNka60r-XANWenZQblqcNWY086WBurMTXCYPYgpASYQH2wP7n-CBBHRit6gvEI5_Jfv4Wlh2QSJgikLX1fTiY9UfFR_ncaOCFw6qgCo9GMsyTc6EE1pf3LaLQnS9QXJgmL8C8MLKGX05kdehhWxSkjEo"
+            alt="3D printed mechanical parts"
+            class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 opacity-40"
+          />
+          <div class="absolute inset-0 bg-linear-to-t from-surface-container-low to-transparent"></div>
+          <div class="absolute top-6 left-6">
+            <span class="px-3 py-1 rounded bg-secondary/20 backdrop-blur-md text-secondary text-[10px] font-bold uppercase tracking-widest border border-secondary/30">Hardware</span>
+          </div>
+        </div>
+        <div class="p-8">
+          <span class="text-primary font-label text-[10px] tracking-widest uppercase mb-2 block">Prototype Phase</span>
+          <h3 class="text-xl font-headline font-bold tracking-tight text-on-background mb-4">Carbon-Frame Skeleton</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed mb-6">
+            Lightweight carbon fiber exoskeleton designed for high-impact industrial load assistance.
+          </p>
+          <button class="bg-surface-container-high w-full py-3 text-on-surface text-[10px] font-bold uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-all rounded cursor-pointer">
+            View Blueprint
+          </button>
+        </div>
+      </div>
+
+      <!-- Swarm-Link Architecture (Wide) -->
+      <div class="md:col-span-8 group relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:bg-surface-container-highest hover:-translate-y-1">
+        <div class="flex flex-col md:flex-row h-full">
+          <div class="md:w-1/2 relative h-64 md:h-auto">
+            <img
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVvqtwaPTcS-4PaTeLnodJhka5E3pox-XBdodhdxGI75nKs4nMvZ68ZfyjNZRDrepVL0tDS51NcLNYYjyog4V3kdWeTcVrD_7lHu1miCCNCmi-vB4n5dR6iwB6daS8uqcjmmWRwJz4QAl53sd1aRP7gIZCU5SMb0TZvNWcX-tPJIgvqkt-V7vsvkM6-NKtXqm_mxxBW5tbvJq6b7NRvLhABqnQ1tlXlw7vSP5YTsNgyPrUDvID-tmBlMTbAX5a0Fwe6PrLbtA7LLc"
+              alt="Swarm drones on a table"
+              class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 opacity-60"
+            />
+            <div class="absolute inset-0 bg-linear-to-r from-transparent via-transparent to-surface-container-low hidden md:block"></div>
+          </div>
+          <div class="md:w-1/2 p-8 flex flex-col justify-center">
+            <span class="text-secondary font-label text-[10px] tracking-widest uppercase mb-4 block">Active Deployment</span>
+            <h3 class="text-2xl font-headline font-bold tracking-tight text-on-background mb-4">Swarm-Link Architecture</h3>
+            <p class="text-on-surface-variant text-sm leading-relaxed mb-8">
+              A decentralized communication protocol allowing hundreds of small-scale autonomous units
+              to coordinate movement without a central server.
+            </p>
+            <div class="flex gap-4">
+              <button class="bg-primary text-on-primary px-6 py-2 rounded-lg font-bold text-[10px] uppercase tracking-widest cursor-pointer">Live Feed</button>
+              <button class="border border-outline-variant px-6 py-2 rounded-lg font-bold text-[10px] uppercase tracking-widest hover:bg-surface-container-highest transition-all cursor-pointer">Details</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="max-w-7xl mx-auto mt-24 py-16 border-t border-slate-800/30">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div>
+          <span class="text-4xl font-headline font-bold text-primary">12</span>
+          <p class="text-slate-500 text-[10px] uppercase tracking-widest mt-2">Active Projects</p>
+        </div>
+        <div>
+          <span class="text-4xl font-headline font-bold text-secondary">48</span>
+          <p class="text-slate-500 text-[10px] uppercase tracking-widest mt-2">Papers Published</p>
+        </div>
+        <div>
+          <span class="text-4xl font-headline font-bold text-tertiary">02</span>
+          <p class="text-slate-500 text-[10px] uppercase tracking-widest mt-2">Patent Pendings</p>
+        </div>
+        <div>
+          <span class="text-4xl font-headline font-bold text-on-background">32</span>
+          <p class="text-slate-500 text-[10px] uppercase tracking-widest mt-2">Lab Fellows</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<app-footer />

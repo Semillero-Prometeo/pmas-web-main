@@ -1,0 +1,83 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Colors */
+  --color-background: #000f1d;
+  --color-surface: #000f1d;
+  --color-surface-dim: #000f1d;
+  --color-surface-bright: #1a1c1e;
+  --color-surface-container-lowest: #000a14;
+  --color-surface-container-low: #001a2e;
+  --color-surface-container: #001525;
+  --color-surface-container-high: #0d2133;
+  --color-surface-container-highest: #132c40;
+  --color-surface-variant: #41484d;
+  --color-surface-tint: #38bdf8;
+
+  --color-primary: #38bdf8;
+  --color-primary-fixed: #c1e8ff;
+  --color-primary-fixed-dim: #38bdf8;
+  --color-primary-container: #004c6a;
+  --color-on-primary: #00354b;
+  --color-on-primary-fixed: #001e2e;
+  --color-on-primary-fixed-variant: #004c6a;
+  --color-on-primary-container: #c1e8ff;
+  --color-inverse-primary: #00668f;
+
+  --color-secondary: #10b981;
+  --color-secondary-fixed: #bdfade;
+  --color-secondary-fixed-dim: #10b981;
+  --color-secondary-container: #005238;
+  --color-on-secondary: #003825;
+  --color-on-secondary-fixed: #002114;
+  --color-on-secondary-fixed-variant: #005238;
+  --color-on-secondary-container: #9ef4d1;
+
+  --color-tertiary: #34d399;
+  --color-tertiary-fixed: #d0fff1;
+  --color-tertiary-fixed-dim: #34d399;
+  --color-tertiary-container: #005238;
+  --color-on-tertiary: #003825;
+  --color-on-tertiary-fixed: #002114;
+  --color-on-tertiary-fixed-variant: #005238;
+  --color-on-tertiary-container: #bdfade;
+
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+  --color-on-error: #690005;
+  --color-on-error-container: #ffdad6;
+
+  --color-outline: #8d919a;
+  --color-outline-variant: #41484d;
+  --color-on-surface: #e1e2e5;
+  --color-on-surface-variant: #c1c7ce;
+  --color-on-background: #e1e2e5;
+  --color-inverse-surface: #e1e2e5;
+  --color-inverse-on-surface: #2e3133;
+
+  /* Fonts */
+  --font-headline: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-label: 'Inter', sans-serif;
+
+  /* Border radius */
+  --radius-DEFAULT: 0.125rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+  --radius-full: 0.75rem;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.editorial-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2rem;
+}
+
+.industrial-grid {
+  background-image: radial-gradient(circle, #43474f 1px, transparent 1px);
+  background-size: 24px 24px;
+}

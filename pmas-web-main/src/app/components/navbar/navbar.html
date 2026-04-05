@@ -1,0 +1,78 @@
+<nav class="fixed top-0 w-full z-50 bg-surface/60 backdrop-blur-xl flex justify-between items-center px-8 h-16">
+  <div class="flex items-center gap-8">
+    <a routerLink="/" class="text-xl font-bold tracking-tighter text-blue-400 uppercase font-headline no-underline">
+      Prometeo
+    </a>
+
+    @if (auth.isAuthenticated()) {
+      <div class="hidden md:flex gap-6 items-center">
+        <a routerLink="/info" routerLinkActive="text-primary border-b-2 border-primary pb-1"
+           class="text-on-surface-variant hover:text-primary font-headline tracking-tight text-sm transition-all duration-300 no-underline">
+          Info
+        </a>
+        <a routerLink="/team" routerLinkActive="text-primary border-b-2 border-primary pb-1"
+           class="text-on-surface-variant hover:text-primary font-headline tracking-tight text-sm transition-all duration-300 no-underline">
+          Team
+        </a>
+        <a routerLink="/projects" routerLinkActive="text-primary border-b-2 border-primary pb-1"
+           class="text-on-surface-variant hover:text-primary font-headline tracking-tight text-sm transition-all duration-300 no-underline">
+          Projects
+        </a>
+        <a routerLink="/control-panel" routerLinkActive="text-primary border-b-2 border-primary pb-1"
+           class="text-on-surface-variant hover:text-primary font-headline tracking-tight text-sm transition-all duration-300 no-underline">
+          Control Panel
+        </a>
+      </div>
+    }
+  </div>
+
+  <div class="flex items-center gap-3">
+    @if (showSearch && auth.isAuthenticated()) {
+      <div class="hidden lg:block">
+        <input
+          class="bg-surface-container-high rounded-full px-4 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary w-64 text-on-surface"
+          placeholder="Search parameters..."
+          type="text"
+        />
+      </div>
+    }
+
+    @if (auth.isAuthenticated()) {
+      <!-- Perfil del usuario -->
+      <div class="flex items-center gap-3 pl-2 border-l border-outline-variant/30">
+        <div class="text-right hidden sm:block">
+          <div class="text-xs font-headline font-bold text-on-surface leading-none">
+            {{ auth.displayName() || auth.profile()?.username }}
+          </div>
+          <div class="text-[10px] font-label uppercase tracking-wider text-outline mt-0.5">
+            {{ auth.activeRole() }}
+          </div>
+        </div>
+        <div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">
+            person
+          </span>
+        </div>
+        <!-- Logout -->
+        <button
+          (click)="auth.logout()"
+          class="material-symbols-outlined text-slate-500 hover:text-error hover:bg-error/10 p-2 rounded-full transition-all cursor-pointer"
+          title="Cerrar sesión">
+          logout
+        </button>
+      </div>
+    } @else {
+      <!-- Sin sesión: botones de acceso -->
+      <a routerLink="/login"
+         class="text-on-surface-variant hover:text-primary font-headline text-sm font-bold tracking-tight
+                transition-all duration-200 no-underline">
+        Iniciar sesión
+      </a>
+      <a routerLink="/register"
+         class="bg-primary text-on-primary px-5 py-2 rounded-lg font-headline font-bold text-sm
+                tracking-tight hover:opacity-90 active:scale-95 transition-all duration-200 no-underline">
+        Registrarse
+      </a>
+    }
+  </div>
+</nav>
