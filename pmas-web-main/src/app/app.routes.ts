@@ -4,7 +4,7 @@ import { authGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'login',
+    redirectTo: 'info',
     pathMatch: 'full',
   },
   {
@@ -16,12 +16,13 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/register/register').then(m => m.Register),
   },
 
-  // Rutas protegidas — requieren sesión activa
+  // Página pública — visible sin sesión
   {
     path: 'info',
-    canActivate: [authGuard],
     loadComponent: () => import('./pages/home/home').then(m => m.Home),
   },
+
+  // Rutas protegidas — requieren sesión activa
   {
     path: 'team',
     canActivate: [authGuard],
@@ -39,6 +40,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'login',
+    redirectTo: 'info',
   },
 ];

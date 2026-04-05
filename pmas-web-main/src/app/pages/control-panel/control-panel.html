@@ -1,10 +1,10 @@
 <app-navbar [showSearch]="true" />
 <app-sidebar activeItem="logs" />
 
-<main class="ml-64 pt-20 px-8 pb-12 industrial-grid min-h-screen">
+<main class="lg:ml-64 pt-20 px-4 md:px-8 pb-12 industrial-grid min-h-screen">
 
   <!-- Header -->
-  <header class="mb-10 flex justify-between items-end">
+  <header class="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
     <div>
       <div class="flex items-center gap-2 mb-2">
         <span class="bg-primary/20 text-primary text-[10px] font-bold px-2 py-0.5 rounded tracking-widest uppercase">
@@ -12,11 +12,11 @@
         </span>
         <span class="text-slate-500 text-[10px] font-mono tracking-tighter">0x4F22-ALPHA</span>
       </div>
-      <h1 class="font-headline text-5xl font-bold tracking-tighter text-on-surface">
+      <h1 class="font-headline text-3xl md:text-5xl font-bold tracking-tighter text-on-surface">
         Robotic Control <span class="text-primary">Interface</span>
       </h1>
     </div>
-    <div class="text-right">
+    <div class="text-left sm:text-right">
       <p class="text-[10px] font-mono text-secondary tracking-widest uppercase">Uptime: {{ uptime() }}</p>
       <p class="text-[10px] font-mono text-slate-500 tracking-widest uppercase">Signal: -42dBm (Stable)</p>
     </div>
@@ -225,7 +225,7 @@
   </div>
 
   <!-- ══════════════════════════ ROBOT VOICE CHAT ══════════════════════════ -->
-  <section class="mt-6">
+  <section class="mt-2">
     <div class="bg-surface-container rounded-xl border border-white/5 shadow-xl overflow-hidden">
 
       <!-- Header del chat -->
