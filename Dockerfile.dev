@@ -1,0 +1,12 @@
+FROM node:22-slim AS base
+
+WORKDIR /usr/src/app
+
+# 1. Dependencias — solo se reinstalan si cambia package.json o package-lock.json
+COPY --chown=node:node package*.json ./
+
+# 2. Código fuente — la capa que cambia con más frecuencia (en dev se sobrescribe por volumen)
+COPY --chown=node:node . .
+
+# El puerto real lo define WEB_MAIN_PORT en docker-compose (documentación)
+EXPOSE 4200
