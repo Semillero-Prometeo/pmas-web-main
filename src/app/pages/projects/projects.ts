@@ -1,13 +1,12 @@
 import { Component, signal } from '@angular/core';
 import { Navbar } from '../../components/navbar/navbar';
 import { Footer } from '../../components/footer/footer';
-import { Sidebar } from '../../components/sidebar/sidebar';
 
 type FilterTag = 'all' | 'robotics' | 'ai' | 'hardware';
 
 @Component({
   selector: 'app-projects',
-  imports: [Navbar, Footer, Sidebar],
+  imports: [Navbar, Footer],
   templateUrl: './projects.html',
 })
 export class Projects {

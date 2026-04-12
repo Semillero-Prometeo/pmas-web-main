@@ -29,9 +29,6 @@
       <h1 class="font-headline text-5xl font-bold tracking-tighter leading-tight text-on-surface mb-6">
         Inicia sesión para continuar en el semillero de investigación <span class="text-primary italic">Prometeo.</span>
       </h1>
-      <p class="text-on-surface-variant text-base leading-relaxed max-w-md">
-       
-      </p>
 
       <!-- Stats -->
       <div class="mt-12 flex gap-10">
@@ -66,12 +63,12 @@
     <div class="relative z-10 flex items-center gap-3">
       <div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
       <span class="text-[10px] font-label uppercase tracking-widest text-slate-500">
-        System Nominal — All Sensors Active
+        Portal de autenticación activo
       </span>
     </div>
   </div>
 
-  <!-- Panel derecho: formulario -->
+  <!-- Panel derecho: formulario / selector de rol -->
   <div class="w-full lg:w-1/2 flex items-center justify-center px-8 py-16 relative">
 
     <!-- Glow top right -->
@@ -82,162 +79,187 @@
       <!-- Mobile logo -->
       <div class="lg:hidden mb-10">
         <span class="text-lg font-headline font-bold tracking-tighter text-blue-400 uppercase">
-          The Kinetic Laboratory
+          Prometeo
         </span>
       </div>
 
-      <!-- Header del form -->
-      <div class="mb-10">
-        <span class="font-label text-[10px] uppercase tracking-[0.3em] text-secondary mb-3 block">
-          Autenticación
-        </span>
-        <h2 class="font-headline text-4xl font-bold tracking-tighter text-on-surface mb-2">
-          Iniciar Sesión
-        </h2>
-        <p class="text-on-surface-variant text-sm">
-          Ingresa tus credenciales para acceder a los sistemas de control.
-        </p>
-      </div>
-
-      <!-- Formulario -->
-      <form (ngSubmit)="handleSubmit()" #loginForm="ngForm" class="space-y-6">
-
-        <!-- Email -->
-        <div class="space-y-2">
-          <label class="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant block">
-            Dirección de correo electrónico
-          </label>
-          <div class="relative">
-            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-600"
-                  style="font-size: 1.1rem;">
-              alternate_email
-            </span>
-            <input
-              type="email"
-              name="email"
-              required
-              autocomplete="email"
-              [ngModel]="email()"
-              (ngModelChange)="email.set($event)"
-              placeholder="prometeo@unilibre.edu.co"
-              class="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary outline-none
-                     pl-12 pr-4 py-3.5 text-on-surface text-sm font-body rounded-t-lg transition-colors duration-200
-                     placeholder:text-slate-600"
-            />
-          </div>
+      <!-- ── FORMULARIO DE LOGIN ── -->
+      <div>
+        <div class="mb-10">
+          <span class="font-label text-[10px] uppercase tracking-[0.3em] text-secondary mb-3 block">
+            Autenticación
+          </span>
+          <h2 class="font-headline text-4xl font-bold tracking-tighter text-on-surface mb-2">
+            Iniciar Sesión
+          </h2>
+          <p class="text-on-surface-variant text-sm">
+            Ingresa tus credenciales para acceder a los sistemas de control.
+          </p>
         </div>
 
-        <!-- Password -->
-        <div class="space-y-2">
-          <label class="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant block">
-            Contraseña
-          </label>
-          <div class="relative">
-            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-600"
-                  style="font-size: 1.1rem;">
-              lock
-            </span>
-            <input
-              [type]="showPassword() ? 'text' : 'password'"
-              name="password"
-              required
-              autocomplete="current-password"
-              [ngModel]="password()"
-              (ngModelChange)="password.set($event)"
-              placeholder="••••••••••••"
-              class="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary outline-none
-                     pl-12 pr-12 py-3.5 text-on-surface text-sm font-body rounded-t-lg transition-colors duration-200
-                     placeholder:text-slate-600"
-            />
-            <button
-              type="button"
-              (click)="showPassword.set(!showPassword())"
-              class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-on-surface transition-colors cursor-pointer">
-              <span class="material-symbols-outlined" style="font-size: 1.1rem;">
-                {{ showPassword() ? 'visibility_off' : 'visibility' }}
-              </span>
-            </button>
-          </div>
-        </div>
+        <form (ngSubmit)="handleSubmit()" #loginForm="ngForm" class="space-y-6">
 
-        <!-- Remember me + Forgot -->
-        <div class="flex items-center justify-between">
-          <label class="flex items-center gap-3 cursor-pointer group">
+          <!-- Email -->
+          <div class="space-y-2">
+            <label class="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant block">
+              Dirección de correo electrónico
+            </label>
             <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-600"
+                    style="font-size: 1.1rem;">
+                alternate_email
+              </span>
               <input
-                type="checkbox"
-                name="rememberMe"
-                [ngModel]="rememberMe()"
-                (ngModelChange)="rememberMe.set($event)"
-                class="sr-only peer"
+                type="email"
+                name="email"
+                required
+                autocomplete="email"
+                [ngModel]="email()"
+                (ngModelChange)="email.set($event)"
+                placeholder="prometeo@unilibre.edu.co"
+                class="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary outline-none
+                       pl-12 pr-4 py-3.5 text-on-surface text-sm font-body rounded-t-lg transition-colors duration-200
+                       placeholder:text-slate-600"
               />
-              <div class="w-9 h-5 bg-surface-container-highest rounded-full peer-checked:bg-primary/30
-                          border border-outline-variant peer-checked:border-primary transition-all relative">
-                <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-outline-variant rounded-full
-                            peer-checked:translate-x-4 peer-checked:bg-primary transition-all
-                            [input:checked~&]:translate-x-4 [input:checked~&]:bg-primary"></div>
-              </div>
             </div>
-            <span class="text-[11px] font-label uppercase tracking-wider text-on-surface-variant group-hover:text-on-surface transition-colors">
-              Remember Unit
-            </span>
-          </label>
-          <a href="#" class="text-[11px] font-label uppercase tracking-wider text-primary hover:text-primary/70 transition-colors no-underline">
-            Reset Access
-          </a>
-        </div>
-
-        <!-- Error del servidor -->
-        @if (serverError()) {
-          <div class="flex items-start gap-3 p-4 bg-error-container/20 rounded-lg border-l-2 border-error">
-            <span class="material-symbols-outlined text-error mt-0.5" style="font-size: 1rem;">error</span>
-            <p class="text-[11px] font-label text-error leading-relaxed uppercase tracking-wide">
-              {{ serverError() }}
-            </p>
           </div>
-        }
 
-        <!-- Submit -->
-        <button
-          type="submit"
-          [disabled]="isLoading()"
-          class="w-full bg-primary text-on-primary py-4 rounded-lg font-headline font-bold tracking-tight
-                 hover:opacity-90 active:scale-95 transition-all duration-200 flex items-center justify-center gap-3
-                 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-2">
-          @if (isLoading()) {
-            <span class="material-symbols-outlined animate-spin" style="font-size: 1.1rem;">progress_activity</span>
-            Authenticating...
-          } @else {
-            <span class="material-symbols-outlined" style="font-size: 1.1rem;">login</span>
-Iniciar Sesión
+          <!-- Password -->
+          <div class="space-y-2">
+            <label class="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant block">
+              Contraseña
+            </label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-600"
+                    style="font-size: 1.1rem;">
+                lock
+              </span>
+              <input
+                [type]="showPassword() ? 'text' : 'password'"
+                name="password"
+                required
+                autocomplete="current-password"
+                [ngModel]="password()"
+                (ngModelChange)="password.set($event)"
+                placeholder="••••••••••••"
+                class="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary outline-none
+                       pl-12 pr-12 py-3.5 text-on-surface text-sm font-body rounded-t-lg transition-colors duration-200
+                       placeholder:text-slate-600"
+              />
+              <button
+                type="button"
+                (click)="showPassword.set(!showPassword())"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-on-surface transition-colors cursor-pointer">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">
+                  {{ showPassword() ? 'visibility_off' : 'visibility' }}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Error del servidor -->
+          @if (serverError()) {
+            <div class="flex items-start gap-3 p-4 bg-error-container/20 rounded-lg border-l-2 border-error">
+              <span class="material-symbols-outlined text-error mt-0.5" style="font-size: 1rem;">error</span>
+              <p class="text-[11px] font-label text-error leading-relaxed uppercase tracking-wide">
+                {{ serverError() }}
+              </p>
+            </div>
           }
-        </button>
 
-        <!-- Divider -->
-        <div class="flex items-center gap-4">
-          <div class="flex-1 h-px bg-outline-variant/20"></div>
-          <span class="text-[10px] font-label uppercase tracking-widest text-outline">or</span>
-          <div class="flex-1 h-px bg-outline-variant/20"></div>
+          <!-- Submit -->
+          <button
+            type="submit"
+            [disabled]="isLoading()"
+            class="w-full bg-primary text-on-primary py-4 rounded-lg font-headline font-bold tracking-tight
+                   hover:opacity-90 active:scale-95 transition-all duration-200 flex items-center justify-center gap-3
+                   disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-2">
+            @if (isLoading()) {
+              <span class="material-symbols-outlined animate-spin" style="font-size: 1.1rem;">progress_activity</span>
+              Autenticando...
+            } @else {
+              <span class="material-symbols-outlined" style="font-size: 1.1rem;">login</span>
+              Iniciar Sesión
+            }
+          </button>
+
+        </form>
+
+        <!-- Security notice -->
+        <div class="mt-10 flex items-start gap-3 p-4 bg-surface-container-low rounded-lg border-l-2 border-outline-variant">
+          <span class="material-symbols-outlined text-outline mt-0.5" style="font-size: 1rem;">shield</span>
+          <p class="text-[10px] font-label text-outline leading-relaxed uppercase tracking-wide">
+            Este sistema está monitoreado. Los intentos de acceso no autorizados se registran y se informan a la seguridad del laboratorio.
+          </p>
         </div>
-
-        <!-- Register link -->
-        <p class="text-center text-sm text-on-surface-variant">
-          ¿No tienes acceso?
-          <a routerLink="/register" class="text-secondary font-bold hover:text-secondary/70 transition-colors no-underline ml-1">
-            Solicitar Acceso
-          </a>
-        </p>
-
-      </form>
-
-      <!-- Security notice -->
-      <div class="mt-10 flex items-start gap-3 p-4 bg-surface-container-low rounded-lg border-l-2 border-outline-variant">
-        <span class="material-symbols-outlined text-outline mt-0.5" style="font-size: 1rem;">shield</span>
-        <p class="text-[10px] font-label text-outline leading-relaxed uppercase tracking-wide">
-          Este sistema está monitoreado. Los intentos de acceso no autorizados se registran y se informan a la seguridad del laboratorio.
-        </p>
       </div>
+
     </div>
   </div>
 
 </div>
+
+<!-- ── MODAL SELECTOR DE ROL ── -->
+@if (loginDone()) {
+  <!-- Backdrop -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+       style="background: rgba(2,6,23,0.85); backdrop-filter: blur(6px);">
+
+    <!-- Card -->
+    <div class="w-full max-w-sm bg-surface-container rounded-2xl border border-white/8 shadow-2xl shadow-black/60 overflow-hidden">
+
+      <!-- Header -->
+      <div class="px-6 pt-6 pb-4 border-b border-white/5">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-9 h-9 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary" style="font-size: 1.1rem; font-variation-settings: 'FILL' 1;">
+              manage_accounts
+            </span>
+          </div>
+          <div>
+            <p class="font-label text-[9px] uppercase tracking-[0.25em] text-secondary">Prometeo · Auth</p>
+            <h3 class="font-headline text-base font-bold tracking-tight text-on-surface leading-tight">
+              Selecciona tu rol
+            </h3>
+          </div>
+        </div>
+        <p class="text-[11px] text-on-surface-variant leading-relaxed">
+          Tu cuenta tiene acceso a múltiples módulos. ¿Con qué rol deseas continuar?
+        </p>
+      </div>
+
+      <!-- Lista de roles -->
+      <div class="px-4 py-4 space-y-2">
+        @for (role of auth.availableRoles(); track role; let i = $index) {
+          <button
+            (click)="confirmRole(i)"
+            class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-outline-variant/20
+                   bg-surface-container-low hover:bg-surface-container-high hover:border-primary/35
+                   transition-all duration-150 text-left group cursor-pointer active:scale-[0.98]">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0
+                        group-hover:bg-primary/20 transition-colors">
+              <span class="material-symbols-outlined text-primary" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">
+                badge
+              </span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-headline font-bold text-on-surface text-sm tracking-tight">{{ role }}</div>
+              <div class="text-[9px] font-label uppercase tracking-widest text-outline mt-0.5">Acceso al módulo</div>
+            </div>
+            <span class="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors"
+                  style="font-size: 1rem;">
+              chevron_right
+            </span>
+          </button>
+        }
+      </div>
+
+      <!-- Footer -->
+      <div class="px-6 pb-5 pt-1">
+        <p class="text-[9px] font-label text-slate-600 uppercase tracking-wide text-center">
+          Puedes cambiar de rol desde tu perfil en cualquier momento
+        </p>
+      </div>
+    </div>
+  </div>
+}

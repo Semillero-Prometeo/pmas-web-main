@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Navbar } from '../../components/navbar/navbar';
 import { Footer } from '../../components/footer/footer';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -9,6 +10,7 @@ import { Footer } from '../../components/footer/footer';
   templateUrl: './home.html',
 })
 export class Home {
+  auth = inject(AuthService);
   enfoques = [
     'Inteligencia artificial y computación en la nube',
     'Soluciones en ciberseguridad',

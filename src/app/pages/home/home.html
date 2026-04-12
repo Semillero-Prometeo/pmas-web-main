@@ -56,17 +56,6 @@
             <!-- Gradiente -->
             <div class="absolute inset-0 bg-linear-to-t from-surface-container-low via-transparent to-transparent"></div>
 
-            <!-- Badge flotante arriba-izquierda -->
-            <div class="absolute top-5 left-5 bg-surface-container/80 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10 flex items-center gap-2">
-              <div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
-              <span class="text-[10px] font-mono text-secondary uppercase tracking-widest">CNN Active</span>
-            </div>
-
-            <!-- Badge flotante abajo-derecha -->
-            <div class="absolute bottom-5 right-5 bg-surface-container/80 backdrop-blur-md px-4 py-3 rounded-lg border border-white/10">
-              <div class="text-2xl font-headline font-bold text-primary">98.2%</div>
-              <div class="text-[9px] font-label uppercase tracking-widest text-outline">Model Accuracy</div>
-            </div>
           </div>
 
           <!-- Glow del borde -->
@@ -75,6 +64,67 @@
       </div>
     </div>
   </section>
+
+  <!-- ═══════════════════════════════ MODO COMPACTO (autenticado) ═══════════════════════════════ -->
+  @if (auth.isAuthenticated()) {
+    <section class="px-4 md:px-8 max-w-7xl mx-auto mb-16">
+      <a routerLink="/r-one" class="no-underline group block">
+        <div class="relative rounded-2xl overflow-hidden border border-primary/20 bg-surface-container-low
+                    hover:border-primary/50 hover:bg-surface-container transition-all duration-300">
+
+          <!-- Background glow -->
+          <div class="absolute inset-0 bg-linear-to-r from-primary/5 via-transparent to-secondary/5 pointer-events-none"></div>
+          <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 p-6 md:p-8">
+            <div class="flex items-start gap-5">
+              <!-- Icon -->
+              <div class="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/25 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-primary" style="font-size: 1.75rem; font-variation-settings: 'FILL' 1;">smart_toy</span>
+              </div>
+              <!-- Text -->
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-[9px] font-label uppercase tracking-[0.25em] text-primary font-bold">Acceso rápido</span>
+                  <div class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
+                </div>
+                <h2 class="font-headline text-xl md:text-2xl font-bold tracking-tighter text-on-surface mb-1 group-hover:text-primary transition-colors">
+                  Modo Compacto — R-One
+                </h2>
+                <p class="text-sm text-on-surface-variant max-w-md leading-relaxed">
+                  Interfaz táctil minimalista para mover y gestionar el robot. Movimientos predefinidos,
+                  chat de comandos y creador de secuencias personalizadas.
+                </p>
+
+                <!-- Feature pills -->
+                <div class="flex flex-wrap gap-2 mt-3">
+                  @for (f of ['Movimientos', 'Chat de comandos', 'Secuencias', 'Acceso restringido']; track f) {
+                    <span class="text-[9px] font-label uppercase tracking-wider px-2.5 py-1 rounded-full
+                                 bg-surface-container-high border border-outline-variant/30 text-on-surface-variant">
+                      {{ f }}
+                    </span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="flex items-center gap-3 shrink-0">
+              <div class="flex flex-col items-end">
+                <span class="text-xs font-headline font-bold text-on-surface">{{ auth.displayName() || auth.profile()?.username }}</span>
+                <span class="text-[10px] font-label uppercase tracking-wider text-outline">{{ auth.activeRole() }}</span>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center
+                          group-hover:shadow-[0_0_20px_rgba(56,189,248,0.4)] transition-all duration-300">
+                <span class="material-symbols-outlined text-on-primary group-hover:translate-x-0.5 transition-transform"
+                      style="font-size: 1.2rem; font-variation-settings: 'FILL' 1;">arrow_forward</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </section>
+  }
 
   <!-- ════════════════════════════════ MISIÓN / VISIÓN / ENFOQUES ════════════════════════════════ -->
   <section class="px-4 md:px-8 max-w-7xl mx-auto mb-20 md:mb-32">

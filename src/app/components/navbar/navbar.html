@@ -5,7 +5,27 @@
     </a>
 
     @if (auth.isAuthenticated()) {
+      <!-- Autenticado: links del panel -->
       <div class="hidden md:flex gap-6 items-center">
+        <a routerLink="/control-panel" routerLinkActive="text-primary border-b-2 border-primary pb-1"
+           class="text-on-surface-variant hover:text-primary font-headline tracking-tight text-sm transition-all duration-300 no-underline">
+          Control Panel
+        </a>
+        <a routerLink="/r-one"
+           class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/25
+                  text-primary hover:bg-primary/20 font-headline font-bold tracking-tight text-xs
+                  transition-all duration-200 no-underline">
+          <span class="material-symbols-outlined" style="font-size: 0.85rem; font-variation-settings: 'FILL' 1;">smart_toy</span>
+          Modo Compacto
+        </a>
+      </div>
+    } @else {
+      <!-- Sin sesión: links públicos -->
+      <div class="hidden md:flex gap-6 items-center">
+        <a routerLink="/info" routerLinkActive="text-primary border-b-2 border-primary pb-1"
+           class="text-on-surface-variant hover:text-primary font-headline tracking-tight text-sm transition-all duration-300 no-underline">
+          Inicio
+        </a>
         <a routerLink="/team" routerLinkActive="text-primary border-b-2 border-primary pb-1"
            class="text-on-surface-variant hover:text-primary font-headline tracking-tight text-sm transition-all duration-300 no-underline">
           Team
@@ -14,9 +34,12 @@
            class="text-on-surface-variant hover:text-primary font-headline tracking-tight text-sm transition-all duration-300 no-underline">
           Projects
         </a>
-        <a routerLink="/control-panel" routerLinkActive="text-primary border-b-2 border-primary pb-1"
-           class="text-on-surface-variant hover:text-primary font-headline tracking-tight text-sm transition-all duration-300 no-underline">
-          Control Panel
+        <a routerLink="/r-one"
+           class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/25
+                  text-primary hover:bg-primary/20 font-headline font-bold tracking-tight text-xs
+                  transition-all duration-200 no-underline">
+          <span class="material-symbols-outlined" style="font-size: 0.85rem; font-variation-settings: 'FILL' 1;">smart_toy</span>
+          Modo Compacto
         </a>
       </div>
     }
@@ -34,81 +57,160 @@
     }
 
     @if (auth.isAuthenticated()) {
-      <!-- Perfil del usuario (desktop) -->
-      <div class="hidden md:flex items-center gap-3 pl-2 border-l border-outline-variant/30">
-        <div class="text-right hidden sm:block">
-          <div class="text-xs font-headline font-bold text-on-surface leading-none">
-            {{ auth.displayName() || auth.profile()?.username }}
-          </div>
-          <div class="text-[10px] font-label uppercase tracking-wider text-outline mt-0.5">
-            {{ auth.activeRole() }}
-          </div>
-        </div>
-        <div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center">
-          <span class="material-symbols-outlined text-primary" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">
-            person
-          </span>
-        </div>
+      <!-- Perfil del usuario (desktop) — dropdown -->
+      <div class="hidden md:block relative">
         <button
-          (click)="auth.logout()"
-          class="material-symbols-outlined text-slate-500 hover:text-error hover:bg-error/10 p-2 rounded-full transition-all cursor-pointer"
-          title="Cerrar sesión">
-          logout
+          (click)="toggleProfileDropdown()"
+          class="flex items-center gap-3 pl-2 border-l border-outline-variant/30 hover:opacity-80 transition-opacity cursor-pointer">
+          <div class="text-right hidden sm:block">
+            <div class="text-xs font-headline font-bold text-on-surface leading-none">
+              {{ auth.displayName() || auth.profile()?.username }}
+            </div>
+            <div class="text-[10px] font-label uppercase tracking-wider text-outline mt-0.5">
+              {{ auth.activeRole() }}
+            </div>
+          </div>
+          <div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">
+              person
+            </span>
+          </div>
+          <span class="material-symbols-outlined text-slate-500 text-sm transition-transform duration-200"
+                [class.rotate-180]="profileDropdownOpen()">
+            expand_more
+          </span>
         </button>
+
+        <!-- Dropdown panel -->
+        @if (profileDropdownOpen()) {
+          <!-- Backdrop -->
+          <div class="fixed inset-0 z-40" (click)="closeProfileDropdown()"></div>
+
+          <!-- Menu -->
+          <div class="absolute right-0 top-full mt-2 w-52 bg-surface-container-high border border-outline-variant/20
+                      rounded-xl shadow-2xl z-50 overflow-hidden">
+            <!-- User info header -->
+            <div class="px-4 py-3 border-b border-outline-variant/20">
+              <div class="text-xs font-headline font-bold text-on-surface truncate">
+                {{ auth.displayName() || auth.profile()?.username }}
+              </div>
+              <div class="text-[10px] font-label uppercase tracking-wider text-outline mt-0.5">
+                {{ auth.activeRole() }}
+              </div>
+            </div>
+            <!-- Options -->
+            <a routerLink="/profile"
+               (click)="closeProfileDropdown()"
+               class="flex items-center gap-3 px-4 py-3 text-sm text-on-surface-variant hover:bg-surface-container-highest
+                      hover:text-on-surface transition-colors no-underline">
+              <span class="material-symbols-outlined text-slate-500" style="font-size: 1.1rem;">manage_accounts</span>
+              Ver perfil
+            </a>
+            <button
+              (click)="closeProfileDropdown(); auth.logout()"
+              class="w-full flex items-center gap-3 px-4 py-3 text-sm text-error hover:bg-error/10
+                     transition-colors cursor-pointer border-t border-outline-variant/10">
+              <span class="material-symbols-outlined" style="font-size: 1.1rem;">logout</span>
+              Cerrar sesión
+            </button>
+          </div>
+        }
       </div>
 
-      <!-- Hamburger (mobile) -->
-      <button
-        (click)="mobileMenuOpen.set(!mobileMenuOpen())"
-        class="md:hidden p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors cursor-pointer">
-        <span class="material-symbols-outlined">{{ mobileMenuOpen() ? 'close' : 'menu' }}</span>
-      </button>
     } @else {
-      <!-- Sin sesión: botones de acceso -->
+      <!-- Sin sesión: botones de acceso (desktop) -->
       <a routerLink="/login"
-         class="text-on-surface-variant hover:text-primary font-headline text-sm font-bold tracking-tight
+         class="hidden md:inline text-on-surface-variant hover:text-primary font-headline text-sm font-bold tracking-tight
                 transition-all duration-200 no-underline">
         Iniciar sesión
       </a>
       <a routerLink="/register"
-         class="bg-primary text-on-primary px-5 py-2 rounded-lg font-headline font-bold text-sm
+         class="hidden md:inline bg-primary text-on-primary px-5 py-2 rounded-lg font-headline font-bold text-sm
                 tracking-tight hover:opacity-90 active:scale-95 transition-all duration-200 no-underline">
         Registrarse
       </a>
     }
+
+    <!-- Hamburger (mobile) — visible siempre -->
+    <button
+      (click)="mobileMenuOpen.set(!mobileMenuOpen())"
+      class="md:hidden p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors cursor-pointer">
+      <span class="material-symbols-outlined">{{ mobileMenuOpen() ? 'close' : 'menu' }}</span>
+    </button>
   </div>
 </nav>
 
 <!-- Mobile dropdown menu -->
-@if (auth.isAuthenticated() && mobileMenuOpen()) {
+@if (mobileMenuOpen()) {
   <div class="fixed top-16 left-0 right-0 z-40 md:hidden bg-surface/95 backdrop-blur-xl border-b border-outline-variant/20 px-6 py-4 space-y-1">
-    <a routerLink="/team" (click)="mobileMenuOpen.set(false)"
-       routerLinkActive="text-primary"
-       class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-primary font-headline text-sm tracking-tight transition-colors no-underline border-b border-outline-variant/10">
-      <span class="material-symbols-outlined text-base">group</span>
-      Team
-    </a>
-    <a routerLink="/projects" (click)="mobileMenuOpen.set(false)"
-       routerLinkActive="text-primary"
-       class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-primary font-headline text-sm tracking-tight transition-colors no-underline border-b border-outline-variant/10">
-      <span class="material-symbols-outlined text-base">folder_open</span>
-      Projects
-    </a>
-    <a routerLink="/control-panel" (click)="mobileMenuOpen.set(false)"
-       routerLinkActive="text-primary"
-       class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-primary font-headline text-sm tracking-tight transition-colors no-underline border-b border-outline-variant/10">
-      <span class="material-symbols-outlined text-base">settings_remote</span>
-      Control Panel
-    </a>
-    <div class="flex items-center justify-between pt-3">
-      <div>
-        <div class="text-sm font-headline font-bold text-on-surface">{{ auth.displayName() || auth.profile()?.username }}</div>
-        <div class="text-[10px] font-label uppercase tracking-wider text-outline">{{ auth.activeRole() }}</div>
+    @if (auth.isAuthenticated()) {
+      <!-- Autenticado -->
+      <a routerLink="/control-panel" (click)="mobileMenuOpen.set(false)"
+         routerLinkActive="text-primary"
+         class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-primary font-headline text-sm tracking-tight transition-colors no-underline border-b border-outline-variant/10">
+        <span class="material-symbols-outlined text-base">settings_remote</span>
+        Control Panel
+      </a>
+      <a routerLink="/r-one" (click)="mobileMenuOpen.set(false)"
+         class="flex items-center gap-3 py-3 text-primary font-headline text-sm font-bold tracking-tight no-underline border-b border-outline-variant/10">
+        <span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+        Modo Compacto
+        <span class="ml-auto text-[9px] font-label uppercase tracking-widest bg-primary/15 border border-primary/25 px-2 py-0.5 rounded-full">R-One</span>
+      </a>
+      <a routerLink="/profile" (click)="mobileMenuOpen.set(false)"
+         routerLinkActive="text-primary"
+         class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-primary font-headline text-sm tracking-tight transition-colors no-underline border-b border-outline-variant/10">
+        <span class="material-symbols-outlined text-base">manage_accounts</span>
+        Mi perfil
+      </a>
+      <div class="flex items-center justify-between pt-3">
+        <div>
+          <div class="text-sm font-headline font-bold text-on-surface">{{ auth.displayName() || auth.profile()?.username }}</div>
+          <div class="text-[10px] font-label uppercase tracking-wider text-outline">{{ auth.activeRole() }}</div>
+        </div>
+        <button (click)="auth.logout()" class="flex items-center gap-2 text-[11px] font-label uppercase tracking-wider text-error hover:bg-error/10 px-3 py-2 rounded-lg transition-colors cursor-pointer">
+          <span class="material-symbols-outlined text-base">logout</span>
+          Salir
+        </button>
       </div>
-      <button (click)="auth.logout()" class="flex items-center gap-2 text-[11px] font-label uppercase tracking-wider text-error hover:bg-error/10 px-3 py-2 rounded-lg transition-colors cursor-pointer">
-        <span class="material-symbols-outlined text-base">logout</span>
-        Salir
-      </button>
-    </div>
+    } @else {
+      <!-- Sin sesión -->
+      <a routerLink="/info" (click)="mobileMenuOpen.set(false)"
+         routerLinkActive="text-primary"
+         class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-primary font-headline text-sm tracking-tight transition-colors no-underline border-b border-outline-variant/10">
+        <span class="material-symbols-outlined text-base">home</span>
+        Inicio
+      </a>
+      <a routerLink="/team" (click)="mobileMenuOpen.set(false)"
+         routerLinkActive="text-primary"
+         class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-primary font-headline text-sm tracking-tight transition-colors no-underline border-b border-outline-variant/10">
+        <span class="material-symbols-outlined text-base">group</span>
+        Team
+      </a>
+      <a routerLink="/projects" (click)="mobileMenuOpen.set(false)"
+         routerLinkActive="text-primary"
+         class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-primary font-headline text-sm tracking-tight transition-colors no-underline border-b border-outline-variant/10">
+        <span class="material-symbols-outlined text-base">folder_open</span>
+        Projects
+      </a>
+      <a routerLink="/r-one" (click)="mobileMenuOpen.set(false)"
+         class="flex items-center gap-3 py-3 text-primary font-headline text-sm font-bold tracking-tight no-underline border-b border-outline-variant/10">
+        <span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+        Modo Compacto
+        <span class="ml-auto text-[9px] font-label uppercase tracking-widest bg-primary/15 border border-primary/25 px-2 py-0.5 rounded-full">R-One</span>
+      </a>
+      <div class="pt-3 flex gap-3">
+        <a routerLink="/login" (click)="mobileMenuOpen.set(false)"
+           class="flex-1 text-center py-2.5 rounded-lg border border-outline-variant/30 text-sm font-headline font-bold
+                  text-on-surface-variant hover:text-primary hover:border-primary/40 transition-colors no-underline">
+          Iniciar sesión
+        </a>
+        <a routerLink="/register" (click)="mobileMenuOpen.set(false)"
+           class="flex-1 text-center py-2.5 rounded-lg bg-primary text-on-primary text-sm font-headline font-bold
+                  hover:opacity-90 transition-opacity no-underline">
+          Registrarse
+        </a>
+      </div>
+    }
   </div>
 }

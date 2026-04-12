@@ -9,13 +9,13 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './login.html',
 })
 export class Login {
-  private auth = inject(AuthService);
+  auth = inject(AuthService);
   private router = inject(Router);
 
   email = signal('');
   password = signal('');
-  rememberMe = signal(false);
   showPassword = signal(false);
+  loginDone = signal(false);
 
   readonly isLoading = this.auth.loading;
   readonly serverError = this.auth.error;
@@ -25,8 +25,20 @@ export class Login {
 
     this.auth.login({ username: this.email(), password: this.password() })
       .subscribe({
-        next: () => this.router.navigate(['/info']),
+        next: () => {
+          // Si no hay roles configurados, ir directo; si los hay, mostrar modal
+          if (this.auth.availableRoles().length === 0) {
+            this.router.navigate(['/control-panel']);
+          } else {
+            this.loginDone.set(true);
+          }
+        },
         error: () => { /* error ya manejado en AuthService */ },
       });
+  }
+
+  confirmRole(index: number) {
+    this.auth.confirmRole(index);
+    this.router.navigate(['/control-panel']);
   }
 }

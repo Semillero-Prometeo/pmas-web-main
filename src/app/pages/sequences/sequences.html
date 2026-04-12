@@ -1,0 +1,331 @@
+<app-navbar [showSearch]="false" />
+<app-sidebar activeItem="telemetry" />
+
+<main class="lg:ml-64 pt-20 px-4 md:px-8 pb-12 min-h-screen industrial-grid">
+
+  <!-- Header -->
+  <header class="mb-8">
+    <span class="font-label text-[10px] uppercase tracking-[0.3em] text-secondary mb-2 block">Robótica · R-One</span>
+    <h1 class="font-headline text-3xl md:text-4xl font-bold tracking-tighter text-on-surface">
+      Creación de <span class="text-primary">Secuencias</span>
+    </h1>
+    <p class="text-sm text-on-surface-variant mt-2">
+      Construye y guarda secuencias de movimientos para ejecutarlos en orden sobre R-One.
+    </p>
+  </header>
+
+  <!-- Sub-tabs -->
+  <div class="flex gap-2 mb-6">
+    <button
+      (click)="activeSubTab.set('build')"
+      class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-headline font-bold text-sm tracking-tight
+             transition-all cursor-pointer active:scale-95"
+      [class]="activeSubTab() === 'build'
+        ? 'bg-primary text-on-primary shadow-[0_0_16px_rgba(172,199,255,0.2)]'
+        : 'bg-surface-container border border-white/5 text-slate-400 hover:text-on-surface'">
+      <span class="material-symbols-outlined" style="font-size: 1rem;">build</span>
+      Constructor
+    </button>
+    <button
+      (click)="activeSubTab.set('saved')"
+      class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-headline font-bold text-sm tracking-tight
+             transition-all cursor-pointer active:scale-95"
+      [class]="activeSubTab() === 'saved'
+        ? 'bg-primary text-on-primary shadow-[0_0_16px_rgba(172,199,255,0.2)]'
+        : 'bg-surface-container border border-white/5 text-slate-400 hover:text-on-surface'">
+      <span class="material-symbols-outlined" style="font-size: 1rem;">bookmark</span>
+      Guardadas
+      @if (savedSequences().length > 0) {
+        <span class="ml-1 px-1.5 py-0.5 rounded-full bg-white/10 text-[10px] font-mono">
+          {{ savedSequences().length }}
+        </span>
+      }
+    </button>
+  </div>
+
+  <!-- ══ CONSTRUCTOR ══════════════════════════════════════════════════════ -->
+  @if (activeSubTab() === 'build') {
+    <div class="grid grid-cols-1 xl:grid-cols-[380px_1fr] gap-6">
+
+      <!-- LEFT: Paleta de movimientos -->
+      <div class="flex flex-col gap-4">
+
+        <!-- Delay config -->
+        <div class="bg-surface-container rounded-2xl border border-white/5 p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-label uppercase tracking-widest text-outline">Pausa entre pasos</span>
+            <span class="text-sm font-mono text-primary font-bold">{{ defaultDelay() }} ms</span>
+          </div>
+          <input type="range" min="0" max="3000" step="100"
+                 [value]="defaultDelay()"
+                 (input)="defaultDelay.set(+($any($event.target).value))"
+                 class="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-primary bg-surface-container-highest"/>
+          <div class="flex justify-between mt-1">
+            <span class="text-[9px] font-mono text-slate-600">0 ms</span>
+            <span class="text-[9px] font-mono text-slate-600">3000 ms</span>
+          </div>
+        </div>
+
+        <!-- Movimientos disponibles -->
+        <div class="bg-surface-container rounded-2xl border border-white/5 overflow-hidden">
+          <div class="px-5 py-3 border-b border-white/5 bg-surface-container-high">
+            <p class="text-xs font-label uppercase tracking-widest text-outline">Movimientos disponibles</p>
+            <p class="text-[10px] text-slate-600 mt-0.5">Haz clic para añadir a la secuencia</p>
+          </div>
+          <div class="divide-y divide-white/5 max-h-[420px] overflow-y-auto"
+               style="scrollbar-width: thin; scrollbar-color: #41484d transparent;">
+            @for (r of routines; track r.id) {
+              <button
+                (click)="addToSequence(r)"
+                class="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-surface-container-highest
+                       transition-colors cursor-pointer text-left group">
+                <div class="w-9 h-9 rounded-xl border flex items-center justify-center flex-shrink-0 transition-colors"
+                     [class]="categoryBadgeClass(r.category)">
+                  <span class="material-symbols-outlined" style="font-size: 1.1rem; font-variation-settings: 'FILL' 1;">{{ r.icon }}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-headline font-bold text-on-surface">{{ r.label }}</span>
+                    <span class="text-[9px] font-label font-bold px-1.5 py-0.5 rounded border"
+                          [class]="categoryBadgeClass(r.category)">{{ categoryLabel(r.category) }}</span>
+                  </div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">{{ r.description }}</div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span class="text-[10px] font-mono text-slate-600">{{ r.duration }}</span>
+                  <span class="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors"
+                        style="font-size: 1rem;">add_circle</span>
+                </div>
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Cola de la secuencia -->
+      <div class="flex flex-col gap-4">
+
+        <!-- Header de la secuencia -->
+        <div class="bg-surface-container rounded-2xl border border-white/5 p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-headline font-bold text-base text-on-surface">
+                Secuencia actual
+                <span class="ml-2 text-[11px] font-mono text-outline font-normal">({{ sequence().length }} pasos)</span>
+              </h3>
+              @if (isPlayingSeq()) {
+                <p class="text-xs text-primary animate-pulse mt-0.5">Ejecutando paso {{ seqProgress() }} de {{ sequence().length }}...</p>
+              }
+            </div>
+            @if (sequence().length > 0) {
+              <button (click)="clearSequence()"
+                      class="flex items-center gap-1.5 text-[10px] font-label uppercase tracking-wider
+                             text-slate-500 hover:text-error transition-colors cursor-pointer
+                             px-3 py-2 rounded-lg hover:bg-error/10">
+                <span class="material-symbols-outlined" style="font-size: 0.9rem;">delete_sweep</span>
+                Vaciar
+              </button>
+            }
+          </div>
+
+          <!-- Progress bar -->
+          @if (isPlayingSeq()) {
+            <div class="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden mb-4">
+              <div class="h-full bg-primary transition-all duration-300 rounded-full"
+                   [style.width.%]="seqProgressPct()"></div>
+            </div>
+          }
+
+          <!-- Steps list -->
+          @if (sequence().length === 0) {
+            <div class="flex flex-col items-center justify-center py-12 gap-3 text-slate-700">
+              <span class="material-symbols-outlined" style="font-size: 3rem;">playlist_add</span>
+              <p class="text-sm font-label uppercase tracking-wider">Añade movimientos desde la paleta</p>
+            </div>
+          } @else {
+            <div class="space-y-2 max-h-[360px] overflow-y-auto pr-1"
+                 style="scrollbar-width: thin; scrollbar-color: #41484d transparent;">
+              @for (step of sequence(); track step.uid; let i = $index) {
+                <div class="flex items-center gap-3 rounded-xl border px-4 py-3 transition-all"
+                     [class]="stepStateClass(step.routine.id)">
+
+                  <span class="text-[11px] font-mono text-slate-600 w-6 text-center flex-shrink-0">{{ i + 1 }}</span>
+
+                  <div class="w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0"
+                       [class]="categoryBadgeClass(step.routine.category)">
+                    <span class="material-symbols-outlined transition-colors"
+                          style="font-size: 1rem; font-variation-settings: 'FILL' 1;"
+                          [class]="getExecState(step.routine.id) === 'executing' ? 'text-primary'
+                                 : getExecState(step.routine.id) === 'done'      ? 'text-secondary'
+                                 : getExecState(step.routine.id) === 'error'     ? 'text-error'
+                                 : ''">
+                      {{ step.routine.icon }}
+                    </span>
+                  </div>
+
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-headline font-bold text-on-surface truncate">{{ step.routine.label }}</div>
+                    <div class="text-[10px] font-mono text-slate-500">{{ step.delayMs }} ms pausa</div>
+                  </div>
+
+                  @if (getExecState(step.routine.id) === 'executing') {
+                    <span class="material-symbols-outlined text-primary animate-spin flex-shrink-0" style="font-size: 1rem;">progress_activity</span>
+                  }
+                  @if (getExecState(step.routine.id) === 'done') {
+                    <span class="material-symbols-outlined text-secondary flex-shrink-0" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">check_circle</span>
+                  }
+                  @if (getExecState(step.routine.id) === 'error') {
+                    <span class="material-symbols-outlined text-error flex-shrink-0" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">error</span>
+                  }
+
+                  <!-- Reorder -->
+                  <div class="flex flex-col gap-0.5 flex-shrink-0">
+                    <button (click)="moveStep(step.uid, 'up')" [disabled]="i === 0"
+                            class="p-0.5 text-slate-600 hover:text-white disabled:opacity-20 cursor-pointer transition-colors">
+                      <span class="material-symbols-outlined" style="font-size: 0.85rem;">expand_less</span>
+                    </button>
+                    <button (click)="moveStep(step.uid, 'down')" [disabled]="i === sequence().length - 1"
+                            class="p-0.5 text-slate-600 hover:text-white disabled:opacity-20 cursor-pointer transition-colors">
+                      <span class="material-symbols-outlined" style="font-size: 0.85rem;">expand_more</span>
+                    </button>
+                  </div>
+
+                  <button (click)="removeStep(step.uid)"
+                          class="p-1.5 rounded-lg text-slate-700 hover:text-error hover:bg-error/10
+                                 transition-all cursor-pointer flex-shrink-0 active:scale-90">
+                    <span class="material-symbols-outlined" style="font-size: 0.9rem;">close</span>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Controls -->
+        @if (sequence().length > 0) {
+          <div class="bg-surface-container rounded-2xl border border-white/5 p-5 space-y-4">
+
+            <!-- Play / Stop -->
+            @if (!isPlayingSeq()) {
+              <button
+                (click)="playSequence()"
+                class="w-full flex items-center justify-center gap-2 py-4 rounded-2xl
+                       bg-primary text-on-primary font-headline font-bold text-sm tracking-tight
+                       hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer
+                       shadow-[0_0_24px_rgba(172,199,255,0.25)]">
+                <span class="material-symbols-outlined" style="font-size: 1.3rem; font-variation-settings: 'FILL' 1;">play_circle</span>
+                Ejecutar secuencia ({{ sequence().length }} pasos)
+              </button>
+            } @else {
+              <button
+                (click)="stopSequence()"
+                class="w-full flex items-center justify-center gap-2 py-4 rounded-2xl
+                       bg-error/15 border border-error/35 text-error font-headline font-bold text-sm
+                       hover:bg-error/25 active:scale-[0.99] transition-all cursor-pointer">
+                <span class="material-symbols-outlined" style="font-size: 1.3rem; font-variation-settings: 'FILL' 1;">stop_circle</span>
+                Detener ({{ seqProgress() }}/{{ sequence().length }})
+              </button>
+            }
+
+            <!-- Save -->
+            <div class="flex gap-3">
+              <input
+                type="text"
+                placeholder="Nombre de la secuencia..."
+                [ngModel]="sequenceName()"
+                (ngModelChange)="sequenceName.set($event)"
+                class="flex-1 bg-surface-container-low border border-outline-variant/30 focus:border-primary outline-none
+                       px-4 py-2.5 text-on-surface text-sm font-body rounded-xl transition-colors
+                       placeholder:text-slate-600"/>
+              <button
+                (click)="saveSequence()"
+                [disabled]="!sequenceName().trim()"
+                class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-surface-container-high border border-white/8
+                       text-sm font-headline font-bold text-slate-300 hover:text-white hover:border-primary/40
+                       transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed active:scale-95">
+                <span class="material-symbols-outlined" style="font-size: 0.9rem; font-variation-settings: 'FILL' 1;">bookmark_add</span>
+                Guardar
+              </button>
+            </div>
+
+          </div>
+        }
+
+      </div>
+    </div>
+  }
+
+  <!-- ══ GUARDADAS ══════════════════════════════════════════════════════════ -->
+  @if (activeSubTab() === 'saved') {
+
+    @if (savedSequences().length === 0) {
+      <div class="flex flex-col items-center justify-center py-24 gap-4 text-slate-700">
+        <span class="material-symbols-outlined" style="font-size: 3.5rem;">bookmarks</span>
+        <div class="text-center">
+          <p class="font-headline font-bold text-slate-500">Sin secuencias guardadas</p>
+          <p class="text-sm text-slate-600 mt-1">Construye una en el Constructor y guárdala aquí.</p>
+        </div>
+        <button (click)="activeSubTab.set('build')"
+                class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary
+                       font-headline font-bold text-sm hover:opacity-90 active:scale-95 transition-all cursor-pointer">
+          <span class="material-symbols-outlined" style="font-size: 1rem;">build</span>
+          Ir al Constructor
+        </button>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        @for (seq of savedSequences(); track seq.name) {
+          <div class="bg-surface-container rounded-2xl border border-white/5 shadow-xl p-5 flex flex-col gap-4 hover:border-primary/20 transition-all">
+
+            <!-- Header -->
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-primary" style="font-size: 1.2rem; font-variation-settings: 'FILL' 1;">playlist_play</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-headline font-bold text-sm text-on-surface truncate">{{ seq.name }}</h3>
+                <p class="text-[10px] font-mono text-slate-500 mt-0.5">{{ seq.steps.length }} pasos</p>
+              </div>
+            </div>
+
+            <!-- Steps preview -->
+            <div class="flex flex-wrap gap-1">
+              @for (step of seq.steps.slice(0, 5); track step.uid) {
+                <span class="text-[9px] font-mono text-slate-500 bg-surface-container-highest px-2 py-1 rounded-lg border border-white/5">
+                  {{ step.routine.label }}
+                </span>
+              }
+              @if (seq.steps.length > 5) {
+                <span class="text-[9px] font-mono text-slate-600 px-2 py-1">+{{ seq.steps.length - 5 }} más</span>
+              }
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-2 pt-2 border-t border-white/5">
+              <button
+                (click)="loadSaved(seq)"
+                class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl
+                       bg-primary/10 border border-primary/20 text-primary
+                       text-[11px] font-label font-bold uppercase tracking-wider
+                       hover:bg-primary/20 transition-all cursor-pointer active:scale-95">
+                <span class="material-symbols-outlined" style="font-size: 0.9rem; font-variation-settings: 'FILL' 1;">download</span>
+                Cargar
+              </button>
+              <button
+                (click)="deleteSaved(seq.name)"
+                class="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl
+                       bg-error/10 border border-error/20 text-error
+                       text-[11px] font-label font-bold uppercase tracking-wider
+                       hover:bg-error/20 transition-all cursor-pointer active:scale-95">
+                <span class="material-symbols-outlined" style="font-size: 0.9rem;">delete</span>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+</main>
+
+<app-footer />

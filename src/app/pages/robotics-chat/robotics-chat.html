@@ -1,0 +1,310 @@
+@if (!compact()) {
+  <app-navbar [showSearch]="false" />
+  <app-sidebar activeItem="chat" />
+}
+
+<!-- Contenedor principal -->
+<div class="fixed flex flex-col bg-background industrial-grid"
+     [class]="compact()
+       ? 'top-0 left-0 right-0 bottom-0'
+       : 'top-16 left-0 lg:left-64 right-0 bottom-0'">
+
+  <!-- ══ BARRA DE TABS / HEADER ════════════════════════════════════════════ -->
+  <div class="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-surface/80 backdrop-blur-sm flex-shrink-0"
+       [class]="compact() ? 'h-14' : ''">
+    <div class="flex items-center gap-3">
+
+      <!-- Botón volver (solo modo compacto) -->
+      @if (compact()) {
+        <a routerLink="/r-one"
+           class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-900 border border-slate-800
+                  text-slate-400 hover:text-white transition-colors no-underline active:scale-90 flex-shrink-0">
+          <span class="material-symbols-outlined" style="font-size: 1rem;">arrow_back</span>
+        </a>
+      }
+
+      <!-- Tabs -->
+      <div class="flex gap-1 p-1 bg-surface-container rounded-xl border border-white/5">
+        <button
+          (click)="activeTab.set('chatbot')"
+          [class]="activeTab() === 'chatbot'
+            ? 'bg-secondary text-on-secondary shadow'
+            : 'text-slate-400 hover:text-on-surface hover:bg-surface-container-highest'"
+          class="flex items-center gap-1.5 px-3 py-2 rounded-lg font-headline font-bold text-sm tracking-tight transition-all cursor-pointer">
+          <span class="material-symbols-outlined" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">smart_toy</span>
+          <span [class]="compact() ? 'hidden sm:inline' : ''">Chatbot IA</span>
+        </button>
+        <button
+          (click)="activeTab.set('decir')"
+          [class]="activeTab() === 'decir'
+            ? 'bg-primary text-on-primary shadow'
+            : 'text-slate-400 hover:text-on-surface hover:bg-surface-container-highest'"
+          class="flex items-center gap-1.5 px-3 py-2 rounded-lg font-headline font-bold text-sm tracking-tight transition-all cursor-pointer">
+          <span class="material-symbols-outlined" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">record_voice_over</span>
+          <span [class]="compact() ? 'hidden sm:inline' : ''">Decir Oración</span>
+        </button>
+      </div>
+
+      <!-- Status pill (oculto en compacto pequeño) -->
+      @if (!compact()) {
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-white/5 text-[10px] font-mono">
+          <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+          <span class="text-secondary uppercase tracking-widest">R-One Online</span>
+        </div>
+      }
+    </div>
+
+    <!-- Clear button -->
+    <button
+      (click)="activeTab() === 'chatbot' ? clearChat() : clearDecir()"
+      class="flex items-center gap-1.5 text-[10px] font-label uppercase tracking-wider text-slate-500
+             hover:text-on-surface transition-colors cursor-pointer px-3 py-2 rounded-lg
+             hover:bg-surface-container">
+      <span class="material-symbols-outlined" style="font-size: 0.9rem;">delete_sweep</span>
+      <span class="hidden sm:inline">Limpiar</span>
+    </button>
+  </div>
+
+  <!-- ══ CHATBOT IA ════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'chatbot') {
+    <div class="flex-1 flex flex-col min-h-0">
+
+      <!-- Messages -->
+      <div
+        #chatScroll
+        class="flex-1 overflow-y-auto py-4 space-y-4"
+        [class]="compact() ? 'px-3' : 'px-8 py-6 space-y-5'"
+        style="scrollbar-width: thin; scrollbar-color: #41484d transparent;">
+
+        @if (chatMessages().length === 0) {
+          <div class="flex flex-col items-center justify-center h-full gap-4 text-slate-600">
+            <div class="rounded-3xl bg-secondary/10 border border-secondary/20 flex items-center justify-center"
+                 [class]="compact() ? 'w-16 h-16' : 'w-24 h-24'">
+              <span class="material-symbols-outlined text-secondary"
+                    [style.font-size]="compact() ? '2rem' : '3rem'"
+                    style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+            </div>
+            <div class="text-center">
+              <p class="font-headline font-bold text-slate-500" [class]="compact() ? 'text-sm' : 'text-lg'">Habla con R-One</p>
+              @if (!compact()) {
+                <p class="text-sm text-slate-600 mt-1 leading-relaxed">
+                  Las respuestas son generadas por IA y transmitidas al robot en tiempo real
+                </p>
+              }
+            </div>
+          </div>
+        }
+
+        @for (msg of chatMessages(); track $index) {
+
+          @if (msg.from === 'user') {
+            <div class="flex justify-end gap-2">
+              <div [class]="compact() ? 'max-w-[85%]' : 'max-w-[78%]'">
+                <div class="bg-primary/15 border border-primary/20 rounded-2xl rounded-tr-sm px-4 py-3">
+                  <p class="text-on-surface leading-relaxed whitespace-pre-wrap"
+                     [class]="compact() ? 'text-sm' : 'text-base'">{{ msg.text }}</p>
+                </div>
+                <div class="flex items-center justify-end gap-1.5 mt-1 pr-1">
+                  <span class="text-[10px] font-mono text-outline">{{ msg.timestamp }}</span>
+                  <span class="material-symbols-outlined text-secondary" style="font-size: 0.8rem;">done_all</span>
+                </div>
+              </div>
+              <div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0 mt-1">
+                <span class="material-symbols-outlined text-primary" style="font-size: 0.9rem;">person</span>
+              </div>
+            </div>
+          }
+
+          @if (msg.from === 'robot') {
+            <div class="flex gap-2">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1 transition-all"
+                   [class]="msg.status === 'sending'
+                     ? 'bg-secondary/30 border border-secondary/50'
+                     : msg.status === 'error'
+                       ? 'bg-error/20 border border-error/40'
+                       : 'bg-surface-container-highest border border-white/10'">
+                <span class="material-symbols-outlined transition-colors"
+                      [class]="msg.status === 'sending' ? 'text-secondary' : msg.status === 'error' ? 'text-error' : 'text-slate-400'"
+                      style="font-size: 0.9rem; font-variation-settings: 'FILL' 1;">smart_toy</span>
+              </div>
+              <div [class]="compact() ? 'max-w-[85%]' : 'max-w-[78%]'">
+                <div class="rounded-2xl rounded-tl-sm px-4 py-3 transition-all"
+                     [class]="msg.status === 'sending'
+                       ? 'bg-secondary/10 border border-secondary/25'
+                       : msg.status === 'error'
+                         ? 'bg-error/10 border border-error/25'
+                         : 'bg-surface-container-high border border-white/5'">
+                  @if (msg.status === 'sending') {
+                    <div class="flex items-end gap-1.5 h-5">
+                      <div class="w-2 h-2 bg-secondary rounded-full animate-bounce" style="animation-delay: 0ms;"></div>
+                      <div class="w-2 h-2 bg-secondary rounded-full animate-bounce" style="animation-delay: 150ms;"></div>
+                      <div class="w-2 h-2 bg-secondary rounded-full animate-bounce" style="animation-delay: 300ms;"></div>
+                    </div>
+                  } @else {
+                    <p class="leading-relaxed whitespace-pre-wrap"
+                       [class]="(msg.status === 'error' ? 'text-error' : 'text-on-surface-variant') + (compact() ? ' text-sm' : ' text-base')">
+                      {{ msg.text }}
+                    </p>
+                  }
+                </div>
+                <span class="text-[10px] font-mono text-outline ml-1 mt-1 block">{{ msg.timestamp }}</span>
+              </div>
+            </div>
+          }
+
+        }
+      </div>
+
+      <!-- Input area -->
+      <div class="border-t border-white/5 bg-surface-container-high flex-shrink-0"
+           [class]="compact() ? 'px-3 py-3' : 'px-8 py-5'">
+        <div class="flex items-end gap-3">
+          <div class="flex-1 relative">
+            <textarea
+              [rows]="compact() ? 3 : 5"
+              maxlength="500"
+              placeholder="Escribe un mensaje para R-One..."
+              [ngModel]="chatInput()"
+              (ngModelChange)="chatInput.set($event)"
+              (keydown)="onChatKeydown($event)"
+              [disabled]="chatBusy()"
+              class="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-secondary outline-none
+                     px-4 pt-3 pb-3 text-on-surface font-body rounded-t-xl transition-colors
+                     placeholder:text-slate-600 resize-none leading-relaxed
+                     disabled:opacity-50 disabled:cursor-not-allowed"
+              [class]="compact() ? 'text-sm' : 'text-base'"
+            ></textarea>
+            <span class="absolute bottom-3 right-3 text-[10px] font-mono text-outline">
+              {{ chatInput().length }}/500
+            </span>
+          </div>
+          <button
+            (click)="sendChat()"
+            [disabled]="chatBusy() || !chatInput().trim()"
+            class="flex-shrink-0 rounded-2xl flex items-center justify-center transition-all
+                   cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            [class]="(chatBusy() || !chatInput().trim()
+              ? 'bg-surface-container-highest'
+              : 'bg-secondary hover:opacity-90 active:scale-90 shadow-[0_0_20px_rgba(99,214,177,0.3)]')
+              + (compact() ? ' w-11 h-11' : ' w-14 h-14')">
+            <span class="material-symbols-outlined"
+                  [class]="chatBusy() || !chatInput().trim() ? 'text-slate-600' : 'text-on-secondary'"
+                  style="font-size: 1.3rem; font-variation-settings: 'FILL' 1;">send</span>
+          </button>
+        </div>
+        @if (!compact()) {
+          <p class="text-[10px] font-label text-outline uppercase tracking-wide mt-2">
+            Enter para enviar &nbsp;·&nbsp; Shift+Enter nueva línea
+          </p>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ══ DECIR ORACIÓN ═════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'decir') {
+    <div class="flex-1 flex flex-col min-h-0">
+
+      <!-- Input fijo de oración -->
+      <div class="flex-shrink-0 border-b border-white/5 bg-surface-container-high"
+           [class]="compact() ? 'px-3 py-3' : 'px-6 py-5'">
+        <div class="flex items-end gap-3">
+          <div class="flex-1 relative">
+            <textarea
+              [rows]="compact() ? 3 : 5"
+              maxlength="400"
+              placeholder="Escribe lo que el robot debe decir..."
+              [ngModel]="decirInput()"
+              (ngModelChange)="decirInput.set($event)"
+              (keydown)="onDecirKeydown($event)"
+              [disabled]="decirBusy()"
+              class="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary outline-none
+                     px-4 pt-3 pb-3 text-on-surface font-body rounded-t-xl transition-colors
+                     placeholder:text-slate-600 resize-none leading-relaxed
+                     disabled:opacity-50 disabled:cursor-not-allowed"
+              [class]="compact() ? 'text-sm' : 'text-base'"
+            ></textarea>
+            <span class="absolute bottom-3 right-3 text-[10px] font-mono text-outline">{{ decirInput().length }}/400</span>
+          </div>
+          <button
+            (click)="sendDecir()"
+            [disabled]="decirBusy() || !decirInput().trim()"
+            class="flex-shrink-0 rounded-2xl flex items-center justify-center
+                   transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            [class]="(decirBusy() || !decirInput().trim()
+              ? 'bg-surface-container-highest'
+              : 'bg-primary text-on-primary hover:opacity-90 active:scale-95 shadow-[0_0_16px_rgba(172,199,255,0.25)]')
+              + (compact() ? ' w-11 h-11' : ' w-14 h-14')">
+            <span class="material-symbols-outlined"
+                  [class]="decirBusy() || !decirInput().trim() ? 'text-slate-600' : 'text-on-primary'"
+                  style="font-size: 1.3rem; font-variation-settings: 'FILL' 1;">
+              {{ decirBusy() ? 'progress_activity' : 'volume_up' }}
+            </span>
+          </button>
+        </div>
+        @if (!compact()) {
+          <p class="text-[10px] font-label text-outline uppercase tracking-wide mt-2">
+            Enter para enviar &nbsp;·&nbsp; Shift+Enter nueva línea
+          </p>
+        }
+      </div>
+
+      <!-- Historial scrollable -->
+      <div class="flex-1 overflow-y-auto"
+           style="scrollbar-width: thin; scrollbar-color: #41484d transparent;">
+
+        @if (decirHistory().length === 0) {
+          <div class="flex flex-col items-center justify-center h-full gap-3 text-slate-600">
+            <div class="rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center"
+                 [class]="compact() ? 'w-12 h-12' : 'w-16 h-16'">
+              <span class="material-symbols-outlined text-primary/50"
+                    [style.font-size]="compact() ? '1.4rem' : '2rem'">chat_bubble_outline</span>
+            </div>
+            <div class="text-center">
+              <p class="font-headline font-bold text-slate-500" [class]="compact() ? 'text-xs' : 'text-sm'">Sin oraciones enviadas</p>
+              <p class="text-[10px] font-label uppercase tracking-wider text-slate-600 mt-1">
+                Las oraciones dichas aparecerán aquí
+              </p>
+            </div>
+          </div>
+        }
+
+        <div class="divide-y divide-white/5">
+          @for (entry of decirHistory(); track $index) {
+            <div class="flex items-start gap-3 hover:bg-surface-container-highest transition-colors"
+                 [class]="compact() ? 'px-3 py-3' : 'px-6 py-4'">
+              <div class="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center mt-0.5"
+                   [class]="entry.status === 'sending'
+                     ? 'bg-primary/10 border border-primary/20'
+                     : entry.status === 'error'
+                       ? 'bg-error/10 border border-error/20'
+                       : 'bg-secondary/10 border border-secondary/20'">
+                @if (entry.status === 'sending') {
+                  <span class="material-symbols-outlined text-primary animate-spin" style="font-size: 0.9rem;">progress_activity</span>
+                } @else if (entry.status === 'error') {
+                  <span class="material-symbols-outlined text-error" style="font-size: 0.9rem;">error_outline</span>
+                } @else {
+                  <span class="material-symbols-outlined text-secondary" style="font-size: 0.9rem; font-variation-settings: 'FILL' 1;">volume_up</span>
+                }
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-on-surface leading-relaxed" [class]="compact() ? 'text-xs' : 'text-sm'">{{ entry.text }}</p>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <span class="text-[9px] font-mono text-outline">{{ entry.timestamp }}</span>
+                  @if (entry.status === 'sending') {
+                    <span class="text-[9px] font-label uppercase tracking-wider text-primary">Enviando...</span>
+                  } @else if (entry.status === 'error') {
+                    <span class="text-[9px] font-label uppercase tracking-wider text-error">Error</span>
+                  } @else {
+                    <span class="text-[9px] font-label uppercase tracking-wider text-secondary">Dicho</span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

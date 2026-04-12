@@ -1,0 +1,162 @@
+<app-navbar />
+
+<main class="pt-24 pb-20 px-4 md:px-8 max-w-4xl mx-auto">
+
+  <!-- Header -->
+  <div class="mb-10">
+    <span class="font-label text-[10px] uppercase tracking-[0.3em] text-secondary mb-3 block">
+      Cuenta // Mi Perfil
+    </span>
+    <h1 class="font-headline text-4xl font-bold tracking-tighter text-on-surface">
+      Perfil de Usuario
+    </h1>
+  </div>
+
+  @if (auth.profile(); as profile) {
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <!-- Tarjeta principal -->
+      <div class="md:col-span-1">
+        <div class="bg-surface-container-low rounded-xl p-8 flex flex-col items-center text-center border border-white/5 shadow-xl">
+
+          <!-- Avatar -->
+          <div class="w-24 h-24 rounded-full bg-primary/20 border-2 border-primary/40 flex items-center justify-center mb-5 relative">
+            @if (profile.person?.image_url) {
+              <img [src]="profile.person!.image_url" alt="Foto de perfil"
+                   class="w-full h-full rounded-full object-cover" />
+            } @else {
+              <span class="material-symbols-outlined text-primary" style="font-size: 2.5rem; font-variation-settings: 'FILL' 1;">
+                person
+              </span>
+            }
+            <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-secondary border-2 border-background"></div>
+          </div>
+
+          <!-- Nombre -->
+          <h2 class="font-headline text-xl font-bold tracking-tight text-on-surface mb-1">
+            {{ auth.displayName() || profile.username }}
+          </h2>
+          <p class="text-[11px] font-label uppercase tracking-widest text-outline mb-4">
+            &#64;{{ profile.username }}
+          </p>
+
+          <!-- Rol activo -->
+          <div class="bg-primary/10 border border-primary/20 rounded-lg px-4 py-2">
+            <span class="text-[10px] font-label uppercase tracking-widest text-primary font-bold">
+              {{ auth.activeRole() }}
+            </span>
+          </div>
+
+          @if (profile.is_first_login) {
+            <div class="mt-4 flex items-center gap-2 text-[10px] font-label uppercase tracking-wide text-tertiary">
+              <span class="material-symbols-outlined" style="font-size: 0.9rem;">new_releases</span>
+              Primer inicio de sesión
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Detalles -->
+      <div class="md:col-span-2 space-y-6">
+
+        <!-- Información personal -->
+        <div class="bg-surface-container-low rounded-xl p-6 border border-white/5 shadow-xl">
+          <h3 class="font-headline text-sm font-bold tracking-tight uppercase text-slate-400 mb-5 flex items-center gap-2">
+            <span class="material-symbols-outlined text-secondary" style="font-size: 1.1rem;">person_pin</span>
+            Información Personal
+          </h3>
+          <div class="space-y-4">
+            @if (profile.person) {
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <span class="text-[9px] font-mono text-slate-500 block mb-1 uppercase tracking-widest">Nombre</span>
+                  <span class="text-sm font-body text-on-surface">{{ profile.person.first_name }}</span>
+                </div>
+                <div>
+                  <span class="text-[9px] font-mono text-slate-500 block mb-1 uppercase tracking-widest">Apellido</span>
+                  <span class="text-sm font-body text-on-surface">{{ profile.person.last_name }}</span>
+                </div>
+              </div>
+              <div>
+                <span class="text-[9px] font-mono text-slate-500 block mb-1 uppercase tracking-widest">Correo electrónico</span>
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-slate-600" style="font-size: 1rem;">alternate_email</span>
+                  <span class="text-sm font-body text-on-surface">{{ profile.person.email }}</span>
+                </div>
+              </div>
+            } @else {
+              <p class="text-sm text-on-surface-variant italic">No hay información personal registrada.</p>
+            }
+            <div>
+              <span class="text-[9px] font-mono text-slate-500 block mb-1 uppercase tracking-widest">Usuario del sistema</span>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-slate-600" style="font-size: 1rem;">account_circle</span>
+                <span class="text-sm font-body text-on-surface">{{ profile.username }}</span>
+              </div>
+            </div>
+            <div>
+              <span class="text-[9px] font-mono text-slate-500 block mb-1 uppercase tracking-widest">ID de usuario</span>
+              <span class="text-[11px] font-mono text-outline">{{ profile.id }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Roles asignados -->
+        <div class="bg-surface-container-low rounded-xl p-6 border border-white/5 shadow-xl">
+          <h3 class="font-headline text-sm font-bold tracking-tight uppercase text-slate-400 mb-5 flex items-center gap-2">
+            <span class="material-symbols-outlined text-secondary" style="font-size: 1.1rem;">badge</span>
+            Roles Asignados
+          </h3>
+          @if ((profile.user_role?.length ?? 0) > 0) {
+            <div class="flex flex-wrap gap-3">
+              @for (ur of profile.user_role; track ur.role.name) {
+                <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg border transition-all"
+                     [class]="ur.role.name === auth.activeRole()
+                       ? 'bg-primary/15 border-primary/40 text-primary'
+                       : 'bg-surface-container border-outline-variant/30 text-on-surface-variant'">
+                  <span class="material-symbols-outlined" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">
+                    {{ ur.role.name === auth.activeRole() ? 'check_circle' : 'radio_button_unchecked' }}
+                  </span>
+                  <span class="text-[11px] font-label uppercase tracking-wider font-bold">{{ ur.role.name }}</span>
+                  @if (ur.role.name === auth.activeRole()) {
+                    <span class="text-[9px] font-label uppercase tracking-widest text-primary/70 ml-1">· Activo</span>
+                  }
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="text-sm text-on-surface-variant italic">Sin roles asignados.</p>
+          }
+        </div>
+
+        <!-- Acciones -->
+        <div class="flex flex-wrap gap-3">
+          <button
+            (click)="auth.logout()"
+            class="flex items-center gap-2 px-5 py-3 rounded-lg border border-error/30 text-error
+                   hover:bg-error/10 transition-all text-[11px] font-label uppercase tracking-wider font-bold cursor-pointer">
+            <span class="material-symbols-outlined" style="font-size: 1rem;">logout</span>
+            Cerrar sesión
+          </button>
+          <a routerLink="/info"
+             class="flex items-center gap-2 px-5 py-3 rounded-lg border border-outline-variant/30 text-on-surface-variant
+                    hover:bg-surface-container transition-all text-[11px] font-label uppercase tracking-wider font-bold no-underline">
+            <span class="material-symbols-outlined" style="font-size: 1rem;">home</span>
+            Ir al inicio
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  } @else {
+    <!-- Cargando -->
+    <div class="flex items-center justify-center py-20 gap-4 text-on-surface-variant">
+      <span class="material-symbols-outlined animate-spin" style="font-size: 1.5rem;">progress_activity</span>
+      <span class="text-sm font-label uppercase tracking-wider">Cargando perfil...</span>
+    </div>
+  }
+
+</main>
+
+<app-footer />

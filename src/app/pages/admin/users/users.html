@@ -1,0 +1,299 @@
+<app-navbar [showSearch]="true" />
+<app-sidebar activeItem="users" />
+
+<main class="lg:ml-64 pt-20 px-4 md:px-8 pb-12 min-h-screen industrial-grid">
+
+  <!-- Header -->
+  <header class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+    <div>
+      <span class="font-label text-[10px] uppercase tracking-[0.3em] text-secondary mb-2 block">Autenticación · Admin</span>
+      <h1 class="font-headline text-3xl md:text-4xl font-bold tracking-tighter text-on-surface">
+        Gestión de <span class="text-primary">Usuarios</span>
+      </h1>
+    </div>
+    <button
+      (click)="openCreate()"
+      class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary
+             font-headline font-bold text-sm tracking-tight hover:opacity-90
+             active:scale-95 transition-all cursor-pointer shadow-[0_0_16px_rgba(172,199,255,0.2)]">
+      <span class="material-symbols-outlined" style="font-size: 1rem;">person_add</span>
+      Nuevo usuario
+    </button>
+  </header>
+
+  <!-- Search bar -->
+  <div class="mb-6 relative max-w-md">
+    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" style="font-size: 1rem;">search</span>
+    <input
+      type="text"
+      placeholder="Buscar por nombre, usuario o correo..."
+      [ngModel]="search()"
+      (ngModelChange)="search.set($event)"
+      class="w-full bg-surface-container border border-white/5 rounded-xl pl-11 pr-4 py-3
+             text-sm text-on-surface placeholder:text-slate-600 outline-none focus:border-primary/40
+             transition-colors"
+    />
+  </div>
+
+  <!-- Error / Loading -->
+  @if (loading()) {
+    <div class="flex items-center justify-center py-20 gap-3 text-slate-500">
+      <span class="material-symbols-outlined animate-spin" style="font-size: 1.5rem;">progress_activity</span>
+      <span class="text-sm font-label uppercase tracking-wider">Cargando usuarios...</span>
+    </div>
+  } @else if (error()) {
+    <div class="flex flex-col items-center justify-center py-20 gap-3">
+      <span class="material-symbols-outlined text-error" style="font-size: 2rem;">error_outline</span>
+      <p class="text-sm text-error">{{ error() }}</p>
+      <button (click)="loadAll()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container border border-white/10 text-sm text-slate-300 hover:text-on-surface transition-colors cursor-pointer">
+        <span class="material-symbols-outlined" style="font-size: 0.9rem;">refresh</span>
+        Reintentar
+      </button>
+    </div>
+  } @else {
+
+    <!-- Table -->
+    <div class="bg-surface-container rounded-2xl border border-white/5 shadow-xl overflow-hidden">
+
+      <!-- Table header -->
+      <div class="grid grid-cols-12 px-6 py-3 border-b border-white/5 bg-surface-container-high">
+        <span class="col-span-3 text-[9px] font-mono text-slate-500 uppercase tracking-widest">Usuario</span>
+        <span class="col-span-3 text-[9px] font-mono text-slate-500 uppercase tracking-widest">Nombre</span>
+        <span class="col-span-3 text-[9px] font-mono text-slate-500 uppercase tracking-widest">Correo</span>
+        <span class="col-span-2 text-[9px] font-mono text-slate-500 uppercase tracking-widest">Rol(es)</span>
+        <span class="col-span-1 text-[9px] font-mono text-slate-500 uppercase tracking-widest text-right">Acciones</span>
+      </div>
+
+      @if (filteredUsers().length === 0) {
+        <div class="flex flex-col items-center justify-center py-14 gap-3 text-slate-600">
+          <span class="material-symbols-outlined" style="font-size: 2rem;">manage_accounts</span>
+          <p class="text-[10px] font-label uppercase tracking-wider">Sin resultados</p>
+        </div>
+      }
+
+      <div class="divide-y divide-white/5">
+        @for (user of filteredUsers(); track user.id) {
+          <div class="grid grid-cols-12 px-6 py-4 items-center hover:bg-surface-container-highest transition-colors">
+
+            <!-- Username -->
+            <div class="col-span-3 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-primary" style="font-size: 0.9rem;">person</span>
+              </div>
+              <span class="text-sm font-headline font-bold text-on-surface truncate">{{ user.username }}</span>
+            </div>
+
+            <!-- Nombre -->
+            <div class="col-span-3">
+              <span class="text-sm text-on-surface-variant truncate block">{{ displayName(user) }}</span>
+            </div>
+
+            <!-- Email -->
+            <div class="col-span-3">
+              <span class="text-sm font-mono text-slate-400 truncate block">{{ user.email ?? '—' }}</span>
+            </div>
+
+            <!-- Roles -->
+            <div class="col-span-2">
+              <span class="px-2 py-0.5 rounded-full bg-secondary/10 border border-secondary/25
+                           text-[9px] font-label uppercase tracking-wider text-secondary truncate block max-w-fit">
+                {{ userRoles(user) }}
+              </span>
+            </div>
+
+            <!-- Actions -->
+            <div class="col-span-1 flex items-center justify-end gap-1">
+              <button
+                (click)="openEdit(user)"
+                title="Editar"
+                class="p-2 rounded-lg text-slate-500 hover:text-primary hover:bg-primary/10 transition-all cursor-pointer">
+                <span class="material-symbols-outlined" style="font-size: 1rem;">edit</span>
+              </button>
+              <button
+                (click)="confirmDelete(user)"
+                title="Eliminar"
+                class="p-2 rounded-lg text-slate-500 hover:text-error hover:bg-error/10 transition-all cursor-pointer">
+                <span class="material-symbols-outlined" style="font-size: 1rem;">delete</span>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Footer count -->
+      <div class="px-6 py-3 border-t border-white/5 bg-surface-container-high">
+        <span class="text-[9px] font-mono text-slate-600">
+          {{ filteredUsers().length }} de {{ users().length }} usuarios
+        </span>
+      </div>
+    </div>
+  }
+
+</main>
+
+<app-footer />
+
+<!-- ══ MODAL CREAR / EDITAR ══════════════════════════════════════════════ -->
+@if (modalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+       style="background: rgba(2,6,23,0.85); backdrop-filter: blur(6px);">
+    <div class="w-full max-w-md bg-surface-container rounded-2xl border border-white/8 shadow-2xl overflow-hidden">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-5 border-b border-white/5 bg-surface-container-high">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary" style="font-size: 1.1rem; font-variation-settings: 'FILL' 1;">
+              {{ modalMode() === 'create' ? 'person_add' : 'manage_accounts' }}
+            </span>
+          </div>
+          <h3 class="font-headline font-bold text-base tracking-tight text-on-surface">
+            {{ modalMode() === 'create' ? 'Nuevo usuario' : 'Editar usuario' }}
+          </h3>
+        </div>
+        <button (click)="closeModal()" class="p-2 rounded-lg text-slate-500 hover:text-on-surface hover:bg-surface-container-highest transition-all cursor-pointer">
+          <span class="material-symbols-outlined" style="font-size: 1.1rem;">close</span>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="px-6 py-5 space-y-4">
+
+        @if (modalError()) {
+          <div class="flex items-start gap-3 p-3 bg-error/10 rounded-lg border border-error/25">
+            <span class="material-symbols-outlined text-error mt-0.5" style="font-size: 0.9rem;">error</span>
+            <p class="text-[11px] text-error font-label">{{ modalError() }}</p>
+          </div>
+        }
+
+        <!-- Nombres -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Nombre</label>
+            <input type="text" placeholder="John"
+                   [ngModel]="form().first_name"
+                   (ngModelChange)="form.update(f => ({...f, first_name: $event}))"
+                   class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
+                          rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
+          </div>
+          <div>
+            <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Apellido</label>
+            <input type="text" placeholder="Doe"
+                   [ngModel]="form().last_name"
+                   (ngModelChange)="form.update(f => ({...f, last_name: $event}))"
+                   class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
+                          rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
+          </div>
+        </div>
+
+        <!-- Username -->
+        <div>
+          <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Usuario *</label>
+          <input type="text" placeholder="john.doe"
+                 [ngModel]="form().username"
+                 (ngModelChange)="form.update(f => ({...f, username: $event}))"
+                 class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
+                        rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Correo *</label>
+          <input type="email" placeholder="john@prometeo.edu.co"
+                 [ngModel]="form().email"
+                 (ngModelChange)="form.update(f => ({...f, email: $event}))"
+                 class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
+                        rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">
+            Contraseña {{ modalMode() === 'edit' ? '(dejar vacío para no cambiar)' : '*' }}
+          </label>
+          <input type="password" placeholder="••••••••"
+                 [ngModel]="form().password"
+                 (ngModelChange)="form.update(f => ({...f, password: $event}))"
+                 class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
+                        rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
+        </div>
+
+        <!-- Rol -->
+        <div>
+          <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Rol</label>
+          <select
+            [ngModel]="form().role_id"
+            (ngModelChange)="form.update(f => ({...f, role_id: +$event}))"
+            class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
+                   rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors cursor-pointer">
+            @for (role of roles(); track role.id) {
+              <option [value]="role.id">{{ role.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-white/5 bg-surface-container-high">
+        <button (click)="closeModal()"
+                class="px-4 py-2.5 rounded-xl text-sm font-headline font-bold tracking-tight text-slate-400
+                       hover:text-on-surface hover:bg-surface-container-highest transition-all cursor-pointer">
+          Cancelar
+        </button>
+        <button (click)="save()"
+                [disabled]="saving()"
+                class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary
+                       text-sm font-headline font-bold tracking-tight hover:opacity-90
+                       active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+          @if (saving()) {
+            <span class="material-symbols-outlined animate-spin" style="font-size: 0.9rem;">progress_activity</span>
+          } @else {
+            <span class="material-symbols-outlined" style="font-size: 0.9rem; font-variation-settings: 'FILL' 1;">save</span>
+          }
+          {{ modalMode() === 'create' ? 'Crear' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ══ CONFIRM DELETE ════════════════════════════════════════════════════ -->
+@if (deleteTarget()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+       style="background: rgba(2,6,23,0.85); backdrop-filter: blur(6px);">
+    <div class="w-full max-w-sm bg-surface-container rounded-2xl border border-white/8 shadow-2xl overflow-hidden">
+      <div class="px-6 py-5 border-b border-white/5 bg-surface-container-high flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-error/15 border border-error/25 flex items-center justify-center">
+          <span class="material-symbols-outlined text-error" style="font-size: 1.1rem;">delete</span>
+        </div>
+        <h3 class="font-headline font-bold text-base tracking-tight text-on-surface">Eliminar usuario</h3>
+      </div>
+      <div class="px-6 py-5">
+        <p class="text-sm text-on-surface-variant leading-relaxed">
+          ¿Seguro que deseas eliminar a
+          <span class="font-bold text-on-surface">{{ deleteTarget()?.username }}</span>?
+          Esta acción no se puede deshacer.
+        </p>
+      </div>
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-white/5 bg-surface-container-high">
+        <button (click)="cancelDelete()"
+                class="px-4 py-2.5 rounded-xl text-sm font-headline font-bold text-slate-400
+                       hover:text-on-surface hover:bg-surface-container-highest transition-all cursor-pointer">
+          Cancelar
+        </button>
+        <button (click)="doDelete()"
+                [disabled]="deleting()"
+                class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-error text-white
+                       text-sm font-headline font-bold hover:opacity-90 active:scale-95
+                       transition-all cursor-pointer disabled:opacity-50">
+          @if (deleting()) {
+            <span class="material-symbols-outlined animate-spin" style="font-size: 0.9rem;">progress_activity</span>
+          } @else {
+            <span class="material-symbols-outlined" style="font-size: 0.9rem;">delete</span>
+          }
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+}

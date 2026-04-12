@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { catchError, tap, throwError } from 'rxjs';
+import { catchError, switchMap, tap, throwError } from 'rxjs';
 import { LoginRequest, LoginResponse, UserProfile } from '../models/auth.models';
 
 const GATEWAY_URL = 'http://localhost:3000';
@@ -16,6 +16,8 @@ export class AuthService {
   private _profile = signal<UserProfile | null>(null);
   private _loading = signal(false);
   private _error = signal<string | null>(null);
+  private _selectedRoleIndex = signal<number>(0);
+  private _roleSelected = signal(false);
 
   // Signals públicos de solo lectura
   readonly token = this._token.asReadonly();
@@ -29,13 +31,25 @@ export class AuthService {
     if (p) return `${p.first_name} ${p.last_name}`;
     return this._profile()?.username ?? '';
   });
+
+  readonly availableRoles = computed(() =>
+    this._profile()?.user_role?.map(ur => ur.role.name) ?? []
+  );
+
   readonly activeRole = computed(() =>
-    this._profile()?.user_role?.[0]?.role?.name ?? 'USER'
+    this.availableRoles()[this._selectedRoleIndex()] ?? 'USER'
+  );
+
+  /** true cuando el usuario tiene múltiples roles y aún no ha seleccionado uno en esta sesión */
+  readonly needsRoleSelection = computed(() =>
+    !this._roleSelected() && this.availableRoles().length > 1
   );
 
   login(credentials: LoginRequest) {
     this._loading.set(true);
     this._error.set(null);
+    this._roleSelected.set(false);
+    this._selectedRoleIndex.set(0);
 
     return this.http
       .post<LoginResponse>(`${GATEWAY_URL}/auth/login`, credentials)
@@ -43,8 +57,11 @@ export class AuthService {
         tap(res => {
           this._token.set(res.accessToken);
           localStorage.setItem(TOKEN_KEY, res.accessToken);
+        }),
+        switchMap(() => this.http.get<UserProfile>(`${GATEWAY_URL}/auth/me`)),
+        tap(profile => {
+          this._profile.set(profile);
           this._loading.set(false);
-          this.loadProfile().subscribe();
         }),
         catchError((err: HttpErrorResponse) => {
           this._loading.set(false);
@@ -64,9 +81,16 @@ export class AuthService {
     );
   }
 
+  confirmRole(index: number) {
+    this._selectedRoleIndex.set(index);
+    this._roleSelected.set(true);
+  }
+
   logout() {
     this._token.set(null);
     this._profile.set(null);
+    this._roleSelected.set(false);
+    this._selectedRoleIndex.set(0);
     localStorage.removeItem(TOKEN_KEY);
     this.router.navigate(['/login']);
   }

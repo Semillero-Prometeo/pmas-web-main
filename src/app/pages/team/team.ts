@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { Navbar } from '../../components/navbar/navbar';
 import { Footer } from '../../components/footer/footer';
-import { Sidebar } from '../../components/sidebar/sidebar';
 
 interface Member {
   name: string;
@@ -12,7 +11,7 @@ interface Member {
 
 @Component({
   selector: 'app-team',
-  imports: [Navbar, Footer, Sidebar],
+  imports: [Navbar, Footer],
   templateUrl: './team.html',
 })
 export class Team {

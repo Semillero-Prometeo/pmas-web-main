@@ -12,4 +12,13 @@ export class Navbar {
 
   auth = inject(AuthService);
   mobileMenuOpen = signal(false);
+  profileDropdownOpen = signal(false);
+
+  toggleProfileDropdown() {
+    this.profileDropdownOpen.update(v => !v);
+  }
+
+  closeProfileDropdown() {
+    this.profileDropdownOpen.set(false);
+  }
 }

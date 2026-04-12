@@ -1,0 +1,591 @@
+<!-- ════════════════════════════════════════════════════════════════════════
+     R-One — Interfaz táctil minimalista
+     Layout: header fijo (56px) + contenido scrollable + tab bar fijo (64px)
+     ════════════════════════════════════════════════════════════════════════ -->
+<div class="min-h-screen bg-slate-950 flex flex-col select-none">
+
+  <!-- ═══════ HEADER ════════════════════════════════════════════════════════ -->
+  <header class="fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between
+                 px-4 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/60">
+
+    <!-- Back + title -->
+    <div class="flex items-center gap-3">
+      <a routerLink="/info"
+         class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-900 border border-slate-800
+                text-slate-400 hover:text-white transition-colors no-underline active:scale-90">
+        <span class="material-symbols-outlined" style="font-size: 1rem;">arrow_back</span>
+      </a>
+      <div class="leading-none">
+        <p class="text-[9px] font-mono text-slate-600 uppercase tracking-[0.2em]">Prometeo · R-One</p>
+        <h1 class="font-headline font-black text-base tracking-tight text-white">Modo Compacto</h1>
+      </div>
+    </div>
+
+    <!-- Status + user -->
+    <div class="flex items-center gap-2">
+      <!-- Connection pill -->
+      <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all duration-500"
+           [class]="connected()
+             ? 'bg-secondary/10 border-secondary/30'
+             : 'bg-slate-900 border-slate-700'">
+        <div class="w-1.5 h-1.5 rounded-full transition-all"
+             [class]="connected() ? 'bg-secondary animate-pulse' : 'bg-slate-600'"></div>
+        <span class="text-[9px] font-mono uppercase tracking-widest"
+              [class]="connected() ? 'text-secondary' : 'text-slate-500'">
+          {{ connected() ? 'Online' : 'Offline' }}
+        </span>
+      </div>
+
+      <!-- User avatar -->
+      <div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/30
+                  flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary"
+              style="font-size: 0.9rem; font-variation-settings: 'FILL' 1;">person</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════ CONTENT (pt-14 + pb-16) ════════════════════════════════════ -->
+  <main class="flex-1 flex flex-col pt-14 pb-16 overflow-hidden">
+
+    <!-- ─────────────────────────────── MOVIMIENTOS TAB ──────────────────── -->
+    @if (activeTab() === 'movements') {
+      <div class="flex flex-col h-full">
+
+        <!-- Category filter bar -->
+        <div class="flex gap-2 px-4 pt-4 pb-3 overflow-x-auto shrink-0"
+             style="scrollbar-width: none;">
+          @for (cat of [
+            { id: 'all',         label: 'Todo',        dot: '' },
+            { id: 'navigation',  label: 'Navegación',  dot: 'bg-primary' },
+            { id: 'interaction', label: 'Interacción', dot: 'bg-secondary' },
+            { id: 'system',      label: 'Sistema',     dot: 'bg-tertiary' }
+          ]; track cat.id) {
+            <button
+              (click)="activeCategory.set($any(cat.id))"
+              class="flex items-center gap-1.5 px-4 py-2 rounded-full whitespace-nowrap text-[11px]
+                     font-label font-bold uppercase tracking-wider transition-all duration-200
+                     cursor-pointer active:scale-95"
+              [class]="activeCategory() === cat.id
+                ? 'bg-primary text-on-primary shadow-[0_0_12px_rgba(56,189,248,0.3)]'
+                : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'">
+              @if (cat.dot) {
+                <span class="w-1.5 h-1.5 rounded-full" [class]="cat.dot"></span>
+              }
+              {{ cat.label }}
+            </button>
+          }
+        </div>
+
+        <!-- Routine grid -->
+        <div class="flex-1 overflow-y-auto px-4 pb-4"
+             style="scrollbar-width: thin; scrollbar-color: #334155 transparent;">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            @for (r of filteredRoutines(); track r.id) {
+              <div class="relative">
+
+                <!-- Main execute button -->
+                <button
+                  (click)="executeRoutine(r)"
+                  [disabled]="!!executingId() && executingId() !== r.id"
+                  [class]="routineCardClass(r.id)"
+                  class="w-full">
+
+                  <!-- Category badge -->
+                  <span class="text-[9px] font-label font-bold uppercase tracking-widest px-1.5 py-0.5
+                               rounded border self-start transition-colors"
+                        [class]="getExecState(r.id) !== 'idle'
+                          ? 'bg-white/10 border-white/15 text-white/60'
+                          : categoryBadgeClass(r.category)">
+                    {{ categoryLabel(r.category) }}
+                  </span>
+
+                  <!-- Icon -->
+                  <span class="material-symbols-outlined transition-colors"
+                        style="font-size: 2rem; font-variation-settings: 'FILL' 1;"
+                        [class]="getExecState(r.id) === 'idle'         ? 'text-slate-300' :
+                                 getExecState(r.id) === 'executing'    ? 'text-primary'   :
+                                 getExecState(r.id) === 'done'         ? 'text-secondary' : 'text-error'">
+                    {{ r.icon }}
+                  </span>
+
+                  <!-- Label + duration -->
+                  <div class="min-w-0 w-full">
+                    <div class="font-headline font-bold text-sm tracking-tight leading-tight truncate"
+                         [class]="getExecState(r.id) === 'idle' ? 'text-white' :
+                                  getExecState(r.id) === 'executing' ? 'text-primary' :
+                                  getExecState(r.id) === 'done' ? 'text-secondary' : 'text-error'">
+                      {{ r.label }}
+                    </div>
+                    <div class="text-[9px] font-mono text-slate-500 mt-0.5">{{ r.duration }}</div>
+                  </div>
+
+                  <!-- State icon (top-right corner) -->
+                  @if (getExecState(r.id) === 'executing') {
+                    <span class="absolute top-3 right-3 material-symbols-outlined text-primary animate-spin"
+                          style="font-size: 1rem;">progress_activity</span>
+                  }
+                  @if (getExecState(r.id) === 'done') {
+                    <span class="absolute top-3 right-3 material-symbols-outlined text-secondary"
+                          style="font-size: 1rem; font-variation-settings: 'FILL' 1;">check_circle</span>
+                  }
+                  @if (getExecState(r.id) === 'error') {
+                    <span class="absolute top-3 right-3 material-symbols-outlined text-error"
+                          style="font-size: 1rem; font-variation-settings: 'FILL' 1;">error</span>
+                  }
+                </button>
+
+                <!-- "Add to sequence" mini button -->
+                <button
+                  (click)="addToSequence(r); activeTab.set('sequences')"
+                  title="Añadir a secuencia"
+                  class="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-slate-800 border border-slate-700
+                         text-slate-400 hover:text-primary hover:border-primary hover:bg-primary/10
+                         flex items-center justify-center transition-all cursor-pointer active:scale-90 z-10">
+                  <span class="material-symbols-outlined" style="font-size: 0.75rem;">add</span>
+                </button>
+
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+    }
+
+    <!-- ─────────────────────────────── SEQUENCES TAB ────────────────────── -->
+    @if (activeTab() === 'sequences') {
+      <div class="flex flex-col h-full overflow-hidden">
+
+        <!-- Sub-tab toggle -->
+        <div class="flex px-4 pt-4 pb-3 gap-2 shrink-0">
+          <button
+            (click)="seqSubTab.set('build')"
+            class="flex-1 py-2.5 rounded-xl text-[11px] font-label font-bold uppercase tracking-wider
+                   transition-all cursor-pointer active:scale-95"
+            [class]="seqSubTab() === 'build'
+              ? 'bg-primary text-on-primary'
+              : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'">
+            <span class="material-symbols-outlined mr-1 align-middle" style="font-size: 0.9rem;">build</span>
+            Constructor
+          </button>
+          <button
+            (click)="seqSubTab.set('saved')"
+            class="flex-1 py-2.5 rounded-xl text-[11px] font-label font-bold uppercase tracking-wider
+                   transition-all cursor-pointer active:scale-95"
+            [class]="seqSubTab() === 'saved'
+              ? 'bg-primary text-on-primary'
+              : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'">
+            <span class="material-symbols-outlined mr-1 align-middle" style="font-size: 0.9rem;">bookmark</span>
+            Guardadas ({{ savedSequences().length }})
+          </button>
+        </div>
+
+        <!-- ── BUILD sub-tab ──────────────────────────────────────────────── -->
+        @if (seqSubTab() === 'build') {
+          <div class="flex-1 flex flex-col lg:flex-row gap-4 px-4 pb-4 overflow-hidden min-h-0">
+
+            <!-- Left: palette of available movements -->
+            <div class="lg:w-72 flex flex-col shrink-0">
+              <p class="text-[9px] font-mono text-slate-500 uppercase tracking-[0.2em] mb-2 shrink-0">
+                Toca para añadir →
+              </p>
+              <div class="flex-1 overflow-y-auto space-y-1 pr-1"
+                   style="max-height: 240px; scrollbar-width: thin; scrollbar-color: #334155 transparent;">
+                @for (r of routines; track r.id) {
+                  <button
+                    (click)="addToSequence(r)"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-800
+                           hover:border-slate-700 hover:bg-slate-800 transition-all cursor-pointer active:scale-[0.98] text-left">
+                    <span class="material-symbols-outlined shrink-0"
+                          style="font-size: 1.1rem; font-variation-settings: 'FILL' 1;"
+                          [class]="categoryBadgeClass(r.category).split(' ')[0]">
+                      {{ r.icon }}
+                    </span>
+                    <div class="flex-1 min-w-0">
+                      <div class="text-[11px] font-headline font-bold text-white truncate">{{ r.label }}</div>
+                      <div class="text-[9px] font-mono text-slate-500">{{ r.duration }}</div>
+                    </div>
+                    <span class="text-slate-600 shrink-0 material-symbols-outlined" style="font-size: 0.9rem;">add</span>
+                  </button>
+                }
+              </div>
+
+              <!-- Delay config -->
+              <div class="mt-3 pt-3 border-t border-slate-800 shrink-0">
+                <div class="flex justify-between mb-1.5">
+                  <span class="text-[9px] font-mono text-slate-500 uppercase tracking-widest">Pausa entre pasos</span>
+                  <span class="text-[9px] font-mono text-primary">{{ defaultDelay() }}ms</span>
+                </div>
+                <input type="range" min="0" max="3000" step="100"
+                       [value]="defaultDelay()"
+                       (input)="defaultDelay.set(+($any($event.target).value))"
+                       class="w-full h-1 rounded-lg appearance-none cursor-pointer accent-primary bg-slate-800"/>
+              </div>
+            </div>
+
+            <!-- Right: sequence queue -->
+            <div class="flex-1 flex flex-col min-h-0 min-w-0">
+              <!-- Header bar -->
+              <div class="flex items-center justify-between mb-2 shrink-0">
+                <div class="flex items-center gap-2">
+                  <span class="text-[9px] font-mono text-slate-500 uppercase tracking-[0.2em]">
+                    Secuencia ({{ sequence().length }} pasos)
+                  </span>
+                  @if (isPlayingSeq()) {
+                    <span class="text-[9px] font-mono text-primary animate-pulse">· Ejecutando...</span>
+                  }
+                </div>
+                @if (sequence().length > 0) {
+                  <button (click)="clearSequence()"
+                          class="text-[9px] font-label uppercase tracking-wider text-slate-500 hover:text-error
+                                 transition-colors cursor-pointer flex items-center gap-1">
+                    <span class="material-symbols-outlined" style="font-size: 0.8rem;">delete_sweep</span>
+                    Vaciar
+                  </button>
+                }
+              </div>
+
+              <!-- Progress bar (only when playing) -->
+              @if (isPlayingSeq()) {
+                <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden mb-3 shrink-0">
+                  <div class="h-full bg-primary transition-all duration-300 rounded-full"
+                       [style.width.%]="seqProgressPct()"></div>
+                </div>
+              }
+
+              <!-- Sequence steps list -->
+              <div class="flex-1 overflow-y-auto space-y-2 pr-1 min-h-0"
+                   style="scrollbar-width: thin; scrollbar-color: #334155 transparent;">
+
+                @if (!sequence().length) {
+                  <div class="flex flex-col items-center justify-center py-12 gap-3 text-slate-700">
+                    <span class="material-symbols-outlined" style="font-size: 2.5rem;">playlist_add</span>
+                    <p class="text-[11px] font-label uppercase tracking-wider">Añade movimientos desde la izquierda</p>
+                  </div>
+                }
+
+                @for (step of sequence(); track step.uid; let i = $index) {
+                  <div class="flex items-center gap-2 bg-slate-900 border rounded-xl px-3 py-2.5 transition-all"
+                       [class]="getExecState(step.routine.id) === 'executing' ? 'border-primary bg-primary/10' :
+                                getExecState(step.routine.id) === 'done'      ? 'border-secondary/50'          :
+                                                                                'border-slate-800'">
+
+                    <!-- Step number -->
+                    <span class="text-[10px] font-mono text-slate-600 w-5 text-center shrink-0">{{ i + 1 }}</span>
+
+                    <!-- Routine icon -->
+                    <span class="material-symbols-outlined shrink-0 transition-colors"
+                          style="font-size: 1rem; font-variation-settings: 'FILL' 1;"
+                          [class]="getExecState(step.routine.id) === 'executing' ? 'text-primary'   :
+                                   getExecState(step.routine.id) === 'done'      ? 'text-secondary' : 'text-slate-500'">
+                      {{ step.routine.icon }}
+                    </span>
+
+                    <!-- Routine label + delay -->
+                    <div class="flex-1 min-w-0">
+                      <div class="text-[11px] font-headline font-bold text-white truncate">
+                        {{ step.routine.label }}
+                      </div>
+                      <div class="text-[9px] font-mono text-slate-600">
+                        {{ step.delayMs }}ms pausa
+                      </div>
+                    </div>
+
+                    <!-- State icon -->
+                    @if (getExecState(step.routine.id) === 'executing') {
+                      <span class="material-symbols-outlined text-primary animate-spin shrink-0" style="font-size: 0.9rem;">progress_activity</span>
+                    }
+                    @if (getExecState(step.routine.id) === 'done') {
+                      <span class="material-symbols-outlined text-secondary shrink-0" style="font-size: 0.9rem; font-variation-settings: 'FILL' 1;">check_circle</span>
+                    }
+
+                    <!-- Reorder buttons -->
+                    <div class="flex flex-col gap-0.5 shrink-0">
+                      <button (click)="moveStep(step.uid, 'up')" [disabled]="i === 0"
+                              class="p-0.5 text-slate-600 hover:text-white disabled:opacity-20 cursor-pointer transition-colors">
+                        <span class="material-symbols-outlined" style="font-size: 0.8rem;">expand_less</span>
+                      </button>
+                      <button (click)="moveStep(step.uid, 'down')" [disabled]="i === sequence().length - 1"
+                              class="p-0.5 text-slate-600 hover:text-white disabled:opacity-20 cursor-pointer transition-colors">
+                        <span class="material-symbols-outlined" style="font-size: 0.8rem;">expand_more</span>
+                      </button>
+                    </div>
+
+                    <!-- Remove -->
+                    <button (click)="removeStep(step.uid)"
+                            class="p-1 text-slate-700 hover:text-error transition-colors cursor-pointer shrink-0 active:scale-90">
+                      <span class="material-symbols-outlined" style="font-size: 0.9rem;">close</span>
+                    </button>
+                  </div>
+                }
+              </div>
+
+              <!-- Controls bar -->
+              @if (sequence().length > 0) {
+                <div class="mt-3 pt-3 border-t border-slate-800 shrink-0 space-y-3">
+                  <!-- Play / Stop -->
+                  @if (!isPlayingSeq()) {
+                    <button
+                      (click)="playSequence()"
+                      class="w-full flex items-center justify-center gap-2 py-4 rounded-2xl
+                             bg-primary text-on-primary font-headline font-bold text-sm tracking-tight
+                             hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer
+                             shadow-[0_0_20px_rgba(56,189,248,0.3)]">
+                      <span class="material-symbols-outlined" style="font-size: 1.2rem; font-variation-settings: 'FILL' 1;">play_circle</span>
+                      Ejecutar Secuencia ({{ sequence().length }} pasos)
+                    </button>
+                  } @else {
+                    <button
+                      (click)="stopSequence()"
+                      class="w-full flex items-center justify-center gap-2 py-4 rounded-2xl
+                             bg-error/20 border border-error/40 text-error font-headline font-bold text-sm
+                             hover:bg-error/30 active:scale-[0.98] transition-all cursor-pointer">
+                      <span class="material-symbols-outlined" style="font-size: 1.2rem; font-variation-settings: 'FILL' 1;">stop_circle</span>
+                      Detener ({{ seqProgress() }}/{{ sequence().length }})
+                    </button>
+                  }
+
+                  <!-- Save row -->
+                  <div class="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Nombre de la secuencia..."
+                      [ngModel]="sequenceName()"
+                      (ngModelChange)="sequenceName.set($event)"
+                      class="flex-1 bg-slate-900 border border-slate-800 focus:border-primary outline-none
+                             px-4 py-2.5 text-white text-sm font-body rounded-xl transition-colors
+                             placeholder:text-slate-600"
+                    />
+                    <button
+                      (click)="saveSequence()"
+                      [disabled]="!sequenceName().trim()"
+                      class="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700
+                             text-[11px] font-label font-bold uppercase tracking-wider text-slate-300
+                             hover:text-white hover:border-primary/40 transition-all cursor-pointer
+                             disabled:opacity-30 disabled:cursor-not-allowed active:scale-95">
+                      <span class="material-symbols-outlined" style="font-size: 0.9rem; font-variation-settings: 'FILL' 1;">bookmark_add</span>
+                      Guardar
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+
+          </div>
+        }
+
+        <!-- ── SAVED sub-tab ──────────────────────────────────────────────── -->
+        @if (seqSubTab() === 'saved') {
+          <div class="flex-1 overflow-y-auto px-4 pb-4"
+               style="scrollbar-width: thin; scrollbar-color: #334155 transparent;">
+
+            @if (!savedSequences().length) {
+              <div class="flex flex-col items-center justify-center py-20 gap-3 text-slate-700">
+                <span class="material-symbols-outlined" style="font-size: 3rem;">bookmarks</span>
+                <p class="text-[11px] font-label uppercase tracking-wider text-center">
+                  No hay secuencias guardadas.<br/>Construye una en el Constructor.
+                </p>
+              </div>
+            }
+
+            <div class="space-y-3 mt-1">
+              @for (seq of savedSequences(); track seq.name) {
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
+
+                  <!-- Info -->
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-headline font-bold text-sm text-white truncate">{{ seq.name }}</h3>
+                    <div class="flex flex-wrap gap-1 mt-2">
+                      @for (step of seq.steps.slice(0, 4); track step.uid) {
+                        <span class="text-[9px] font-mono text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded">
+                          {{ step.routine.label }}
+                        </span>
+                      }
+                      @if (seq.steps.length > 4) {
+                        <span class="text-[9px] font-mono text-slate-600">+{{ seq.steps.length - 4 }} más</span>
+                      }
+                    </div>
+                    <p class="text-[9px] font-mono text-slate-600 mt-1">{{ seq.steps.length }} pasos</p>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="flex gap-2 shrink-0">
+                    <button
+                      (click)="loadSaved(seq)"
+                      class="flex flex-col items-center gap-0.5 p-2.5 rounded-xl bg-primary/10 border border-primary/20
+                             text-primary hover:bg-primary/20 transition-all cursor-pointer active:scale-90">
+                      <span class="material-symbols-outlined" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">download</span>
+                      <span class="text-[8px] font-label uppercase tracking-wide">Cargar</span>
+                    </button>
+                    <button
+                      (click)="deleteSaved(seq.name)"
+                      class="flex flex-col items-center gap-0.5 p-2.5 rounded-xl bg-error/10 border border-error/20
+                             text-error hover:bg-error/20 transition-all cursor-pointer active:scale-90">
+                      <span class="material-symbols-outlined" style="font-size: 1rem;">delete</span>
+                      <span class="text-[8px] font-label uppercase tracking-wide">Borrar</span>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+      </div>
+    }
+
+  </main>
+
+  <!-- ═══════ BOTTOM TAB BAR ═══════════════════════════════════════════════ -->
+  <nav class="fixed bottom-0 left-0 right-0 z-50 h-16 flex items-stretch
+              bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/60">
+
+    <!-- Movimientos -->
+    <button
+      (click)="activeTab.set('movements')"
+      class="flex-1 flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer relative"
+      [class]="activeTab() === 'movements' ? 'text-primary' : 'text-slate-600 hover:text-slate-400'">
+      @if (activeTab() === 'movements') {
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-primary"></div>
+      }
+      <span class="material-symbols-outlined transition-all"
+            style="font-variation-settings: 'FILL' 1;"
+            [style.font-size]="activeTab() === 'movements' ? '1.4rem' : '1.2rem'">smart_toy</span>
+      <span class="text-[8px] font-label uppercase tracking-wider font-bold">Movim.</span>
+    </button>
+
+    <!-- Chat → navega a /robotics/chat en modo compacto -->
+    <a routerLink="/robotics/chat" [queryParams]="{compact: 'true'}"
+       class="flex-1 flex flex-col items-center justify-center gap-0.5 transition-all no-underline
+              text-slate-600 hover:text-secondary cursor-pointer relative">
+      <span class="material-symbols-outlined" style="font-size: 1.2rem; font-variation-settings: 'FILL' 1;">chat_bubble</span>
+      <span class="text-[8px] font-label uppercase tracking-wider font-bold">Chat</span>
+    </a>
+
+    <!-- Decir Oración → navega a /robotics/chat?tab=decir en modo compacto -->
+    <a routerLink="/robotics/chat" [queryParams]="{tab: 'decir', compact: 'true'}"
+       class="flex-1 flex flex-col items-center justify-center gap-0.5 transition-all no-underline
+              text-slate-600 hover:text-primary cursor-pointer relative">
+      <span class="material-symbols-outlined" style="font-size: 1.2rem; font-variation-settings: 'FILL' 1;">record_voice_over</span>
+      <span class="text-[8px] font-label uppercase tracking-wider font-bold">Decir</span>
+    </a>
+
+    <!-- Secuencias -->
+    <button
+      (click)="activeTab.set('sequences')"
+      class="flex-1 flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer relative"
+      [class]="activeTab() === 'sequences' ? 'text-primary' : 'text-slate-600 hover:text-slate-400'">
+      @if (activeTab() === 'sequences') {
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-primary"></div>
+      }
+      <span class="material-symbols-outlined transition-all"
+            style="font-variation-settings: 'FILL' 1;"
+            [style.font-size]="activeTab() === 'sequences' ? '1.4rem' : '1.2rem'">playlist_play</span>
+      <span class="text-[8px] font-label uppercase tracking-wider font-bold">Secuencias</span>
+      @if (sequence().length > 0) {
+        <div class="absolute top-2 right-1/4 w-4 h-4 rounded-full bg-primary text-on-primary
+                    text-[8px] font-bold flex items-center justify-center">
+          {{ sequence().length }}
+        </div>
+      }
+    </button>
+
+  </nav>
+
+</div>
+
+<!-- ══ LOGIN OVERLAY (solo visible sin sesión activa) ═══════════════════ -->
+@if (!auth.isAuthenticated() || showRolePicker()) {
+  <div class="fixed inset-0 z-[100] flex items-center justify-center p-4"
+       style="background: rgba(2,6,23,0.92); backdrop-filter: blur(12px);">
+
+    <div class="w-full max-w-sm">
+
+      <!-- Logo / título -->
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/15 border border-primary/30 mb-4">
+          <span class="material-symbols-outlined text-primary" style="font-size: 2rem; font-variation-settings: 'FILL' 1;">smart_toy</span>
+        </div>
+        <h2 class="font-headline font-black text-xl tracking-tight text-white">Modo Compacto</h2>
+        <p class="text-xs text-slate-500 mt-1">
+          {{ showRolePicker() ? 'Selecciona el rol con el que deseas continuar' : 'Inicia sesión para continuar' }}
+        </p>
+      </div>
+
+      @if (!showRolePicker()) {
+        <!-- ── Login form ── -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+
+          @if (loginError()) {
+            <div class="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/25 rounded-lg">
+              <span class="material-symbols-outlined text-red-400 mt-0.5 shrink-0" style="font-size: 0.9rem;">error</span>
+              <p class="text-[11px] text-red-400 font-label">{{ loginError() }}</p>
+            </div>
+          }
+
+          <div>
+            <label class="text-[9px] font-label uppercase tracking-widest text-slate-500 block mb-1.5">Usuario</label>
+            <input
+              type="text"
+              placeholder="nombre de usuario"
+              [ngModel]="loginUsername()"
+              (ngModelChange)="loginUsername.set($event)"
+              (keydown)="onLoginKeydown($event)"
+              [disabled]="loginBusy()"
+              class="w-full bg-slate-800 border border-slate-700 focus:border-primary outline-none
+                     px-4 py-3 text-white text-sm font-body rounded-xl transition-colors
+                     placeholder:text-slate-600 disabled:opacity-50"/>
+          </div>
+
+          <div>
+            <label class="text-[9px] font-label uppercase tracking-widest text-slate-500 block mb-1.5">Contraseña</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              [ngModel]="loginPassword()"
+              (ngModelChange)="loginPassword.set($event)"
+              (keydown)="onLoginKeydown($event)"
+              [disabled]="loginBusy()"
+              class="w-full bg-slate-800 border border-slate-700 focus:border-primary outline-none
+                     px-4 py-3 text-white text-sm font-body rounded-xl transition-colors
+                     placeholder:text-slate-600 disabled:opacity-50"/>
+          </div>
+
+          <button
+            (click)="doLogin()"
+            [disabled]="loginBusy() || !loginUsername().trim() || !loginPassword()"
+            class="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-headline font-bold text-sm
+                   tracking-tight transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed
+                   bg-primary text-on-primary hover:opacity-90 active:scale-[0.98]
+                   shadow-[0_0_20px_rgba(56,189,248,0.25)]">
+            @if (loginBusy()) {
+              <span class="material-symbols-outlined animate-spin" style="font-size: 1rem;">progress_activity</span>
+              Iniciando sesión...
+            } @else {
+              <span class="material-symbols-outlined" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">login</span>
+              Iniciar sesión
+            }
+          </button>
+        </div>
+
+      } @else {
+        <!-- ── Role picker ── -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+          @for (role of auth.availableRoles(); track $index) {
+            <button
+              (click)="confirmRoleAndClose($index)"
+              class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-slate-700
+                     bg-slate-800 hover:border-primary/40 hover:bg-primary/10
+                     text-white font-headline font-bold text-sm tracking-tight
+                     transition-all cursor-pointer active:scale-[0.98]">
+              <span class="material-symbols-outlined text-primary" style="font-size: 1.1rem; font-variation-settings: 'FILL' 1;">badge</span>
+              {{ role }}
+            </button>
+          }
+        </div>
+      }
+
+    </div>
+  </div>
+}

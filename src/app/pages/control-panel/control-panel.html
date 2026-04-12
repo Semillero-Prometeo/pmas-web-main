@@ -16,9 +16,18 @@
         Robotic Control <span class="text-primary">Interface</span>
       </h1>
     </div>
-    <div class="text-left sm:text-right">
-      <p class="text-[10px] font-mono text-secondary tracking-widest uppercase">Uptime: {{ uptime() }}</p>
-      <p class="text-[10px] font-mono text-slate-500 tracking-widest uppercase">Signal: -42dBm (Stable)</p>
+    <div class="flex items-center gap-4">
+      <div class="text-left sm:text-right">
+        <p class="text-[10px] font-mono text-secondary tracking-widest uppercase">Uptime: {{ uptime() }}</p>
+        <p class="text-[10px] font-mono text-slate-500 tracking-widest uppercase">Signal: -42dBm (Stable)</p>
+      </div>
+      <a routerLink="/r-one"
+         class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/25
+                text-primary hover:bg-primary/20 font-headline font-bold text-xs tracking-tight
+                transition-all no-underline active:scale-95">
+        <span class="material-symbols-outlined" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">smart_toy</span>
+        Modo Compacto
+      </a>
     </div>
   </header>
 
@@ -36,8 +45,6 @@
           alt="Robotic vision system live feed"
           class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700"
         />
-
-        <!-- Overlay badges top-left -->
         <div class="absolute top-4 left-4 z-20 flex gap-2">
           <div class="bg-black/60 backdrop-blur-md px-3 py-1 rounded text-[10px] font-mono border border-white/10 flex items-center gap-2">
             <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> LIVE FEED
@@ -46,14 +53,10 @@
             CAM_01_FRONT
           </div>
         </div>
-
-        <!-- Overlay info bottom-left -->
         <div class="absolute bottom-4 left-4 z-20 flex flex-col gap-1">
           <div class="text-[10px] font-mono text-secondary">LATENCY: 12ms</div>
           <div class="text-[10px] font-mono text-white/50">COORDS: X 142.2 | Y 89.1 | Z 0.0</div>
         </div>
-
-        <!-- Camera controls bottom-right -->
         <div class="absolute bottom-4 right-4 z-20 flex gap-2">
           <button class="p-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded transition-colors cursor-pointer">
             <span class="material-symbols-outlined text-white" style="font-size: 1.1rem;">videocam</span>
@@ -120,17 +123,14 @@
       </div>
     </section>
 
-    <!-- Right: Kinetic Drive + Sensors -->
-    <section class="col-span-12 lg:col-span-4 flex flex-col gap-6">
-
-      <!-- Kinetic Drive -->
+    <!-- Right: Kinetic Drive -->
+    <section class="col-span-12 lg:col-span-4">
       <div class="bg-surface-container-high rounded-xl p-8 shadow-2xl border border-white/5 flex flex-col items-center">
         <h3 class="font-headline text-sm font-bold tracking-tight uppercase text-slate-400 mb-8 self-start">Kinetic Drive</h3>
 
         <!-- D-pad -->
         <div class="relative w-48 h-48 mb-8">
           <div class="absolute inset-0 bg-primary/5 rounded-full border border-primary/20"></div>
-
           <button class="absolute top-0 left-1/2 -translate-x-1/2 w-14 h-14 bg-surface-container-highest rounded-xl border border-white/10 flex items-center justify-center hover:bg-primary/20 hover:border-primary/50 transition-all active:scale-90 cursor-pointer">
             <span class="material-symbols-outlined text-slate-400 hover:text-primary">keyboard_arrow_up</span>
           </button>
@@ -143,8 +143,6 @@
           <button class="absolute right-0 top-1/2 -translate-y-1/2 w-14 h-14 bg-surface-container-highest rounded-xl border border-white/10 flex items-center justify-center hover:bg-primary/20 hover:border-primary/50 transition-all active:scale-90 cursor-pointer">
             <span class="material-symbols-outlined text-slate-400 hover:text-primary">keyboard_arrow_right</span>
           </button>
-
-          <!-- Center button -->
           <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-primary rounded-full shadow-[0_0_20px_rgba(172,199,255,0.4)] flex items-center justify-center">
             <span class="material-symbols-outlined text-on-primary" style="font-variation-settings: 'FILL' 1;">adjust</span>
           </div>
@@ -173,213 +171,160 @@
           </div>
         </div>
       </div>
-
-      <!-- Environment Sensors -->
-      <div class="bg-surface-container rounded-xl p-6 shadow-xl border border-white/5">
-        <h3 class="font-headline text-sm font-bold tracking-tight uppercase text-slate-400 mb-4">Environment Sensors</h3>
-        <div class="grid grid-cols-2 gap-3">
-          <div class="bg-surface-container-low p-4 rounded-lg border border-white/5">
-            <span class="text-[9px] font-mono text-slate-500 block mb-1">HUMIDITY</span>
-            <span class="text-xl font-headline font-bold text-on-surface">42.8%</span>
-          </div>
-          <div class="bg-surface-container-low p-4 rounded-lg border border-white/5">
-            <span class="text-[9px] font-mono text-slate-500 block mb-1">VOC INDEX</span>
-            <span class="text-xl font-headline font-bold text-secondary">0.002</span>
-          </div>
-          <div class="bg-surface-container-low p-4 rounded-lg border border-white/5">
-            <span class="text-[9px] font-mono text-slate-500 block mb-1">PROXIMITY</span>
-            <span class="text-xl font-headline font-bold text-on-surface">2.4m</span>
-          </div>
-          <div class="bg-surface-container-low p-4 rounded-lg border border-white/5">
-            <span class="text-[9px] font-mono text-slate-500 block mb-1">IR SCAN</span>
-            <span class="text-xl font-headline font-bold text-tertiary">38.4°</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Movimientos -->
-      <div class="bg-surface-container rounded-xl p-6 shadow-xl border border-white/5">
-        <h3 class="font-headline text-sm font-bold tracking-tight uppercase text-slate-400 mb-4">Movimientos</h3>
-        <div class="grid grid-cols-2 gap-3">
-          @for (mov of movements; track mov.label) {
-            <button
-              (click)="triggerMovement(mov)"
-              [class]="activeMovement() === mov.label
-                ? 'bg-primary/15 border-primary/40 text-primary'
-                : 'bg-surface-container-low border-white/5 text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface hover:border-primary/20'"
-              class="p-4 rounded-lg border text-left transition-all duration-200 cursor-pointer group active:scale-95">
-              <span class="material-symbols-outlined block mb-2 transition-colors duration-200"
-                    [class]="activeMovement() === mov.label ? 'text-primary' : 'text-slate-600 group-hover:text-primary'"
-                    style="font-size: 1.1rem; font-variation-settings: 'FILL' 1;">
-                {{ mov.icon }}
-              </span>
-              <span class="text-[9px] font-mono uppercase tracking-widest block leading-tight">
-                {{ mov.label }}
-              </span>
-            </button>
-          }
-        </div>
-      </div>
-
     </section>
   </div>
 
-  <!-- ══════════════════════════ ROBOT VOICE CHAT ══════════════════════════ -->
-  <section class="mt-2">
-    <div class="bg-surface-container rounded-xl border border-white/5 shadow-xl overflow-hidden">
-
-      <!-- Header del chat -->
-      <div class="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-surface-container-high">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <span class="material-symbols-outlined text-primary" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">
-              record_voice_over
-            </span>
-          </div>
-          <div>
-            <h3 class="font-headline text-sm font-bold tracking-tight text-on-surface">Robot Voice Channel</h3>
-            <div class="flex items-center gap-2 mt-0.5">
-              @if (isSpeaking()) {
-                <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
-                <span class="text-[10px] font-mono text-secondary uppercase tracking-widest">Speaking...</span>
-              } @else {
-                <span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
-                <span class="text-[10px] font-mono text-outline uppercase tracking-widest">Standby</span>
-              }
-            </div>
-          </div>
-        </div>
-        <button
-          (click)="clearChat()"
-          class="flex items-center gap-1.5 text-[10px] font-label uppercase tracking-wider text-slate-500
-                 hover:text-on-surface transition-colors cursor-pointer px-3 py-1.5 rounded hover:bg-surface-container-highest">
-          <span class="material-symbols-outlined" style="font-size: 0.9rem;">delete_sweep</span>
-          Limpiar
-        </button>
+  <!-- ══════════════════════════ MOVIMIENTOS POR ARDUINO ══════════════════════════ -->
+  <section class="mt-6">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <span class="font-label text-[10px] uppercase tracking-[0.3em] text-secondary mb-1 block">Comandos</span>
+        <h2 class="font-headline text-2xl font-bold tracking-tighter text-on-surface">Panel de Movimientos</h2>
       </div>
+      <div class="flex items-center gap-2 text-[10px] font-mono text-outline">
+        <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+        {{ commandLogs().length }} comandos enviados
+      </div>
+    </div>
 
-      <!-- Historial de mensajes -->
-      <div
-        #chatScroll
-        class="h-72 overflow-y-auto px-6 py-5 space-y-4 scroll-smooth"
-        style="scrollbar-width: thin; scrollbar-color: #41484d transparent;"
-      >
-        @for (msg of messages(); track trackMessage($index, msg)) {
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
-          <!-- Mensaje del usuario (derecha) -->
-          @if (msg.from === 'user') {
-            <div class="flex justify-end gap-3">
-              <div class="max-w-[70%]">
-                <div class="bg-primary/15 border border-primary/20 rounded-xl rounded-tr-sm px-4 py-3">
-                  <p class="text-sm text-on-surface leading-relaxed">{{ msg.text }}</p>
-                </div>
-                <div class="flex items-center justify-end gap-2 mt-1.5 pr-1">
-                  <span class="text-[9px] font-mono text-outline">{{ msg.timestamp }}</span>
-                  @if (msg.status === 'sending') {
-                    <span class="material-symbols-outlined text-outline" style="font-size: 0.75rem;">schedule</span>
-                  } @else if (msg.status === 'transmitted') {
-                    <span class="material-symbols-outlined text-secondary" style="font-size: 0.75rem;">done_all</span>
-                  }
-                </div>
-              </div>
-              <div class="w-7 h-7 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0 mt-1">
-                <span class="material-symbols-outlined text-primary" style="font-size: 0.85rem;">person</span>
-              </div>
-            </div>
-          }
+      <!-- Tarjetas de grupos de Arduino (2/3 del ancho en xl) -->
+      <div class="xl:col-span-2 space-y-4">
 
-          <!-- Mensaje del robot (izquierda) -->
-          @if (msg.from === 'robot') {
-            <div class="flex gap-3">
-              <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-1 transition-all duration-300"
-                   [class]="msg.status === 'speaking' ? 'bg-secondary/30 border border-secondary/50' : 'bg-surface-container-highest border border-white/10'">
-                <span class="material-symbols-outlined transition-colors duration-300"
-                      [class]="msg.status === 'speaking' ? 'text-secondary' : 'text-slate-500'"
-                      style="font-size: 0.85rem; font-variation-settings: 'FILL' 1;">
-                  smart_toy
-                </span>
-              </div>
-              <div class="max-w-[70%]">
-                <div class="rounded-xl rounded-tl-sm px-4 py-3 transition-all duration-300"
-                     [class]="msg.status === 'speaking'
-                       ? 'bg-secondary/10 border border-secondary/25'
-                       : 'bg-surface-container-high border border-white/5'">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-[9px] font-label uppercase tracking-widest font-bold"
-                          [class]="msg.status === 'speaking' ? 'text-secondary' : 'text-outline'">
-                      Robot
-                    </span>
-                    @if (msg.status === 'speaking') {
-                      <!-- Ondas de voz animadas -->
-                      <div class="flex items-end gap-0.5 h-3">
-                        <div class="w-0.5 bg-secondary rounded-full animate-bounce" style="height: 4px; animation-delay: 0ms;"></div>
-                        <div class="w-0.5 bg-secondary rounded-full animate-bounce" style="height: 8px; animation-delay: 100ms;"></div>
-                        <div class="w-0.5 bg-secondary rounded-full animate-bounce" style="height: 12px; animation-delay: 200ms;"></div>
-                        <div class="w-0.5 bg-secondary rounded-full animate-bounce" style="height: 8px; animation-delay: 300ms;"></div>
-                        <div class="w-0.5 bg-secondary rounded-full animate-bounce" style="height: 4px; animation-delay: 400ms;"></div>
-                      </div>
-                    }
+        @if (actionsLoading()) {
+          <div class="flex flex-col items-center justify-center py-16 gap-3 text-slate-500">
+            <span class="material-symbols-outlined animate-spin" style="font-size: 2rem;">progress_activity</span>
+            <p class="text-[10px] font-label uppercase tracking-wider">Cargando acciones del robot...</p>
+          </div>
+        } @else if (actionsError()) {
+          <div class="flex flex-col items-center justify-center py-16 gap-3 text-slate-500">
+            <span class="material-symbols-outlined text-error" style="font-size: 2rem;">error_outline</span>
+            <p class="text-[10px] font-label uppercase tracking-wider text-error">{{ actionsError() }}</p>
+            <button
+              (click)="loadActions()"
+              class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-high border border-white/10
+                     text-[10px] font-label uppercase tracking-wider text-slate-300 hover:text-on-surface
+                     hover:bg-surface-container-highest transition-colors cursor-pointer">
+              <span class="material-symbols-outlined" style="font-size: 0.9rem;">refresh</span>
+              Reintentar
+            </button>
+          </div>
+        } @else if (actionGroups().length === 0) {
+          <div class="flex flex-col items-center justify-center py-16 gap-3 text-slate-600">
+            <span class="material-symbols-outlined" style="font-size: 2rem;">robot_2</span>
+            <p class="text-[10px] font-label uppercase tracking-wider">No hay acciones configuradas</p>
+          </div>
+        } @else {
+          @for (group of actionGroups(); track group.arduino_id) {
+            <div class="bg-surface-container rounded-xl border border-white/5 shadow-xl overflow-hidden">
+              <!-- Cabecera del grupo -->
+              <div class="flex items-center justify-between px-5 py-3 bg-surface-container-high border-b border-white/5">
+                <div class="flex items-center gap-3">
+                  <div class="px-2 py-0.5 rounded bg-primary/15 border border-primary/25">
+                    <span class="text-[9px] font-mono text-primary font-bold tracking-widest">ARD-{{ group.arduino_id }}</span>
                   </div>
-                  <p class="text-sm text-on-surface-variant leading-relaxed">{{ msg.text }}</p>
+                  <h3 class="font-headline text-sm font-bold tracking-tight text-on-surface">{{ group.label }}</h3>
                 </div>
-                <span class="text-[9px] font-mono text-outline ml-1 mt-1 block">{{ msg.timestamp }}</span>
+                <span class="text-[10px] font-label text-outline">{{ group.actions.length }} acciones</span>
+              </div>
+
+              <!-- Grid de botones de acciones -->
+              <div class="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                @for (action of group.actions; track action.id) {
+                  <button
+                    (click)="executeAction(group, action)"
+                    [disabled]="isExecuting(group, action)"
+                    [class]="isExecuting(group, action)
+                      ? 'bg-primary/20 border-primary/50 text-primary shadow-[0_0_12px_rgba(56,189,248,0.2)] cursor-wait'
+                      : 'bg-surface-container-low border-white/5 text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface hover:border-primary/20 cursor-pointer'"
+                    class="p-3 rounded-lg border text-center transition-all duration-150 group active:scale-95 select-none disabled:active:scale-100">
+                    <span class="material-symbols-outlined block mx-auto mb-1 transition-colors duration-150"
+                          [class]="isExecuting(group, action) ? 'text-primary animate-pulse' : 'text-slate-600 group-hover:text-primary'"
+                          style="font-size: 1.1rem; font-variation-settings: 'FILL' 1;">
+                      {{ isExecuting(group, action) ? 'sync' : 'play_circle' }}
+                    </span>
+                    <span class="text-[9px] font-mono uppercase tracking-wide leading-tight block">
+                      {{ action.name }}
+                    </span>
+                    <span class="text-[8px] font-mono text-slate-600 block mt-0.5">#{{ action.id }}</span>
+                  </button>
+                }
               </div>
             </div>
           }
-
         }
       </div>
 
-      <!-- Input area -->
-      <div class="border-t border-white/5 px-6 py-4 bg-surface-container-high">
-        <div class="flex items-end gap-3">
-
-          <!-- Textarea -->
-          <div class="flex-1 relative">
-            <textarea
-              rows="2"
-              maxlength="300"
-              placeholder="Escribe lo que quieres que el robot diga..."
-              [ngModel]="inputText()"
-              (ngModelChange)="inputText.set($event)"
-              (keydown)="onKeydown($event)"
-              [disabled]="isSpeaking()"
-              class="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary outline-none
-                     px-4 pt-3 pb-2 text-on-surface text-sm font-body rounded-t-lg transition-colors duration-200
-                     placeholder:text-slate-600 resize-none leading-relaxed
-                     disabled:opacity-50 disabled:cursor-not-allowed"
-            ></textarea>
-            <!-- Contador de caracteres -->
-            <span class="absolute bottom-2 right-3 text-[9px] font-mono text-outline">
-              {{ charCount() }}/300
-            </span>
+      <!-- Panel de logs (1/3 del ancho en xl) -->
+      <div class="xl:col-span-1">
+        <div class="bg-surface-container rounded-xl border border-white/5 shadow-xl overflow-hidden sticky top-24">
+          <!-- Header -->
+          <div class="flex items-center justify-between px-5 py-3 bg-surface-container-high border-b border-white/5">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-secondary" style="font-size: 1rem;">receipt_long</span>
+              <h3 class="font-headline text-sm font-bold tracking-tight text-on-surface">Command Log</h3>
+            </div>
+            <button
+              (click)="clearLogs()"
+              class="text-[9px] font-label uppercase tracking-wider text-slate-500 hover:text-on-surface
+                     transition-colors cursor-pointer px-2 py-1 rounded hover:bg-surface-container-highest flex items-center gap-1">
+              <span class="material-symbols-outlined" style="font-size: 0.8rem;">delete_sweep</span>
+              Limpiar
+            </button>
           </div>
 
-          <!-- Botón transmitir -->
-          <button
-            (click)="sendMessage()"
-            [disabled]="isSpeaking() || charCount() === 0"
-            class="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200
-                   cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-            [class]="isSpeaking() || charCount() === 0
-              ? 'bg-surface-container-highest'
-              : 'bg-primary hover:opacity-90 active:scale-90 shadow-[0_0_16px_rgba(56,189,248,0.25)]'">
-            <span class="material-symbols-outlined"
-                  [class]="isSpeaking() || charCount() === 0 ? 'text-slate-600' : 'text-on-primary'"
-                  style="font-size: 1.2rem; font-variation-settings: 'FILL' 1;">
-              {{ isSpeaking() ? 'volume_up' : 'send' }}
-            </span>
-          </button>
+          <!-- Log entries -->
+          <div
+            #logScroll
+            class="h-[520px] overflow-y-auto px-3 py-2 space-y-1 font-mono text-[10px]"
+            style="scrollbar-width: thin; scrollbar-color: #41484d transparent;">
+
+            @if (commandLogs().length === 0) {
+              <div class="flex flex-col items-center justify-center h-full gap-3 text-slate-600">
+                <span class="material-symbols-outlined" style="font-size: 2rem;">terminal</span>
+                <p class="text-[10px] font-label uppercase tracking-wider">Sin comandos enviados</p>
+              </div>
+            }
+
+            @for (log of commandLogs(); track trackLog($index, log)) {
+              <div class="py-1.5 px-2 rounded hover:bg-surface-container-highest transition-colors">
+                <div class="flex items-start gap-2">
+                  <span class="material-symbols-outlined flex-shrink-0 mt-0.5" [class]="logStatusColor(log.status)" style="font-size: 0.8rem;">
+                    {{ logStatusIcon(log.status) }}
+                  </span>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="text-primary/70">{{ log.timestamp }}</span>
+                      <span class="px-1 py-0.5 rounded bg-primary/10 text-primary text-[8px]">{{ log.arduinoId }}</span>
+                      <span class="px-1 py-0.5 rounded bg-surface-container-highest text-slate-400 text-[8px]">action #{{ log.actionId }}</span>
+                    </div>
+                    <div class="text-on-surface-variant mt-0.5 truncate">{{ log.label }}</div>
+                    @if (log.response && log.response.length > 0) {
+                      <div class="mt-1 space-y-0.5">
+                        @for (line of log.response; track $index) {
+                          <div class="text-secondary/70 text-[9px] truncate pl-1 border-l border-secondary/30">{{ line }}</div>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Footer stats -->
+          <div class="px-4 py-2 border-t border-white/5 bg-surface-container-high">
+            <div class="flex justify-between text-[9px] font-mono text-slate-600">
+              <span>Total: {{ commandLogs().length }}</span>
+              <span>ACK: {{ ackCount() }}</span>
+            </div>
+          </div>
         </div>
-
-        <!-- Hint -->
-        <p class="text-[9px] font-label text-outline uppercase tracking-wide mt-2">
-          Enter para enviar &nbsp;·&nbsp; Shift+Enter nueva línea &nbsp;·&nbsp; Máx. 300 caracteres
-        </p>
       </div>
-
     </div>
   </section>
+
 
 </main>
 

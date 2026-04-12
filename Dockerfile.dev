@@ -4,6 +4,7 @@ WORKDIR /usr/src/app
 
 # 1. Dependencias — solo se reinstalan si cambia package.json o package-lock.json
 COPY --chown=node:node package*.json ./
+RUN npm install
 
 # 2. Código fuente — la capa que cambia con más frecuencia (en dev se sobrescribe por volumen)
 COPY --chown=node:node . .
