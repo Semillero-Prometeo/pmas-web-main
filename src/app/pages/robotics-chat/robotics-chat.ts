@@ -70,12 +70,12 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
     this.chatBusy.set(true);
     this.shouldScrollChat = true;
 
-    this.http.post<{ response: string }>(`${GATEWAY_URL}/robotics/chat`, { message: text })
+    this.http.post<{ reply: string }>(`${GATEWAY_URL}/chat/question`, { message: text })
       .subscribe({
         next: res => {
           this.chatMessages.update(msgs =>
             msgs.map((m, i) => i === msgs.length - 1
-              ? { ...m, text: res.response ?? 'Sin respuesta', status: 'done' }
+              ? { ...m, text: res.reply ?? 'Sin respuesta', status: 'done' }
               : m
             )
           );
@@ -118,7 +118,7 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
     this.decirBusy.set(true);
     this.shouldScrollDecir = true;
 
-    this.http.post<{ status: string }>(`${GATEWAY_URL}/robotics/speak`, { text })
+    this.http.post<{ status: string }>(`${GATEWAY_URL}/voice/speak`, { message: text })
       .subscribe({
         next: () => {
           this.decirHistory.update(h =>

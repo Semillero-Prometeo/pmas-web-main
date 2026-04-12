@@ -46,9 +46,9 @@ export class Roles implements OnInit {
   loadRoles() {
     this.loading.set(true);
     this.error.set(null);
-    this.http.get<any>(`${GATEWAY_URL}/auth/roles`).subscribe({
-      next: res => {
-        this.roles.set(res.data ?? res ?? []);
+    this.http.get<{ data: Role[] } | Role[]>(`${GATEWAY_URL}/roles?skip=0&take=10`).subscribe({
+      next: (res: { data: Role[] } | Role[]) => {
+        this.roles.set((res as { data: Role[] }).data ?? (res as Role[]) ?? []);
         this.loading.set(false);
       },
       error: () => {

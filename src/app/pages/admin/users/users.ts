@@ -65,9 +65,9 @@ export class Users implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    this.http.get<any>(`${GATEWAY_URL}/auth/users`).subscribe({
-      next: res => {
-        this.users.set(res.data ?? res ?? []);
+    this.http.get<{ data: User[] } | User[]>(`${GATEWAY_URL}/users?skip=0&take=50`).subscribe({
+      next: (res: { data: User[] } | User[]) => {
+        this.users.set((res as { data: User[] }).data ?? (res as User[]) ?? []);
         this.loading.set(false);
       },
       error: () => {
@@ -76,8 +76,8 @@ export class Users implements OnInit {
       },
     });
 
-    this.http.get<any>(`${GATEWAY_URL}/auth/roles`).subscribe({
-      next: res => this.roles.set(res.data ?? res ?? []),
+    this.http.get<{ data: Role[] } | Role[]>(`${GATEWAY_URL}/roles?skip=0&take=10`).subscribe({
+      next: (res: { data: Role[] } | Role[]) => this.roles.set((res as { data: Role[] }).data ?? (res as Role[]) ?? []),
     });
   }
 

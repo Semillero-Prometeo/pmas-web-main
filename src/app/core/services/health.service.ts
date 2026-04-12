@@ -15,8 +15,8 @@ export class HealthService {
 
   checkAll() {
     this.check(`${GATEWAY_URL}/health`,            this.gateway);
-    this.check(`${GATEWAY_URL}/management/health`, this.management);
-    this.check(`${GATEWAY_URL}/robotics/health`,   this.robotics);
+    this.check(`${GATEWAY_URL}/management-ms/health`, this.management);
+    this.check(`${GATEWAY_URL}/robotics-ms/health`,   this.robotics);
   }
 
   private check(url: string, target: WritableSignal<ServiceStatus>) {

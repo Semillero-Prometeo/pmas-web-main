@@ -2,10 +2,11 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, switchMap, tap, throwError } from 'rxjs';
-import { LoginRequest, LoginResponse, UserProfile } from '../models/auth.models';
+import { LoginRequest, LoginResponse, UserProfile, UserRole } from '../models/auth.models';
 
 const GATEWAY_URL = 'http://localhost:3000';
 const TOKEN_KEY = 'prometeo_token';
+const ROLE_KEY = 'prometeo_active_role';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -16,8 +17,8 @@ export class AuthService {
   private _profile = signal<UserProfile | null>(null);
   private _loading = signal(false);
   private _error = signal<string | null>(null);
-  private _selectedRoleIndex = signal<number>(0);
-  private _roleSelected = signal(false);
+  private _activeRoleId = signal<string>(localStorage.getItem(ROLE_KEY) ?? '');
+  private _roleSelected = signal(!!localStorage.getItem(ROLE_KEY));
 
   // Signals públicos de solo lectura
   readonly token = this._token.asReadonly();
@@ -33,11 +34,15 @@ export class AuthService {
   });
 
   readonly availableRoles = computed(() =>
-    this._profile()?.user_role?.map(ur => ur.role.name) ?? []
+    this._profile()?.user_role?.map((ur: UserRole) => ur.role.name) ?? []
   );
 
-  readonly activeRole = computed(() =>
-    this.availableRoles()[this._selectedRoleIndex()] ?? 'USER'
+  /** ID del rol activo — usado en el header X-Active-Role */
+  readonly activeRole = computed(() => this._activeRoleId());
+
+  /** Nombre del rol activo — usado para mostrar en la UI */
+  readonly activeRoleName = computed(() =>
+    this._profile()?.user_role?.find((ur: UserRole) => ur.role.id === this._activeRoleId())?.role.name ?? ''
   );
 
   /** true cuando el usuario tiene múltiples roles y aún no ha seleccionado uno en esta sesión */
@@ -49,7 +54,8 @@ export class AuthService {
     this._loading.set(true);
     this._error.set(null);
     this._roleSelected.set(false);
-    this._selectedRoleIndex.set(0);
+    this._activeRoleId.set('');
+    localStorage.removeItem(ROLE_KEY);
 
     return this.http
       .post<LoginResponse>(`${GATEWAY_URL}/auth/login`, credentials)
@@ -62,6 +68,13 @@ export class AuthService {
         tap(profile => {
           this._profile.set(profile);
           this._loading.set(false);
+          // Si solo tiene un rol, seleccionarlo automáticamente
+          const roles = profile.user_role ?? [];
+          if (roles.length === 1) {
+            this._activeRoleId.set(roles[0].role.id);
+            localStorage.setItem(ROLE_KEY, roles[0].role.id);
+            this._roleSelected.set(true);
+          }
         }),
         catchError((err: HttpErrorResponse) => {
           this._loading.set(false);
@@ -82,7 +95,9 @@ export class AuthService {
   }
 
   confirmRole(index: number) {
-    this._selectedRoleIndex.set(index);
+    const roleId = this._profile()?.user_role?.[index]?.role.id ?? '';
+    this._activeRoleId.set(roleId);
+    localStorage.setItem(ROLE_KEY, roleId);
     this._roleSelected.set(true);
   }
 
@@ -90,8 +105,9 @@ export class AuthService {
     this._token.set(null);
     this._profile.set(null);
     this._roleSelected.set(false);
-    this._selectedRoleIndex.set(0);
+    this._activeRoleId.set('');
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(ROLE_KEY);
     this.router.navigate(['/login']);
   }
 
