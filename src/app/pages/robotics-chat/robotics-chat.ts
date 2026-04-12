@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Navbar } from '../../components/navbar/navbar';
 import { Sidebar } from '../../components/sidebar/sidebar';
 import { AuthService } from '../../core/services/auth.service';
+import { environment } from '../../../environments/environment';
 
 type Tab = 'chatbot' | 'decir';
 
@@ -37,7 +38,7 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   @ViewChild('decirScroll') decirScroll?: ElementRef<HTMLDivElement>;
 
   activeTab = signal<Tab>('chatbot');
-  compact   = signal(false);
+  compact   = signal(environment.compactMode);
 
   // ── Chatbot IA ──
   chatMessages = signal<ChatMessage[]>([]);
@@ -149,7 +150,6 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   ngOnInit() {
     const params = this.route.snapshot.queryParamMap;
     if (params.get('tab') === 'decir') this.activeTab.set('decir');
-    if (params.get('compact') === 'true') this.compact.set(true);
   }
 
   ngAfterViewChecked() {
