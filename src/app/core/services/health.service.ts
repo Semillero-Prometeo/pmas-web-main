@@ -8,29 +8,36 @@ export type ServiceStatus = 'online' | 'offline' | 'checking';
 export class HealthService {
   private http = inject(HttpClient);
 
-  readonly gateway    = signal<ServiceStatus>('checking');
+  readonly gateway = signal<ServiceStatus>('checking');
+  readonly authMs = signal<ServiceStatus>('checking');
   readonly management = signal<ServiceStatus>('checking');
-  readonly robotics   = signal<ServiceStatus>('checking');
+  readonly robotics = signal<ServiceStatus>('checking');
+  readonly maiCore = signal<ServiceStatus>('checking');
 
   checkAll() {
-    this.check(`${GATEWAY_URL}/health`,            this.gateway);
+    this.check(`${GATEWAY_URL}/health`, this.gateway);
+    this.check(`${GATEWAY_URL}/auth-ms/health`, this.authMs);
     this.check(`${GATEWAY_URL}/management-ms/health`, this.management);
-    this.check(`${GATEWAY_URL}/robotics-ms/health`,   this.robotics);
+    this.check(`${GATEWAY_URL}/robotics-ms/health`, this.robotics);
+    this.check(`${GATEWAY_URL}/mai-core-ms/health`, this.maiCore);
   }
 
   private check(url: string, target: WritableSignal<ServiceStatus>) {
     target.set('checking');
     this.http.get(url).subscribe({
-      next:  () => target.set('online'),
+      next: () => target.set('online'),
       error: () => target.set('offline'),
     });
   }
 
   statusLabel(status: ServiceStatus): string {
     switch (status) {
-      case 'online':   return 'Operativo';
-      case 'offline':  return 'Sin respuesta';
-      case 'checking': return 'Verificando...';
+      case 'online':
+        return 'Operativo';
+      case 'offline':
+        return 'Sin respuesta';
+      case 'checking':
+        return 'Verificando...';
     }
   }
 }
