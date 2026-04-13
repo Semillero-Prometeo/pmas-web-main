@@ -1,0 +1,48 @@
+<app-navbar
+  [showSearch]="showSearchForRoute()"
+  [adminCompactLayout]="compact()"
+  [showMobileAdminMenu]="!compact()"
+  (openAdminMenu)="openDrawer()" />
+
+@if (drawerOpen()) {
+  <div
+    class="fixed inset-0 z-[55] flex"
+    [class.md:hidden]="!compact()"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Menú de navegación">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeDrawer()"></div>
+    <div
+      class="relative z-10 flex flex-col w-[min(22rem,92vw)] max-w-full h-full bg-slate-950 border-r border-slate-800 shadow-2xl">
+      <div class="flex items-center justify-between px-3 py-3 border-b border-slate-800 shrink-0">
+        <span class="font-label text-[10px] font-bold uppercase tracking-widest text-slate-400">Navegación</span>
+        <button
+          type="button"
+          (click)="closeDrawer()"
+          class="p-2 rounded-lg text-slate-500 hover:text-on-surface hover:bg-slate-900 cursor-pointer"
+          aria-label="Cerrar menú">
+          <span class="material-symbols-outlined" style="font-size: 1.25rem;">close</span>
+        </button>
+      </div>
+      <div class="flex-1 min-h-0 overflow-y-auto">
+        <app-sidebar variant="drawer" [activeItem]="activeSidebarItem()" />
+      </div>
+    </div>
+  </div>
+}
+
+@if (compact()) {
+  <app-robotics-bottom-nav [activeItem]="activeSidebarItem()" />
+} @else {
+  <app-sidebar variant="docked" [activeItem]="activeSidebarItem()" />
+}
+
+<main [class]="mainClasses()">
+  <router-outlet />
+</main>
+
+@if (!compact()) {
+  <div [class]="footerWrapClasses()">
+    <app-footer />
+  </div>
+}

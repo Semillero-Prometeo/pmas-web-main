@@ -2,11 +2,7 @@ import { Component, signal, computed, inject, OnInit, ViewChild, ElementRef, Aft
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { Navbar } from '../../components/navbar/navbar';
-import { Footer } from '../../components/footer/footer';
-import { Sidebar } from '../../components/sidebar/sidebar';
-
-const GATEWAY_URL = 'http://localhost:3000';
+import { GATEWAY_URL } from '../../core/constants/gateway';
 
 // ── API shapes ────────────────────────────────────────────────────────────────
 export interface Action {
@@ -52,7 +48,7 @@ export interface CommandLog {
 
 @Component({
   selector: 'app-control-panel',
-  imports: [Navbar, Footer, Sidebar, FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink],
   templateUrl: './control-panel.html',
 })
 export class ControlPanel implements OnInit, AfterViewChecked {

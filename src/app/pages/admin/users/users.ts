@@ -1,11 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { Navbar } from '../../../components/navbar/navbar';
-import { Footer } from '../../../components/footer/footer';
-import { Sidebar } from '../../../components/sidebar/sidebar';
-
-const GATEWAY_URL = 'http://localhost:3000';
+import { GATEWAY_URL } from '../../../core/constants/gateway';
 
 export interface User {
   id: number;
@@ -25,7 +21,7 @@ type ModalMode = 'create' | 'edit';
 
 @Component({
   selector: 'app-users',
-  imports: [Navbar, Footer, Sidebar, FormsModule],
+  imports: [FormsModule],
   templateUrl: './users.html',
 })
 export class Users implements OnInit {
