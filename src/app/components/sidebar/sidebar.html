@@ -1,67 +1,128 @@
-<aside class="hidden lg:flex lg:flex-col w-64 fixed left-0 top-16 border-r border-slate-800/50 bg-slate-950 h-[calc(100vh-64px)] py-6 z-40 overflow-y-auto">
+<aside
+  class="flex-col border-r border-slate-800/50 bg-slate-950 py-4 z-40 overflow-y-auto transition-[width] duration-200 ease-out"
+  [class.hidden]="variant === 'docked'"
+  [class.md:flex]="variant === 'docked'"
+  [class.flex]="variant === 'drawer'"
+  [class.fixed]="variant === 'docked'"
+  [class.left-0]="variant === 'docked'"
+  [class.top-16]="variant === 'docked'"
+  [class.h-\[calc\(100vh-64px\)\]]="variant === 'docked'"
+  [class.relative]="variant === 'drawer'"
+  [class.h-full]="variant === 'drawer'"
+  [class.min-h-0]="variant === 'drawer'"
+  [class.w-full]="variant === 'drawer'"
+  [class.w-64]="variant === 'docked' && expandedUi()"
+  [class.w-\[4.5rem\]]="variant === 'docked' && !expandedUi()">
 
-  <!-- Header: estado del sistema -->
-  <div class="px-6 mb-6">
-    <div class="flex items-center gap-3 mb-1">
-      <div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
-      <h2 class="text-secondary font-black font-label text-xs uppercase tracking-[0.1em]">Panel de Administración</h2>
-    </div>
-    <p class="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Prometeo · Sistemas</p>
-  </div>
-
-  <!-- Estado de microservicios -->
-  <div class="px-4 mb-6">
-    <div class="bg-slate-900 rounded-lg p-3 border border-slate-800 space-y-2">
-      <p class="text-[9px] font-mono text-slate-600 uppercase tracking-widest mb-2">Estado de servicios</p>
-      <div class="flex items-center justify-between">
-        <span class="text-[10px] font-label text-slate-400 uppercase tracking-wide">Gateway</span>
-        <div class="flex items-center gap-1.5">
-          <div class="w-1.5 h-1.5 rounded-full" [class]="statusColor(health.gateway())"></div>
-          <span class="text-[9px] font-mono text-slate-500">{{ health.statusLabel(health.gateway()) }}</span>
-        </div>
-      </div>
-      <div class="flex items-center justify-between">
-        <span class="text-[10px] font-label text-slate-400 uppercase tracking-wide">Gestión</span>
-        <div class="flex items-center gap-1.5">
-          <div class="w-1.5 h-1.5 rounded-full" [class]="statusColor(health.management())"></div>
-          <span class="text-[9px] font-mono text-slate-500">{{ health.statusLabel(health.management()) }}</span>
-        </div>
-      </div>
-      <div class="flex items-center justify-between">
-        <span class="text-[10px] font-label text-slate-400 uppercase tracking-wide">Robótica</span>
-        <div class="flex items-center gap-1.5">
-          <div class="w-1.5 h-1.5 rounded-full" [class]="statusColor(health.robotics())"></div>
-          <span class="text-[9px] font-mono text-slate-500">{{ health.statusLabel(health.robotics()) }}</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Grupos de navegación -->
-  <nav class="flex-1 space-y-1 px-2">
-    @for (group of groups; track group.id) {
-      <!-- Cabecera del grupo (toggle) -->
+  @if (variant === 'docked') {
+    <div class="px-2 mb-3 flex justify-end">
       <button
-        (click)="toggleGroup(group.id)"
-        class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg
-               text-slate-500 hover:text-slate-300 hover:bg-slate-900/60
-               transition-all duration-200 cursor-pointer group">
-        <div class="flex items-center gap-2.5">
-          <span class="material-symbols-outlined" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">
-            {{ group.icon }}
-          </span>
-          <span class="font-label text-[10px] font-bold uppercase tracking-[0.15em]">{{ group.label }}</span>
-          <div class="w-1.5 h-1.5 rounded-full" [class]="statusColor(groupStatus(group))"></div>
-        </div>
-        <span class="material-symbols-outlined text-slate-600 transition-transform duration-200"
-              style="font-size: 0.9rem;"
-              [class.rotate-180]="isGroupOpen(group.id)">
-          expand_more
+        type="button"
+        (click)="chrome.toggleSidebarCollapsed()"
+        class="p-2 rounded-lg text-slate-500 hover:text-secondary hover:bg-slate-900/80 transition-colors cursor-pointer"
+        [attr.aria-label]="chrome.sidebarCollapsed() ? 'Expandir menú' : 'Contraer menú'">
+        <span class="material-symbols-outlined" style="font-size: 1.1rem;">
+          {{ chrome.sidebarCollapsed() ? 'chevron_right' : 'chevron_left' }}
         </span>
       </button>
+    </div>
+  }
 
-      <!-- Items del grupo -->
-      @if (isGroupOpen(group.id)) {
+  <div class="px-4 mb-4" [class.px-2]="variant === 'docked' && !expandedUi()" [class.text-center]="variant === 'docked' && !expandedUi()">
+    @if (expandedUi()) {
+      <div class="flex items-center gap-3 mb-1">
+        <div class="w-2 h-2 rounded-full bg-secondary animate-pulse shrink-0"></div>
+        <h2 class="text-secondary font-black font-label text-xs uppercase tracking-[0.1em] leading-tight">
+          Panel de Administración
+        </h2>
+      </div>
+      <p class="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Prometeo · Sistemas</p>
+    } @else {
+      <div class="flex justify-center">
+        <div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
+      </div>
+    }
+  </div>
+
+  <div class="px-3 mb-4" [class.px-2]="variant === 'docked' && !expandedUi()">
+    <div class="bg-slate-900 rounded-lg p-2 border border-slate-800 space-y-1.5">
+      @if (expandedUi()) {
+        <p class="text-[9px] font-mono text-slate-600 uppercase tracking-widest mb-1 px-1">Estado de servicios</p>
+      }
+      <div class="flex items-center justify-between gap-1 px-1" [class.flex-col]="variant === 'docked' && !expandedUi()" [class.gap-2]="variant === 'docked' && !expandedUi()">
+        <span class="text-[9px] font-label text-slate-500 uppercase tracking-wide truncate" [class.hidden]="!expandedUi()">Gateway</span>
+        <div class="flex items-center gap-1 justify-end min-w-0">
+          <div class="w-1.5 h-1.5 rounded-full shrink-0" [class]="statusColor(health.gateway())"></div>
+          @if (expandedUi()) {
+            <span class="text-[9px] font-mono text-slate-500 truncate">{{ health.statusLabel(health.gateway()) }}</span>
+          }
+        </div>
+      </div>
+      <div class="flex items-center justify-between gap-1 px-1" [class.flex-col]="variant === 'docked' && !expandedUi()">
+        <span class="text-[9px] font-label text-slate-500 uppercase truncate" [class.hidden]="!expandedUi()">Auth MS</span>
+        <div class="flex items-center gap-1 justify-end">
+          <div class="w-1.5 h-1.5 rounded-full shrink-0" [class]="statusColor(health.authMs())"></div>
+          @if (expandedUi()) {
+            <span class="text-[9px] font-mono text-slate-500 truncate">{{ health.statusLabel(health.authMs()) }}</span>
+          }
+        </div>
+      </div>
+      <div class="flex items-center justify-between gap-1 px-1" [class.flex-col]="variant === 'docked' && !expandedUi()">
+        <span class="text-[9px] font-label text-slate-500 uppercase truncate" [class.hidden]="!expandedUi()">Gestión</span>
+        <div class="flex items-center gap-1 justify-end">
+          <div class="w-1.5 h-1.5 rounded-full shrink-0" [class]="statusColor(health.management())"></div>
+          @if (expandedUi()) {
+            <span class="text-[9px] font-mono text-slate-500 truncate">{{ health.statusLabel(health.management()) }}</span>
+          }
+        </div>
+      </div>
+      <div class="flex items-center justify-between gap-1 px-1" [class.flex-col]="variant === 'docked' && !expandedUi()">
+        <span class="text-[9px] font-label text-slate-500 uppercase truncate" [class.hidden]="!expandedUi()">Robótica</span>
+        <div class="flex items-center gap-1 justify-end">
+          <div class="w-1.5 h-1.5 rounded-full shrink-0" [class]="statusColor(health.robotics())"></div>
+          @if (expandedUi()) {
+            <span class="text-[9px] font-mono text-slate-500 truncate">{{ health.statusLabel(health.robotics()) }}</span>
+          }
+        </div>
+      </div>
+      <div class="flex items-center justify-between gap-1 px-1" [class.flex-col]="variant === 'docked' && !expandedUi()">
+        <span class="text-[9px] font-label text-slate-500 uppercase truncate" [class.hidden]="!expandedUi()">PMAI</span>
+        <div class="flex items-center gap-1 justify-end">
+          <div class="w-1.5 h-1.5 rounded-full shrink-0" [class]="statusColor(health.maiCore())"></div>
+          @if (expandedUi()) {
+            <span class="text-[9px] font-mono text-slate-500 truncate">{{ health.statusLabel(health.maiCore()) }}</span>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="flex-1 space-y-1 px-2 min-h-0">
+    @for (group of groups; track group.id) {
+      <button
+        type="button"
+        (click)="toggleGroup(group.id)"
+        [class.px-2]="variant === 'docked' && !expandedUi()"
+        class="w-full flex items-center justify-between px-2 py-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-900/60 transition-all duration-200 cursor-pointer">
+        <div class="flex items-center gap-2 min-w-0" [class.justify-center]="variant === 'docked' && !expandedUi()" [class.w-full]="variant === 'docked' && !expandedUi()">
+          <span class="material-symbols-outlined shrink-0" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">
+            {{ group.icon }}
+          </span>
+          @if (expandedUi()) {
+            <span class="font-label text-[10px] font-bold uppercase tracking-[0.15em] truncate">{{ group.label }}</span>
+            <div class="w-1.5 h-1.5 rounded-full shrink-0" [class]="statusColor(groupStatus(group))"></div>
+          }
+        </div>
+        @if (expandedUi()) {
+          <span class="material-symbols-outlined text-slate-600 transition-transform duration-200 shrink-0"
+                style="font-size: 0.9rem;"
+                [class.rotate-180]="isGroupOpen(group.id)">
+            expand_more
+          </span>
+        }
+      </button>
+
+      @if (isGroupOpen(group.id) && expandedUi()) {
         <div class="ml-2 border-l border-slate-800 pl-2 space-y-0.5 pb-1">
           @for (item of group.items; track item.id) {
             <a [routerLink]="item.route"
@@ -76,18 +137,33 @@
           }
         </div>
       }
+
+      @if (variant === 'docked' && !expandedUi() && isGroupOpen(group.id)) {
+        <div class="flex flex-col items-center gap-1 pb-2">
+          @for (item of group.items; track item.id) {
+            <a [routerLink]="item.route"
+               [queryParams]="item.queryParams ?? {}"
+               [title]="item.label"
+               [class]="activeItem === item.id ? 'text-secondary bg-blue-900/30' : 'text-slate-500 hover:text-slate-200'"
+               class="p-2.5 rounded-lg transition-colors no-underline">
+              <span class="material-symbols-outlined" style="font-size: 1rem;">{{ item.icon }}</span>
+            </a>
+          }
+        </div>
+      }
     }
   </nav>
 
-  <!-- Refresh health -->
-  <div class="px-4 mt-4">
+  <div class="px-2 mt-3 shrink-0">
     <button
+      type="button"
       (click)="health.checkAll()"
-      class="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-slate-500
-             hover:text-slate-300 hover:bg-slate-900/60 transition-colors text-[10px] font-label
-             uppercase tracking-wider cursor-pointer border border-slate-800">
+      [class.px-2]="variant === 'docked' && !expandedUi()"
+      class="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-900/60 transition-colors text-[10px] font-label uppercase tracking-wider cursor-pointer border border-slate-800">
       <span class="material-symbols-outlined" style="font-size: 0.85rem;">refresh</span>
-      Actualizar estado
+      @if (expandedUi()) {
+        <span>Actualizar estado</span>
+      }
     </button>
   </div>
 </aside>

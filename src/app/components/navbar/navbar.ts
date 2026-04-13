@@ -1,4 +1,4 @@
-import { Component, Input, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -9,6 +9,14 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class Navbar {
   @Input() showSearch = false;
+
+  /** Modo compacto autenticado: menú abre el drawer lateral (admin shell). */
+  @Input() adminCompactLayout = false;
+
+  /** Vista admin no compacta en viewport pequeño: mismo menú lateral (sidebar oculta bajo `md`). */
+  @Input() showMobileAdminMenu = false;
+
+  @Output() openAdminMenu = new EventEmitter<void>();
 
   auth = inject(AuthService);
   mobileMenuOpen = signal(false);

@@ -1,5 +1,23 @@
 <nav class="fixed top-0 w-full z-50 bg-surface/60 backdrop-blur-xl flex justify-between items-center px-6 md:px-8 h-16">
   <div class="flex items-center gap-6">
+    @if (auth.isAuthenticated() && adminCompactLayout) {
+      <button
+        type="button"
+        (click)="openAdminMenu.emit()"
+        class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors cursor-pointer -ml-1"
+        aria-label="Abrir menú de administración">
+        <span class="material-symbols-outlined" style="font-size: 1.35rem;">menu</span>
+      </button>
+    }
+    @if (auth.isAuthenticated() && showMobileAdminMenu) {
+      <button
+        type="button"
+        (click)="openAdminMenu.emit()"
+        class="md:hidden p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors cursor-pointer -ml-1"
+        aria-label="Abrir menú lateral">
+        <span class="material-symbols-outlined" style="font-size: 1.35rem;">menu</span>
+      </button>
+    }
     <a routerLink="/" class="text-xl font-bold tracking-tighter text-blue-400 uppercase font-headline no-underline">
       Prometeo
     </a>
@@ -117,12 +135,15 @@
       </a>
     }
 
-    <!-- Hamburger (mobile) — visible siempre -->
-    <button
-      (click)="mobileMenuOpen.set(!mobileMenuOpen())"
-      class="md:hidden p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors cursor-pointer">
-      <span class="material-symbols-outlined">{{ mobileMenuOpen() ? 'close' : 'menu' }}</span>
-    </button>
+    <!-- Hamburger (mobile) — oculto en admin compacto (drawer lateral) -->
+    @if (!(auth.isAuthenticated() && (adminCompactLayout || showMobileAdminMenu))) {
+      <button
+        type="button"
+        (click)="mobileMenuOpen.set(!mobileMenuOpen())"
+        class="md:hidden p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors cursor-pointer">
+        <span class="material-symbols-outlined">{{ mobileMenuOpen() ? 'close' : 'menu' }}</span>
+      </button>
+    }
   </div>
 </nav>
 
