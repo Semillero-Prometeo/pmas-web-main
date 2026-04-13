@@ -1,13 +1,4 @@
-@if (!compact()) {
-  <app-navbar [showSearch]="false" />
-  <app-sidebar activeItem="chat" />
-}
-
-<!-- Contenedor principal -->
-<div class="fixed flex flex-col bg-background industrial-grid"
-     [class]="compact()
-       ? 'top-0 left-0 right-0 bottom-0'
-       : 'top-16 left-0 lg:left-64 right-0 bottom-0'">
+<div class="flex flex-col min-h-[calc(100vh-8rem)] max-h-[calc(100vh-8rem)] md:max-h-none md:min-h-[calc(100vh-6rem)] bg-background industrial-grid">
 
   <!-- ══ BARRA DE TABS / HEADER ════════════════════════════════════════════ -->
   <div class="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-surface/80 backdrop-blur-sm flex-shrink-0"

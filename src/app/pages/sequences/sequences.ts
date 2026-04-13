@@ -1,11 +1,7 @@
 import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { Navbar } from '../../components/navbar/navbar';
-import { Sidebar } from '../../components/sidebar/sidebar';
-import { Footer } from '../../components/footer/footer';
-
-const GATEWAY_URL = 'http://localhost:3000';
+import { GATEWAY_URL } from '../../core/constants/gateway';
 const SEQ_STORAGE_KEY = 'r1_sequences';
 
 type ExecState = 'idle' | 'executing' | 'done' | 'error';
@@ -34,7 +30,7 @@ interface SavedSequence {
 
 @Component({
   selector: 'app-sequences',
-  imports: [Navbar, Sidebar, Footer, FormsModule],
+  imports: [FormsModule],
   templateUrl: './sequences.html',
 })
 export class Sequences implements OnInit {

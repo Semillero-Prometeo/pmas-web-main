@@ -8,22 +8,16 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { Navbar } from '../../components/navbar/navbar';
-import { Sidebar } from '../../components/sidebar/sidebar';
-import { environment } from '../../../environments/environment';
 import { VisionWebSocketService } from './vision-websocket.service';
 import type { VisionCameraTile } from './vision.types';
 
 @Component({
   selector: 'app-robotics-vision',
-  imports: [Navbar, Sidebar],
   templateUrl: './robotics-vision.html',
 })
 export class RoboticsVision implements OnInit, OnDestroy {
   readonly vision = inject(VisionWebSocketService);
-  readonly compact = signal(environment.compactMode);
 
-  /** Camera selected in UI (preview + NATS selection). */
   readonly selectedCameraId = signal<string | null>(null);
 
   readonly previewSrc = computed(() => {

@@ -2,9 +2,8 @@ import { Component, inject, signal, ElementRef, ViewChild, AfterViewChecked, OnI
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Navbar } from '../../components/navbar/navbar';
-import { Sidebar } from '../../components/sidebar/sidebar';
 import { AuthService } from '../../core/services/auth.service';
+import { GATEWAY_URL } from '../../core/constants/gateway';
 import { environment } from '../../../environments/environment';
 
 type Tab = 'chatbot' | 'decir';
@@ -22,11 +21,9 @@ interface SentenceEntry {
   status: 'sending' | 'done' | 'error';
 }
 
-const GATEWAY_URL = 'http://localhost:3000';
-
 @Component({
   selector: 'app-robotics-chat',
-  imports: [Navbar, Sidebar, FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink],
   templateUrl: './robotics-chat.html',
 })
 export class RoboticsChat implements OnInit, AfterViewChecked {
