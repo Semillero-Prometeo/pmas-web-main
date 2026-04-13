@@ -1,7 +1,6 @@
 import { Injectable, inject, signal, WritableSignal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-
-const GATEWAY_URL = 'http://localhost:3000';
+import { GATEWAY_URL } from '../constants/gateway';
 
 export type ServiceStatus = 'online' | 'offline' | 'checking';
 

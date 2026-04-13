@@ -2,7 +2,15 @@ import { Component, Input, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HealthService, ServiceStatus } from '../../core/services/health.service';
 
-export type SidebarItem = 'telemetry' | 'logs' | 'control' | 'users' | 'roles' | 'management' | 'chat';
+export type SidebarItem =
+  | 'telemetry'
+  | 'logs'
+  | 'control'
+  | 'users'
+  | 'roles'
+  | 'management'
+  | 'chat'
+  | 'vision';
 
 interface SidebarGroup {
   id: string;
@@ -51,6 +59,7 @@ export class Sidebar implements OnInit {
       healthKey: 'robotics',
       items: [
         { id: 'control',    label: 'Movimientos',    icon: 'settings_remote', route: '/control-panel' },
+        { id: 'vision',     label: 'Visión',         icon: 'videocam',        route: '/robotics/vision' },
         { id: 'chat',       label: 'Chat',       icon: 'forum',           route: '/robotics/chat' },
         { id: 'telemetry',  label: 'Creación de Secuencias', icon: 'insights',        route: '/sequences' },
       ],

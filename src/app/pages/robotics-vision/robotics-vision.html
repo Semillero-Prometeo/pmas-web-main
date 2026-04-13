@@ -1,0 +1,139 @@
+@if (!compact()) {
+  <app-navbar [showSearch]="false" />
+  <app-sidebar activeItem="vision" />
+}
+
+<div
+  class="fixed flex flex-col bg-background industrial-grid overflow-y-auto"
+  [class]="compact()
+    ? 'top-0 left-0 right-0 bottom-0'
+    : 'top-16 left-0 lg:left-64 right-0 bottom-0'">
+
+  <header class="flex-shrink-0 px-4 md:px-8 py-6 border-b border-white/5 bg-surface/80 backdrop-blur-sm">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+      <div>
+        <p class="text-[10px] font-mono text-secondary tracking-widest uppercase mb-1">Robótica · PMAI</p>
+        <h1 class="font-headline text-2xl md:text-4xl font-bold tracking-tight text-on-surface">
+          Visión <span class="text-primary">multicámara</span>
+        </h1>
+        <p class="text-slate-500 text-xs mt-1 max-w-xl">
+          Vista en vivo de las cámaras registradas y objetos rastreados (ReID). Los datos llegan por WebSocket desde el gateway.
+        </p>
+      </div>
+      <div class="flex flex-col items-start sm:items-end gap-1 text-[10px] font-mono text-slate-500">
+        <span [class.text-secondary]="vision.connectionState() === 'connected'"
+              [class.text-error]="vision.connectionState() === 'error'">
+          WS: {{ vision.connectionState() }}
+        </span>
+        @if (vision.snapshot(); as snap) {
+          <span class="tabular-nums">v{{ snap.version }} · {{ snap.timestampMs }}</span>
+        }
+      </div>
+    </div>
+  </header>
+
+  @if (vision.lastError(); as err) {
+    <div class="mx-4 md:mx-8 mt-4 rounded-lg border border-error/40 bg-error/10 px-4 py-3 text-sm text-error">
+      {{ err }}
+    </div>
+  }
+
+  <div class="flex-1 px-4 md:px-8 py-6 grid grid-cols-1 xl:grid-cols-12 gap-6">
+
+    <!-- Camera grid -->
+    <section class="xl:col-span-5 space-y-3">
+      <h2 class="font-label text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500">Cámaras</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-2 gap-3">
+        @for (cam of vision.snapshot()?.cameras ?? []; track cam.cameraId) {
+          <button
+            type="button"
+            (click)="pickCamera(cam.cameraId)"
+            [class.ring-2]="selectedCameraId() === cam.cameraId"
+            [class.ring-secondary]="selectedCameraId() === cam.cameraId"
+            class="group rounded-xl overflow-hidden border border-white/10 bg-surface-container text-left transition hover:border-secondary/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary cursor-pointer">
+            <div class="aspect-video bg-black/40 relative">
+              @if (thumbDataUrl(cam); as src) {
+                <img [src]="src" [alt]="cam.name || cam.cameraId" class="w-full h-full object-cover opacity-90 group-hover:opacity-100" />
+              } @else {
+                <div class="w-full h-full flex items-center justify-center text-[10px] font-mono text-slate-600 px-2 text-center">
+                  Sin frame
+                </div>
+              }
+              @if (cam.hasFrame) {
+                <span class="absolute top-2 left-2 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+              }
+            </div>
+            <div class="px-2 py-2 border-t border-white/5">
+              <p class="text-[10px] font-bold font-label uppercase tracking-wide text-on-surface truncate">
+                {{ cam.name || cam.cameraId }}
+              </p>
+              <p class="text-[9px] font-mono text-slate-500 truncate">{{ cam.status }}</p>
+            </div>
+          </button>
+        } @empty {
+          <p class="text-sm text-slate-500 col-span-full">Sin cámaras en el snapshot.</p>
+        }
+      </div>
+    </section>
+
+    <!-- Preview + objects -->
+    <section class="xl:col-span-7 flex flex-col gap-6">
+      <div class="rounded-xl overflow-hidden border border-white/10 bg-surface-container shadow-xl shadow-blue-900/10">
+        <div class="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-surface-container-high">
+          <h2 class="font-label text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">Vista seleccionada</h2>
+          @if (selectedTile(); as t) {
+            <span class="text-[10px] font-mono text-secondary">{{ t.cameraId }}</span>
+          }
+        </div>
+        <div class="aspect-video bg-black/50 flex items-center justify-center">
+          @if (previewSrc(); as src) {
+            <img [src]="src" alt="Vista anotada" class="max-w-full max-h-full object-contain" />
+          } @else {
+            <p class="text-sm text-slate-500 px-6 text-center">Seleccione una cámara con frame para ver la vista anotada.</p>
+          }
+        </div>
+      </div>
+
+      <div class="rounded-xl border border-white/10 bg-surface-container p-4 md:p-6">
+        <div class="flex flex-wrap items-end justify-between gap-2 mb-4">
+          <h2 class="font-headline text-sm font-bold uppercase text-slate-400 tracking-tight">Objetos observados</h2>
+          @if (vision.snapshot(); as snap) {
+            <span class="text-[10px] font-mono text-slate-500">
+              ReID: {{ snap.reidSummary.crossCameraIdentities }} / {{ snap.reidSummary.totalIdentities }} cross-cámara
+            </span>
+          }
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs font-mono border-collapse">
+            <thead>
+              <tr class="text-slate-500 border-b border-white/10">
+                <th class="py-2 pr-3">ID</th>
+                <th class="py-2 pr-3">Etiqueta</th>
+                <th class="py-2 pr-3">Conf.</th>
+                <th class="py-2 pr-3">Cámaras</th>
+                <th class="py-2">BBox</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (obj of vision.snapshot()?.globalObjects ?? []; track obj.id_global) {
+                <tr class="border-b border-white/5 text-slate-300 hover:bg-white/[0.02]">
+                  <td class="py-2 pr-3 text-secondary whitespace-nowrap">{{ obj.id_global }}</td>
+                  <td class="py-2 pr-3">{{ obj.etiqueta }}</td>
+                  <td class="py-2 pr-3">{{ formatPct(obj.confianza) }}</td>
+                  <td class="py-2 pr-3">{{ obj.cameras_seen.join(', ') }}</td>
+                  <td class="py-2 text-slate-500">
+                    {{ obj.bbox ? '(' + obj.bbox.join(',') + ')' : '—' }}
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="py-6 text-center text-slate-500">No hay objetos globales en este snapshot.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

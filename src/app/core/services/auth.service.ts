@@ -2,9 +2,8 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, switchMap, tap, throwError } from 'rxjs';
+import { GATEWAY_URL } from '../constants/gateway';
 import { LoginRequest, LoginResponse, UserProfile, UserRole } from '../models/auth.models';
-
-const GATEWAY_URL = 'http://localhost:3000';
 const TOKEN_KEY = 'prometeo_token';
 const ROLE_KEY = 'prometeo_active_role';
 

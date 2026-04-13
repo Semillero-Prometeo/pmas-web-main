@@ -58,6 +58,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/robotics-chat/robotics-chat').then(m => m.RoboticsChat),
   },
   {
+    path: 'robotics/vision',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/robotics-vision/robotics-vision').then(m => m.RoboticsVision),
+  },
+  {
     path: 'admin/users',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/admin/users/users').then(m => m.Users),
