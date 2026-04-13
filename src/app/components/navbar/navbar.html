@@ -22,8 +22,26 @@
       Prometeo
     </a>
 
-    @if (auth.isAuthenticated()) {
-      <!-- Autenticado: links del panel -->
+    @if (auth.isAuthenticated() && fullSiteMode) {
+      <div class="hidden md:flex gap-6 items-center">
+        <a routerLink="/info" routerLinkActive="text-primary border-b-2 border-primary pb-1"
+           class="text-on-surface-variant hover:text-primary font-headline tracking-tight text-sm transition-all duration-300 no-underline">
+          Inicio
+        </a>
+        <a routerLink="/team" routerLinkActive="text-primary border-b-2 border-primary pb-1"
+           class="text-on-surface-variant hover:text-primary font-headline tracking-tight text-sm transition-all duration-300 no-underline">
+          Team
+        </a>
+        <a routerLink="/projects" routerLinkActive="text-primary border-b-2 border-primary pb-1"
+           class="text-on-surface-variant hover:text-primary font-headline tracking-tight text-sm transition-all duration-300 no-underline">
+          Projects
+        </a>
+        <a routerLink="/control-panel" routerLinkActive="text-primary border-b-2 border-primary pb-1"
+           class="text-on-surface-variant hover:text-primary font-headline tracking-tight text-sm transition-all duration-300 no-underline">
+          Robótica
+        </a>
+      </div>
+    } @else if (auth.isAuthenticated()) {
       <div class="hidden md:flex gap-6 items-center">
         <a routerLink="/control-panel" routerLinkActive="text-primary border-b-2 border-primary pb-1"
            class="text-on-surface-variant hover:text-primary font-headline tracking-tight text-sm transition-all duration-300 no-underline">
@@ -150,8 +168,48 @@
 <!-- Mobile dropdown menu -->
 @if (mobileMenuOpen()) {
   <div class="fixed top-16 left-0 right-0 z-40 md:hidden bg-surface/95 backdrop-blur-xl border-b border-outline-variant/20 px-6 py-4 space-y-1">
-    @if (auth.isAuthenticated()) {
-      <!-- Autenticado -->
+    @if (auth.isAuthenticated() && fullSiteMode) {
+      <a routerLink="/info" (click)="mobileMenuOpen.set(false)"
+         routerLinkActive="text-primary"
+         class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-primary font-headline text-sm tracking-tight transition-colors no-underline border-b border-outline-variant/10">
+        <span class="material-symbols-outlined text-base">home</span>
+        Inicio
+      </a>
+      <a routerLink="/team" (click)="mobileMenuOpen.set(false)"
+         routerLinkActive="text-primary"
+         class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-primary font-headline text-sm tracking-tight transition-colors no-underline border-b border-outline-variant/10">
+        <span class="material-symbols-outlined text-base">group</span>
+        Team
+      </a>
+      <a routerLink="/projects" (click)="mobileMenuOpen.set(false)"
+         routerLinkActive="text-primary"
+         class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-primary font-headline text-sm tracking-tight transition-colors no-underline border-b border-outline-variant/10">
+        <span class="material-symbols-outlined text-base">folder_open</span>
+        Projects
+      </a>
+      <a routerLink="/control-panel" (click)="mobileMenuOpen.set(false)"
+         routerLinkActive="text-primary"
+         class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-primary font-headline text-sm tracking-tight transition-colors no-underline border-b border-outline-variant/10">
+        <span class="material-symbols-outlined text-base">settings_remote</span>
+        Robótica
+      </a>
+      <a routerLink="/profile" (click)="mobileMenuOpen.set(false)"
+         routerLinkActive="text-primary"
+         class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-primary font-headline text-sm tracking-tight transition-colors no-underline border-b border-outline-variant/10">
+        <span class="material-symbols-outlined text-base">manage_accounts</span>
+        Mi perfil
+      </a>
+      <div class="flex items-center justify-between pt-3">
+        <div>
+          <div class="text-sm font-headline font-bold text-on-surface">{{ auth.displayName() || auth.profile()?.username }}</div>
+          <div class="text-[10px] font-label uppercase tracking-wider text-outline">{{ auth.activeRole() }}</div>
+        </div>
+        <button type="button" (click)="auth.logout()" class="flex items-center gap-2 text-[11px] font-label uppercase tracking-wider text-error hover:bg-error/10 px-3 py-2 rounded-lg transition-colors cursor-pointer">
+          <span class="material-symbols-outlined text-base">logout</span>
+          Salir
+        </button>
+      </div>
+    } @else if (auth.isAuthenticated()) {
       <a routerLink="/control-panel" (click)="mobileMenuOpen.set(false)"
          routerLinkActive="text-primary"
          class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-primary font-headline text-sm tracking-tight transition-colors no-underline border-b border-outline-variant/10">

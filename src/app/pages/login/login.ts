@@ -2,10 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
+import { Navbar } from '../../components/navbar/navbar';
 
 @Component({
   selector: 'app-login',
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, Navbar],
   templateUrl: './login.html',
 })
 export class Login {
