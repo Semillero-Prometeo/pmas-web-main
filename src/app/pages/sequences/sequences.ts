@@ -25,6 +25,14 @@ interface SequenceFile {
   file_name: string;
 }
 
+interface LegacyImportItem {
+  sourceFileName: string;
+  targetName: string;
+  arduino_id: number | null;
+  blocks: MotionBlock[];
+  error: string | null;
+}
+
 @Component({
   selector: 'app-sequences',
   imports: [FormsModule],
@@ -42,6 +50,8 @@ export class Sequences {
   sequenceName = signal('');
   statusMessage = signal('Listo');
   playing = signal(false);
+  legacyImportOpen = signal(false);
+  legacyItems = signal<LegacyImportItem[]>([]);
 
   addPca = 0;
   addServo = 0;
@@ -64,6 +74,15 @@ export class Sequences {
   constructor() {
     this.refreshArduinos();
     this.refreshFiles();
+  }
+
+  openLegacyImport() {
+    this.legacyImportOpen.set(true);
+  }
+
+  closeLegacyImport() {
+    this.legacyImportOpen.set(false);
+    this.legacyItems.set([]);
   }
 
   refreshArduinos() {
@@ -218,6 +237,134 @@ export class Sequences {
         this.statusMessage.set('Secuencia eliminada');
       },
       error: () => this.statusMessage.set('No se pudo eliminar'),
+    });
+  }
+
+  onLegacyFilesSelected(event: Event) {
+    const files = (event.target as HTMLInputElement).files;
+    if (!files?.length) return;
+    const selectedArduino = this.selectedArduinoId();
+    const readers = Array.from(files).map((file) => this.parseLegacyFile(file, selectedArduino));
+    Promise.all(readers).then((items) => this.legacyItems.set(items));
+  }
+
+  updateLegacyItemName(index: number, targetName: string) {
+    this.legacyItems.update((items) =>
+      items.map((item, idx) => (idx === index ? { ...item, targetName } : item)),
+    );
+  }
+
+  updateLegacyItemArduino(index: number, arduino_id: number) {
+    this.legacyItems.update((items) =>
+      items.map((item, idx) => (idx === index ? { ...item, arduino_id } : item)),
+    );
+  }
+
+  importLegacyItems() {
+    const items = this.legacyItems();
+    const validItems = items.filter(
+      (item) => item.error === null && item.arduino_id !== null && item.targetName.trim().length > 0,
+    );
+    if (!validItems.length) {
+      this.statusMessage.set('No hay archivos legacy válidos para importar');
+      return;
+    }
+
+    const imports = validItems.map((item) => this.importSingleLegacy(item));
+    Promise.all(imports).then(() => {
+      this.refreshFiles();
+      this.statusMessage.set('Importación legacy finalizada');
+      this.closeLegacyImport();
+    });
+  }
+
+  private async importSingleLegacy(item: LegacyImportItem): Promise<void> {
+    const blocks = item.blocks.map((block) => ({ ...block, arduino_id: item.arduino_id ?? 0 }));
+    const payload = {
+      sequence: { version: 1, name: item.targetName.trim(), blocks },
+      overwrite: false,
+    };
+    await this.requestSaveSequence(payload, item.targetName.trim(), blocks);
+  }
+
+  private requestSaveSequence(
+    payload: { sequence: { version: number; name: string; blocks: MotionBlock[] }; overwrite: boolean },
+    targetName: string,
+    blocks: MotionBlock[],
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      this.http.post<{ status: string; message: string }>(`${GATEWAY_URL}/sequence/file`, payload).subscribe({
+        next: () => resolve(),
+        error: () => {
+          if (!payload.overwrite && confirm(`La secuencia '${targetName}' ya existe. ¿Sobrescribir?`)) {
+            this.requestSaveSequence(
+              { sequence: { version: 1, name: targetName, blocks }, overwrite: true },
+              targetName,
+              blocks,
+            ).then(resolve);
+            return;
+          }
+          resolve();
+        },
+      });
+    });
+  }
+
+  private parseLegacyFile(file: File, defaultArduinoId: number | null): Promise<LegacyImportItem> {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const rawText = String(reader.result ?? '');
+        const fileBaseName = file.name.replace(/\.json$/i, '');
+        try {
+          const parsed = JSON.parse(rawText);
+          if (!Array.isArray(parsed)) {
+            throw new Error('El archivo no contiene una lista de movimientos');
+          }
+
+          const blocks: MotionBlock[] = parsed.map((entry, index) => {
+            if (!Array.isArray(entry) || entry.length < 7) {
+              throw new Error(`Movimiento inválido en índice ${index}`);
+            }
+            return {
+              arduino_id: defaultArduinoId ?? 0,
+              pca: Number(entry[0]),
+              servo: Number(entry[1]),
+              inicio: Number(entry[2]),
+              dur: Number(entry[3]),
+              pos: Number(entry[4]),
+              vel: Number(entry[5]),
+              nombre: String(entry[6]),
+            };
+          });
+
+          resolve({
+            sourceFileName: file.name,
+            targetName: fileBaseName,
+            arduino_id: defaultArduinoId,
+            blocks,
+            error: null,
+          });
+        } catch (error) {
+          resolve({
+            sourceFileName: file.name,
+            targetName: fileBaseName,
+            arduino_id: defaultArduinoId,
+            blocks: [],
+            error: error instanceof Error ? error.message : 'Error de parseo',
+          });
+        }
+      };
+      reader.onerror = () => {
+        resolve({
+          sourceFileName: file.name,
+          targetName: file.name.replace(/\.json$/i, ''),
+          arduino_id: defaultArduinoId,
+          blocks: [],
+          error: 'No se pudo leer el archivo',
+        });
+      };
+      reader.readAsText(file);
     });
   }
 

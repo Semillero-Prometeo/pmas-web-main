@@ -19,35 +19,35 @@
     </div>
   </header>
 
-  <!-- ══════════════════════════ MOVIMIENTOS POR ARDUINO ══════════════════════════ -->
+  <!-- ══════════════════════════ SECUENCIAS POR ARDUINO ══════════════════════════ -->
   <section class="mt-6">
     <div class="flex items-center justify-between mb-4">
       <div>
-        <span class="font-label text-[10px] uppercase tracking-[0.3em] text-secondary mb-1 block">Comandos</span>
-        <h2 class="font-headline text-2xl font-bold tracking-tighter text-on-surface">Panel de Movimientos</h2>
+        <span class="font-label text-[10px] uppercase tracking-[0.3em] text-secondary mb-1 block">Secuencias</span>
+        <h2 class="font-headline text-2xl font-bold tracking-tighter text-on-surface">Panel de Ejecución</h2>
       </div>
       <div class="flex items-center gap-2 text-[10px] font-mono text-outline">
         <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
-        {{ commandLogs().length }} comandos enviados
+        {{ commandLogs().length }} eventos
       </div>
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
-      <!-- Tarjetas de grupos de Arduino (2/3 del ancho en xl) -->
+      <!-- Tarjetas de grupos de secuencias (2/3 del ancho en xl) -->
       <div class="xl:col-span-2 space-y-4">
 
-        @if (actionsLoading()) {
+        @if (sequenceLoading()) {
           <div class="flex flex-col items-center justify-center py-16 gap-3 text-slate-500">
             <span class="material-symbols-outlined animate-spin" style="font-size: 2rem;">progress_activity</span>
-            <p class="text-[10px] font-label uppercase tracking-wider">Cargando acciones del robot...</p>
+            <p class="text-[10px] font-label uppercase tracking-wider">Cargando secuencias del robot...</p>
           </div>
-        } @else if (actionsError()) {
+        } @else if (sequenceError()) {
           <div class="flex flex-col items-center justify-center py-16 gap-3 text-slate-500">
             <span class="material-symbols-outlined text-error" style="font-size: 2rem;">error_outline</span>
-            <p class="text-[10px] font-label uppercase tracking-wider text-error">{{ actionsError() }}</p>
+            <p class="text-[10px] font-label uppercase tracking-wider text-error">{{ sequenceError() }}</p>
             <button
-              (click)="loadActions()"
+              (click)="loadSequences()"
               class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-high border border-white/10
                      text-[10px] font-label uppercase tracking-wider text-slate-300 hover:text-on-surface
                      hover:bg-surface-container-highest transition-colors cursor-pointer">
@@ -55,45 +55,45 @@
               Reintentar
             </button>
           </div>
-        } @else if (actionGroups().length === 0) {
+        } @else if (sequenceGroups().length === 0) {
           <div class="flex flex-col items-center justify-center py-16 gap-3 text-slate-600">
             <span class="material-symbols-outlined" style="font-size: 2rem;">robot_2</span>
-            <p class="text-[10px] font-label uppercase tracking-wider">No hay acciones configuradas</p>
+            <p class="text-[10px] font-label uppercase tracking-wider">No hay secuencias configuradas</p>
           </div>
         } @else {
-          @for (group of actionGroups(); track group.arduino_id) {
+          @for (group of sequenceGroups(); track group.key) {
             <div class="bg-surface-container rounded-xl border border-white/5 shadow-xl overflow-hidden">
               <!-- Cabecera del grupo -->
               <div class="flex items-center justify-between px-5 py-3 bg-surface-container-high border-b border-white/5">
                 <div class="flex items-center gap-3">
                   <div class="px-2 py-0.5 rounded bg-primary/15 border border-primary/25">
-                    <span class="text-[9px] font-mono text-primary font-bold tracking-widest">ARD-{{ group.arduino_id }}</span>
+                    <span class="text-[9px] font-mono text-primary font-bold tracking-widest">{{ group.key }}</span>
                   </div>
                   <h3 class="font-headline text-sm font-bold tracking-tight text-on-surface">{{ group.label }}</h3>
                 </div>
-                <span class="text-[10px] font-label text-outline">{{ group.actions.length }} acciones</span>
+                <span class="text-[10px] font-label text-outline">{{ group.sequenceNames.length }} secuencias</span>
               </div>
 
-              <!-- Grid de botones de acciones -->
-              <div class="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                @for (action of group.actions; track action.id) {
-                  <button
-                    (click)="executeAction(group, action)"
-                    [disabled]="isExecuting(group, action)"
-                    [class]="isExecuting(group, action)
-                      ? 'bg-primary/20 border-primary/50 text-primary shadow-[0_0_12px_rgba(56,189,248,0.2)] cursor-wait'
-                      : 'bg-surface-container-low border-white/5 text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface hover:border-primary/20 cursor-pointer'"
-                    class="p-3 rounded-lg border text-center transition-all duration-150 group active:scale-95 select-none disabled:active:scale-100">
-                    <span class="material-symbols-outlined block mx-auto mb-1 transition-colors duration-150"
-                          [class]="isExecuting(group, action) ? 'text-primary animate-pulse' : 'text-slate-600 group-hover:text-primary'"
-                          style="font-size: 1.1rem; font-variation-settings: 'FILL' 1;">
-                      {{ isExecuting(group, action) ? 'sync' : 'play_circle' }}
-                    </span>
-                    <span class="text-[9px] font-mono uppercase tracking-wide leading-tight block">
-                      {{ action.name }}
-                    </span>
-                    <span class="text-[8px] font-mono text-slate-600 block mt-0.5">#{{ action.id }}</span>
-                  </button>
+              <div class="p-4 space-y-2">
+                @for (name of group.sequenceNames; track name) {
+                  <div class="rounded-lg border border-white/5 bg-surface-container-low px-3 py-2 flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                      <p class="text-[11px] font-mono text-on-surface truncate">{{ name }}</p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        (click)="addToChain(name)"
+                        class="px-2 py-1 rounded text-[10px] bg-surface-container-high text-slate-300 hover:text-on-surface cursor-pointer">
+                        Añadir cadena
+                      </button>
+                      <button
+                        (click)="executeSequence(name)"
+                        [disabled]="executingSequenceName() === name"
+                        class="px-2 py-1 rounded text-[10px] bg-primary/15 border border-primary/25 text-primary hover:bg-primary/25 cursor-pointer disabled:opacity-50">
+                        {{ executingSequenceName() === name ? 'Ejecutando...' : 'Play' }}
+                      </button>
+                    </div>
+                  </div>
                 }
               </div>
             </div>
@@ -101,68 +101,94 @@
         }
       </div>
 
-      <!-- Panel de logs (1/3 del ancho en xl) -->
+      <!-- Panel de cadena + logs (1/3 del ancho en xl) -->
       <div class="xl:col-span-1">
-        <div class="bg-surface-container rounded-xl border border-white/5 shadow-xl overflow-hidden sticky top-24">
-          <!-- Header -->
-          <div class="flex items-center justify-between px-5 py-3 bg-surface-container-high border-b border-white/5">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-secondary" style="font-size: 1rem;">receipt_long</span>
-              <h3 class="font-headline text-sm font-bold tracking-tight text-on-surface">Command Log</h3>
+        <div class="space-y-4 sticky top-24">
+          <div class="bg-surface-container rounded-xl border border-white/5 shadow-xl overflow-hidden">
+            <div class="px-5 py-3 bg-surface-container-high border-b border-white/5">
+              <h3 class="font-headline text-sm font-bold tracking-tight text-on-surface">Cadena de secuencias</h3>
             </div>
-            <button
-              (click)="clearLogs()"
-              class="text-[9px] font-label uppercase tracking-wider text-slate-500 hover:text-on-surface
-                     transition-colors cursor-pointer px-2 py-1 rounded hover:bg-surface-container-highest flex items-center gap-1">
-              <span class="material-symbols-outlined" style="font-size: 0.8rem;">delete_sweep</span>
-              Limpiar
-            </button>
+            <div class="p-4 space-y-3">
+              <div class="text-[10px] font-mono text-slate-400">
+                Estado: {{ chainRunning() ? 'RUNNING' : 'IDLE' }}
+              </div>
+              <div class="text-[10px] font-mono text-slate-400">
+                Actual: {{ chainCurrentSequence() || '—' }}
+              </div>
+              <div class="text-[10px] font-mono text-slate-400">
+                Progreso: {{ chainCompletedItems() }}/{{ chainTotalItems() }}
+              </div>
+
+              <div class="space-y-1 max-h-[180px] overflow-auto">
+                @for (name of selectedChain(); track $index; let i = $index) {
+                  <div class="rounded border border-white/10 px-2 py-1 flex items-center justify-between text-[10px]">
+                    <span class="truncate">{{ i + 1 }}. {{ name }}</span>
+                    <button (click)="removeFromChain(i)" class="text-red-400 cursor-pointer">X</button>
+                  </div>
+                }
+              </div>
+
+              <div class="grid grid-cols-3 gap-2">
+                <button (click)="startChain()" class="py-2 rounded bg-primary text-on-primary text-[10px] font-semibold cursor-pointer">Ejecutar</button>
+                <button (click)="stopChain()" class="py-2 rounded bg-red-600 text-white text-[10px] font-semibold cursor-pointer">Detener</button>
+                <button (click)="clearChain()" class="py-2 rounded bg-surface-container-high text-[10px] font-semibold cursor-pointer">Limpiar</button>
+              </div>
+            </div>
           </div>
 
-          <!-- Log entries -->
-          <div
-            #logScroll
-            class="h-[520px] overflow-y-auto px-3 py-2 space-y-1 font-mono text-[10px]"
-            style="scrollbar-width: thin; scrollbar-color: #41484d transparent;">
-
-            @if (commandLogs().length === 0) {
-              <div class="flex flex-col items-center justify-center h-full gap-3 text-slate-600">
-                <span class="material-symbols-outlined" style="font-size: 2rem;">terminal</span>
-                <p class="text-[10px] font-label uppercase tracking-wider">Sin comandos enviados</p>
+          <div class="bg-surface-container rounded-xl border border-white/5 shadow-xl overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-3 bg-surface-container-high border-b border-white/5">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary" style="font-size: 1rem;">receipt_long</span>
+                <h3 class="font-headline text-sm font-bold tracking-tight text-on-surface">Execution Log</h3>
               </div>
-            }
+              <button
+                (click)="clearLogs()"
+                class="text-[9px] font-label uppercase tracking-wider text-slate-500 hover:text-on-surface
+                       transition-colors cursor-pointer px-2 py-1 rounded hover:bg-surface-container-highest flex items-center gap-1">
+                <span class="material-symbols-outlined" style="font-size: 0.8rem;">delete_sweep</span>
+                Limpiar
+              </button>
+            </div>
 
-            @for (log of commandLogs(); track trackLog($index, log)) {
-              <div class="py-1.5 px-2 rounded hover:bg-surface-container-highest transition-colors">
-                <div class="flex items-start gap-2">
-                  <span class="material-symbols-outlined flex-shrink-0 mt-0.5" [class]="logStatusColor(log.status)" style="font-size: 0.8rem;">
-                    {{ logStatusIcon(log.status) }}
-                  </span>
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-1.5 flex-wrap">
-                      <span class="text-primary/70">{{ log.timestamp }}</span>
-                      <span class="px-1 py-0.5 rounded bg-primary/10 text-primary text-[8px]">{{ log.arduinoId }}</span>
-                      <span class="px-1 py-0.5 rounded bg-surface-container-highest text-slate-400 text-[8px]">action #{{ log.actionId }}</span>
-                    </div>
-                    <div class="text-on-surface-variant mt-0.5 truncate">{{ log.label }}</div>
-                    @if (log.response && log.response.length > 0) {
-                      <div class="mt-1 space-y-0.5">
-                        @for (line of log.response; track $index) {
-                          <div class="text-secondary/70 text-[9px] truncate pl-1 border-l border-secondary/30">{{ line }}</div>
-                        }
+            <div
+              #logScroll
+              class="h-[300px] overflow-y-auto px-3 py-2 space-y-1 font-mono text-[10px]"
+              style="scrollbar-width: thin; scrollbar-color: #41484d transparent;">
+
+              @if (commandLogs().length === 0) {
+                <div class="flex flex-col items-center justify-center h-full gap-3 text-slate-600">
+                  <span class="material-symbols-outlined" style="font-size: 2rem;">terminal</span>
+                  <p class="text-[10px] font-label uppercase tracking-wider">Sin ejecuciones</p>
+                </div>
+              }
+
+              @for (log of commandLogs(); track trackLog($index, log)) {
+                <div class="py-1.5 px-2 rounded hover:bg-surface-container-highest transition-colors">
+                  <div class="flex items-start gap-2">
+                    <span class="material-symbols-outlined flex-shrink-0 mt-0.5" [class]="logStatusColor(log.status)" style="font-size: 0.8rem;">
+                      {{ logStatusIcon(log.status) }}
+                    </span>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="text-primary/70">{{ log.timestamp }}</span>
+                        <span class="px-1 py-0.5 rounded bg-primary/10 text-primary text-[8px]">{{ log.group }}</span>
                       </div>
-                    }
+                      <div class="text-on-surface-variant mt-0.5 truncate">{{ log.sequenceName }}</div>
+                      @if (log.message) {
+                        <div class="text-slate-400 mt-0.5 truncate">{{ log.message }}</div>
+                      }
+                    </div>
                   </div>
                 </div>
-              </div>
-            }
-          </div>
+              }
+            </div>
 
-          <!-- Footer stats -->
-          <div class="px-4 py-2 border-t border-white/5 bg-surface-container-high">
-            <div class="flex justify-between text-[9px] font-mono text-slate-600">
-              <span>Total: {{ commandLogs().length }}</span>
-              <span>ACK: {{ ackCount() }}</span>
+            <div class="px-4 py-2 border-t border-white/5 bg-surface-container-high">
+              <div class="flex justify-between text-[9px] font-mono text-slate-600">
+                <span>Total: {{ commandLogs().length }}</span>
+                <span>ACK: {{ ackCount() }}</span>
+              </div>
             </div>
           </div>
         </div>

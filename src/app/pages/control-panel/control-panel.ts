@@ -1,61 +1,57 @@
-import { Component, signal, computed, inject, OnInit, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, signal, computed, inject, OnInit, ViewChild, ElementRef, AfterViewChecked, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { GATEWAY_URL } from '../../core/constants/gateway';
+import { catchError, forkJoin, map, of } from 'rxjs';
 
-// ── API shapes ────────────────────────────────────────────────────────────────
-export interface Action {
-  id: number;
+interface MotionBlock {
+  arduino_id: number;
+  pca: number;
+  servo: number;
+  inicio: number;
+  dur: number;
+  pos: number;
+  vel: number;
+  nombre: string;
+}
+
+interface SequenceFile {
   name: string;
-  arduino_id: number;
+  file_name: string;
 }
 
-interface ActionsResponse {
-  total: number;
-  data: Action[];
+interface SequenceDetail {
+  version: number;
+  name: string;
+  blocks: MotionBlock[];
 }
 
-interface ExecuteResponse {
+interface SequenceGroup {
+  key: string;
+  label: string;
+  sequenceNames: string[];
+}
+
+interface SequenceLog {
+  id: number;
+  timestamp: string;
+  group: string;
+  sequenceName: string;
   status: string;
-  response: string[];
-}
-
-// ── Runtime models ────────────────────────────────────────────────────────────
-export interface ActionGroup {
-  arduino_id: number;
-  label: string;
-  actions: Action[];
-}
-
-export interface ChatMessage {
-  id: number;
-  from: 'user' | 'robot';
-  text: string;
-  timestamp: string;
-  status?: 'sending' | 'transmitted' | 'speaking' | 'done';
-}
-
-export interface CommandLog {
-  id: number;
-  timestamp: string;
-  arduinoId: string;
-  actionId: number;
-  label: string;
-  status: 'pending' | 'sent' | 'ack' | 'error';
-  response?: string[];
+  message?: string;
 }
 
 @Component({
   selector: 'app-control-panel',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule],
   templateUrl: './control-panel.html',
 })
-export class ControlPanel implements OnInit, AfterViewChecked {
-  @ViewChild('chatScroll') chatScroll!: ElementRef<HTMLDivElement>;
+export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
   @ViewChild('logScroll')  logScroll!:  ElementRef<HTMLDivElement>;
 
   private http = inject(HttpClient);
+  private chainStatusTimer: ReturnType<typeof setInterval> | null = null;
+  private logCounter = 0;
 
   // ── Telemetry ──────────────────────────────────────────────────────────────
   uptime      = signal('14:02:55');
@@ -64,192 +60,249 @@ export class ControlPanel implements OnInit, AfterViewChecked {
   temperature = signal(42);
   velocity    = signal(0.85);
 
-  // ── Actions loaded from API ────────────────────────────────────────────────
-  actionGroups   = signal<ActionGroup[]>([]);
-  actionsLoading = signal(true);
-  actionsError   = signal<string | null>(null);
+  // ── Sequences ──────────────────────────────────────────────────────────────
+  sequenceGroups = signal<SequenceGroup[]>([]);
+  sequenceLoading = signal(true);
+  sequenceError = signal<string | null>(null);
+  selectedChain = signal<string[]>([]);
+  sequenceCache = new Map<string, SequenceDetail>();
+  executingSequenceName = signal<string | null>(null);
+
+  chainRunning = signal(false);
+  chainCurrentSequence = signal<string | null>(null);
+  chainCompletedItems = signal(0);
+  chainTotalItems = signal(0);
+
+  commandLogs = signal<SequenceLog[]>([]);
+  ackCount = computed(() => this.commandLogs().filter((item) => item.status === 'ack').length);
 
   ngOnInit() {
-    this.loadActions();
+    this.loadSequences();
+    this.refreshChainStatus();
+    this.chainStatusTimer = setInterval(() => this.refreshChainStatus(), 2000);
   }
 
-  loadActions() {
-    this.actionsLoading.set(true);
-    this.actionsError.set(null);
+  ngOnDestroy() {
+    if (this.chainStatusTimer) {
+      clearInterval(this.chainStatusTimer);
+      this.chainStatusTimer = null;
+    }
+  }
 
-    this.http.get<ActionsResponse>(`${GATEWAY_URL}/action/actions`).subscribe({
+  loadSequences() {
+    this.sequenceLoading.set(true);
+    this.sequenceError.set(null);
+
+    this.http.get<{ total: number; data: SequenceFile[] }>(`${GATEWAY_URL}/sequence/files`).subscribe({
       next: (res) => {
-        this.actionGroups.set(this.groupByArduino(res.data));
-        this.actionsLoading.set(false);
+        if (!res.data.length) {
+          this.sequenceGroups.set([]);
+          this.sequenceLoading.set(false);
+          return;
+        }
+
+        const requests = res.data.map((file) =>
+          this.http
+            .get<SequenceDetail>(`${GATEWAY_URL}/sequence/file`, { params: { name: file.name } })
+            .pipe(
+              map((sequence) => ({ name: file.name, sequence })),
+              catchError(() => of({ name: file.name, sequence: null })),
+            ),
+        );
+
+        forkJoin(requests).subscribe({
+          next: (entries) => {
+            const grouping = new Map<string, string[]>();
+            this.sequenceCache.clear();
+            for (const entry of entries) {
+              if (!entry.sequence) continue;
+              this.sequenceCache.set(entry.name, entry.sequence);
+              const uniqueIds = [...new Set(entry.sequence.blocks.map((block) => block.arduino_id))];
+              const key = uniqueIds.length === 1 ? `ARD-${uniqueIds[0]}` : 'MULTI';
+              const list = grouping.get(key) ?? [];
+              list.push(entry.name);
+              grouping.set(key, list);
+            }
+
+            const groups: SequenceGroup[] = Array.from(grouping.entries())
+              .sort(([a], [b]) => a.localeCompare(b))
+              .map(([key, sequenceNames]) => ({
+                key,
+                label: key === 'MULTI' ? 'Multi Arduino' : `Arduino ${key.replace('ARD-', '')}`,
+                sequenceNames: sequenceNames.sort((a, b) => a.localeCompare(b)),
+              }));
+            this.sequenceGroups.set(groups);
+            this.sequenceLoading.set(false);
+          },
+          error: () => {
+            this.sequenceError.set('No se pudieron cargar los detalles de secuencias');
+            this.sequenceLoading.set(false);
+          },
+        });
       },
       error: () => {
-        this.actionsError.set('No se pudo cargar las acciones del robot.');
-        this.actionsLoading.set(false);
+        this.sequenceError.set('No se pudo cargar las secuencias del robot.');
+        this.sequenceLoading.set(false);
       },
     });
   }
 
-  private groupByArduino(actions: Action[]): ActionGroup[] {
-    const map = new Map<number, Action[]>();
-    for (const a of actions) {
-      const list = map.get(a.arduino_id) ?? [];
-      list.push(a);
-      map.set(a.arduino_id, list);
-    }
-    return Array.from(map.entries())
-      .sort(([a], [b]) => a - b)
-      .map(([arduino_id, acts]) => ({
-        arduino_id,
-        label: `Arduino ${arduino_id}`,
-        actions: acts,
-      }));
+  executeSequence(sequenceName: string) {
+    const sequence = this.sequenceCache.get(sequenceName);
+    if (!sequence || !sequence.blocks.length) return;
+    this.executingSequenceName.set(sequenceName);
+    this.appendLog({
+      group: this.groupLabelForSequence(sequenceName),
+      sequenceName,
+      status: 'sent',
+      message: 'Ejecución individual solicitada',
+    });
+
+    this.http.post<{ status: string; message: string }>(`${GATEWAY_URL}/sequence/play`, { blocks: sequence.blocks }).subscribe({
+      next: () => {
+        this.appendLog({
+          group: this.groupLabelForSequence(sequenceName),
+          sequenceName,
+          status: 'ack',
+          message: 'Secuencia en ejecución',
+        });
+        this.executingSequenceName.set(null);
+      },
+      error: () => {
+        this.appendLog({
+          group: this.groupLabelForSequence(sequenceName),
+          sequenceName,
+          status: 'error',
+          message: 'Error al iniciar secuencia',
+        });
+        this.executingSequenceName.set(null);
+      },
+    });
   }
 
-  // ── Execution ──────────────────────────────────────────────────────────────
-  executingKey = signal<string | null>(null);   // "arduino_id:action_id"
-  commandLogs  = signal<CommandLog[]>([]);
-  private logCounter = 0;
+  addToChain(sequenceName: string) {
+    this.selectedChain.update((items) => [...items, sequenceName]);
+  }
 
-  executeAction(group: ActionGroup, action: Action) {
-    const key = `${group.arduino_id}:${action.id}`;
-    if (this.executingKey() === key) return;
+  removeFromChain(index: number) {
+    this.selectedChain.update((items) => items.filter((_, idx) => idx !== index));
+  }
 
-    this.executingKey.set(key);
+  clearChain() {
+    this.selectedChain.set([]);
+  }
+
+  startChain() {
+    const items = this.selectedChain().map((name) => ({ name, repeat: 1, delay_ms: 0 }));
+    if (!items.length) return;
+
+    this.http.post<{ status: string; message: string }>(`${GATEWAY_URL}/sequence/chain/start`, { items }).subscribe({
+      next: () => {
+        this.appendLog({
+          group: 'CHAIN',
+          sequenceName: items.map((item) => item.name).join(' -> '),
+          status: 'ack',
+          message: 'Cadena iniciada',
+        });
+        this.refreshChainStatus();
+      },
+      error: () => {
+        this.appendLog({
+          group: 'CHAIN',
+          sequenceName: items.map((item) => item.name).join(' -> '),
+          status: 'error',
+          message: 'No se pudo iniciar cadena',
+        });
+      },
+    });
+  }
+
+  stopChain() {
+    this.http.post<{ status: string; message: string }>(`${GATEWAY_URL}/sequence/chain/stop`, {}).subscribe({
+      next: () => {
+        this.appendLog({
+          group: 'CHAIN',
+          sequenceName: this.chainCurrentSequence() ?? 'N/A',
+          status: 'ack',
+          message: 'Cadena detenida',
+        });
+        this.refreshChainStatus();
+      },
+      error: () => {
+        this.appendLog({
+          group: 'CHAIN',
+          sequenceName: this.chainCurrentSequence() ?? 'N/A',
+          status: 'error',
+          message: 'No se pudo detener cadena',
+        });
+      },
+    });
+  }
+
+  refreshChainStatus() {
+    this.http
+      .get<{
+        status: string;
+        running: boolean;
+        current_sequence: string | null;
+        completed_items: number;
+        total_items: number;
+      }>(`${GATEWAY_URL}/sequence/chain/status`)
+      .subscribe({
+        next: (res) => {
+          this.chainRunning.set(res.running);
+          this.chainCurrentSequence.set(res.current_sequence);
+          this.chainCompletedItems.set(res.completed_items);
+          this.chainTotalItems.set(res.total_items);
+        },
+        error: () => {
+          this.chainRunning.set(false);
+        },
+      });
+  }
+
+  private groupLabelForSequence(sequenceName: string): string {
+    for (const group of this.sequenceGroups()) {
+      if (group.sequenceNames.includes(sequenceName)) {
+        return group.label;
+      }
+    }
+    return 'N/A';
+  }
+
+  private appendLog(log: Omit<SequenceLog, 'id' | 'timestamp'>) {
     this.logCounter++;
-    const log: CommandLog = {
+    const nextLog: SequenceLog = {
       id: this.logCounter,
       timestamp: this.now(),
-      arduinoId: `ARD-${group.arduino_id}`,
-      actionId: action.id,
-      label: action.name,
-      status: 'pending',
+      ...log,
     };
-    this.commandLogs.update(logs => [log, ...logs].slice(0, 200));
+    this.commandLogs.update((items) => [nextLog, ...items].slice(0, 300));
     this.shouldScrollLog = true;
-
-    // Mark as sent immediately (request in flight)
-    this.commandLogs.update(logs =>
-      logs.map(l => l.id === log.id ? { ...l, status: 'sent' } : l)
-    );
-
-    this.http.get<ExecuteResponse>(`${GATEWAY_URL}/action/execute`, {
-      params: { action_id: action.id, arduino_id: group.arduino_id },
-    }).subscribe({
-      next: (res) => {
-        this.commandLogs.update(logs =>
-          logs.map(l => l.id === log.id
-            ? { ...l, status: 'ack', response: res.response }
-            : l
-          )
-        );
-        this.executingKey.set(null);
-      },
-      error: () => {
-        this.commandLogs.update(logs =>
-          logs.map(l => l.id === log.id ? { ...l, status: 'error' } : l)
-        );
-        this.executingKey.set(null);
-      },
-    });
-  }
-
-  isExecuting(group: ActionGroup, action: Action): boolean {
-    return this.executingKey() === `${group.arduino_id}:${action.id}`;
   }
 
   clearLogs() { this.commandLogs.set([]); }
 
-  logStatusColor(status: CommandLog['status']): string {
+  logStatusColor(status: SequenceLog['status']): string {
     switch (status) {
-      case 'pending': return 'text-outline';
       case 'sent':    return 'text-tertiary';
       case 'ack':     return 'text-secondary';
       case 'error':   return 'text-error';
+      default:        return 'text-outline';
     }
   }
 
-  logStatusIcon(status: CommandLog['status']): string {
+  logStatusIcon(status: SequenceLog['status']): string {
     switch (status) {
-      case 'pending': return 'schedule';
       case 'sent':    return 'send';
       case 'ack':     return 'done_all';
       case 'error':   return 'error';
+      default:        return 'schedule';
     }
   }
-
-  ackCount = computed(() => this.commandLogs().filter(l => l.status === 'ack').length);
-
-  // ── Chat ───────────────────────────────────────────────────────────────────
-  inputText  = signal('');
-  isSpeaking = signal(false);
-  private msgCounter = 0;
-
-  messages = signal<ChatMessage[]>([{
-    id: 0, from: 'robot',
-    text: 'Sistema de voz activo. Escribe el mensaje que deseas que transmita.',
-    timestamp: '14:02:01', status: 'done',
-  }]);
-
-  charCount = computed(() => this.inputText().length);
-
-  sendMessage() {
-    const text = this.inputText().trim();
-    if (!text) return;
-    this.msgCounter++;
-    const userMsg: ChatMessage = {
-      id: this.msgCounter, from: 'user', text,
-      timestamp: this.now(), status: 'sending',
-    };
-    this.messages.update(m => [...m, userMsg]);
-    this.inputText.set('');
-
-    setTimeout(() => {
-      this.messages.update(m =>
-        m.map(msg => msg.id === userMsg.id ? { ...msg, status: 'transmitted' } : msg)
-      );
-      this.isSpeaking.set(true);
-      this.msgCounter++;
-      const robotMsg: ChatMessage = {
-        id: this.msgCounter, from: 'robot',
-        text: `Transmitiendo: "${text}"`,
-        timestamp: this.now(), status: 'speaking',
-      };
-      this.messages.update(m => [...m, robotMsg]);
-      const dur = Math.min(Math.max(text.length * 60, 1500), 6000);
-      setTimeout(() => {
-        this.isSpeaking.set(false);
-        this.messages.update(m =>
-          m.map(msg => msg.id === robotMsg.id ? { ...msg, status: 'done' } : msg)
-        );
-      }, dur);
-    }, 600);
-    this.shouldScroll = true;
-  }
-
-  onKeydown(event: KeyboardEvent) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      this.sendMessage();
-    }
-  }
-
-  clearChat() {
-    this.msgCounter = 0;
-    this.messages.set([{
-      id: 0, from: 'robot',
-      text: 'Chat limpiado. Sistema de voz listo.',
-      timestamp: this.now(), status: 'done',
-    }]);
-  }
-
-  private shouldScroll    = false;
   private shouldScrollLog = false;
 
   ngAfterViewChecked() {
-    if (this.shouldScroll && this.chatScroll) {
-      this.chatScroll.nativeElement.scrollTop = this.chatScroll.nativeElement.scrollHeight;
-      this.shouldScroll = false;
-    }
     if (this.shouldScrollLog && this.logScroll) {
       this.logScroll.nativeElement.scrollTop = 0;
       this.shouldScrollLog = false;
@@ -260,6 +313,5 @@ export class ControlPanel implements OnInit, AfterViewChecked {
     return new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   }
 
-  trackMessage(_: number, msg: ChatMessage)  { return msg.id; }
-  trackLog    (_: number, log: CommandLog)   { return log.id; }
+  trackLog(_: number, log: SequenceLog) { return log.id; }
 }

@@ -55,6 +55,9 @@
           <button (click)="saveSequence()" class="py-2 rounded-lg bg-secondary text-on-primary text-sm font-semibold cursor-pointer">Guardar</button>
           <button (click)="refreshFiles()" class="py-2 rounded-lg bg-surface-container-high text-sm font-semibold cursor-pointer">Actualizar lista</button>
         </div>
+        <button (click)="openLegacyImport()" class="w-full py-2 rounded-lg bg-surface-container-high text-sm font-semibold cursor-pointer">
+          Importar JSON legacy
+        </button>
       </div>
 
       <div class="pt-3 border-t border-white/5 grid grid-cols-2 gap-2">
@@ -128,4 +131,62 @@
       </div>
     </section>
   </div>
+
+  @if (legacyImportOpen()) {
+    <div class="fixed inset-0 z-40 bg-black/50" (click)="closeLegacyImport()"></div>
+    <div class="fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-white/10 p-6 max-h-[60vh] overflow-auto">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-headline text-lg font-bold text-on-surface">Importación legacy</h3>
+          <button (click)="closeLegacyImport()" class="text-slate-400 hover:text-on-surface cursor-pointer">Cerrar</button>
+        </div>
+        <p class="text-xs text-slate-400 mb-4">
+          Sube archivos `.json` legacy y define nombre + Arduino destino para convertirlos al nuevo formato.
+        </p>
+
+        <div class="flex items-center gap-3 mb-4">
+          <input type="file" multiple accept=".json" (change)="onLegacyFilesSelected($event)" />
+          <button (click)="importLegacyItems()" class="px-4 py-2 rounded-lg bg-primary text-on-primary text-sm font-semibold cursor-pointer">
+            Importar seleccionados
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          @for (item of legacyItems(); track item.sourceFileName; let i = $index) {
+            <div class="border border-white/10 rounded-lg p-3">
+              <div class="text-xs text-slate-500 mb-2">{{ item.sourceFileName }}</div>
+              @if (item.error) {
+                <div class="text-xs text-red-400">{{ item.error }}</div>
+              } @else {
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <label class="text-[11px] text-slate-400">
+                    Nombre
+                    <input
+                      [ngModel]="item.targetName"
+                      (ngModelChange)="updateLegacyItemName(i, $event)"
+                      class="w-full mt-1 rounded bg-surface-container-high border border-white/10 px-2 py-1 text-sm"/>
+                  </label>
+                  <label class="text-[11px] text-slate-400">
+                    Arduino
+                    <select
+                      [ngModel]="item.arduino_id"
+                      (ngModelChange)="updateLegacyItemArduino(i, +$event)"
+                      class="w-full mt-1 rounded bg-surface-container-high border border-white/10 px-2 py-1 text-sm">
+                      @for (arduino of arduinos(); track arduino.arduino_id) {
+                        <option [ngValue]="arduino.arduino_id">#{{ arduino.arduino_id }} · {{ arduino.port }}</option>
+                      }
+                    </select>
+                  </label>
+                  <div class="text-[11px] text-slate-400">
+                    Movimientos detectados
+                    <div class="mt-1 text-sm text-on-surface">{{ item.blocks.length }}</div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
 </div>
