@@ -1,31 +1,28 @@
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { Component, HostListener, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { GATEWAY_URL } from '../../core/constants/gateway';
-const SEQ_STORAGE_KEY = 'r1_sequences';
 
-type ExecState = 'idle' | 'executing' | 'done' | 'error';
-type Category  = 'navigation' | 'interaction' | 'system';
-
-interface Routine {
-  id: string;
-  label: string;
-  description: string;
-  icon: string;
-  endpoint: string;
-  category: Category;
-  duration: string;
+interface ArduinoDevice {
+  arduino_id: number;
+  port: string;
+  hardware_fingerprint: string | null;
 }
 
-interface SequenceStep {
-  uid: number;
-  routine: Routine;
-  delayMs: number;
+interface MotionBlock {
+  arduino_id: number;
+  pca: number;
+  servo: number;
+  inicio: number;
+  dur: number;
+  pos: number;
+  vel: number;
+  nombre: string;
 }
 
-interface SavedSequence {
+interface SequenceFile {
   name: string;
-  steps: SequenceStep[];
+  file_name: string;
 }
 
 @Component({
@@ -33,160 +30,225 @@ interface SavedSequence {
   imports: [FormsModule],
   templateUrl: './sequences.html',
 })
-export class Sequences implements OnInit {
+export class Sequences {
   private http = inject(HttpClient);
+  private readonly pxPerSecond = 100;
 
-  // ── ROUTINES ─────────────────────────────────────────────────────────────
-  readonly routines: Routine[] = [
-    { id: 'find_all',    label: 'Find All',          description: 'Exploración completa del entorno',   icon: 'travel_explore',    endpoint: 'find-all',    category: 'navigation',  duration: '~15s' },
-    { id: 'stand_by',   label: 'Stand By',           description: 'Posición de reposo neutral',          icon: 'accessibility_new', endpoint: 'stand-by',    category: 'system',      duration: '~3s'  },
-    { id: 'wave',       label: 'Saludo',              description: 'Movimiento de saludo con brazo',      icon: 'waving_hand',       endpoint: 'wave',        category: 'interaction', duration: '~4s'  },
-    { id: 'point',      label: 'Señalar',             description: 'Apuntar en dirección frontal',        icon: 'back_hand',         endpoint: 'point',       category: 'interaction', duration: '~3s'  },
-    { id: 'head_scan',  label: 'Head Scan',           description: 'Barrido panorámico de cabeza',        icon: 'radar',             endpoint: 'head-scan',   category: 'navigation',  duration: '~8s'  },
-    { id: 'arms_open',  label: 'Brazos Abiertos',     description: 'Extender ambos brazos laterales',     icon: 'open_in_full',      endpoint: 'arms-open',   category: 'interaction', duration: '~2s'  },
-    { id: 'arms_home',  label: 'Brazos Inicio',       description: 'Retornar brazos a posición base',     icon: 'close_fullscreen',  endpoint: 'arms-home',   category: 'system',      duration: '~2s'  },
-    { id: 'walk_fwd',   label: 'Avanzar',             description: 'Secuencia de marcha hacia adelante',  icon: 'directions_walk',   endpoint: 'walk-fwd',    category: 'navigation',  duration: '~5s'  },
-    { id: 'turn_left',  label: 'Giro Izquierda',      description: 'Rotación 90° a la izquierda',         icon: 'turn_left',         endpoint: 'turn-left',   category: 'navigation',  duration: '~4s'  },
-    { id: 'turn_right', label: 'Giro Derecha',        description: 'Rotación 90° a la derecha',           icon: 'turn_right',        endpoint: 'turn-right',  category: 'navigation',  duration: '~4s'  },
-    { id: 'calibrate',  label: 'Calibrar',            description: 'Calibración de todos los servos',     icon: 'tune',              endpoint: 'calibrate',   category: 'system',      duration: '~20s' },
-    { id: 'reset_pos',  label: 'Resetear',            description: 'Volver a posición inicial completa',  icon: 'restart_alt',       endpoint: 'reset',       category: 'system',      duration: '~5s'  },
-  ];
+  arduinos = signal<ArduinoDevice[]>([]);
+  selectedArduinoId = signal<number | null>(null);
+  scannedPcas = signal<number[]>([]);
+  files = signal<SequenceFile[]>([]);
+  blocks = signal<MotionBlock[]>([]);
+  sequenceName = signal('');
+  statusMessage = signal('Listo');
+  playing = signal(false);
 
-  // ── SEQUENCE ─────────────────────────────────────────────────────────────
-  sequence       = signal<SequenceStep[]>([]);
-  sequenceName   = signal('');
-  savedSequences = signal<SavedSequence[]>([]);
-  defaultDelay   = signal(500);
-  isPlayingSeq   = signal(false);
-  seqProgress    = signal(0);
-  activeSubTab   = signal<'build' | 'saved'>('build');
-  execStateMap   = signal<Record<string, ExecState>>({});
-  private stepUid = 0;
+  addPca = 0;
+  addServo = 0;
+  addNombre = '';
 
-  seqProgressPct = computed(() => {
-    const total = this.sequence().length;
-    return total ? Math.round((this.seqProgress() / total) * 100) : 0;
+  readonly timelineSeconds = computed(() => {
+    const items = this.blocks();
+    const maxEnd = items.reduce((acc, item) => Math.max(acc, item.inicio + item.dur), 0);
+    return Math.max(10, Math.ceil(maxEnd) + 2);
   });
 
-  getExecState(id: string): ExecState {
-    return this.execStateMap()[id] ?? 'idle';
+  readonly timelineWidthPx = computed(() => this.timelineSeconds() * this.pxPerSecond);
+  readonly timelineHeightPx = computed(() => Math.max(140, this.blocks().length * 48 + 80));
+  readonly secondMarks = computed(() => Array.from({ length: this.timelineSeconds() + 1 }, (_, i) => i));
+
+  private dragState:
+    | { index: number; pointerStartX: number; originalInicio: number }
+    | null = null;
+
+  constructor() {
+    this.refreshArduinos();
+    this.refreshFiles();
   }
 
-  addToSequence(routine: Routine) {
-    this.stepUid++;
-    this.sequence.update(s => [...s, { uid: this.stepUid, routine, delayMs: this.defaultDelay() }]);
-  }
-
-  removeStep(uid: number) {
-    this.sequence.update(s => s.filter(step => step.uid !== uid));
-  }
-
-  moveStep(uid: number, dir: 'up' | 'down') {
-    this.sequence.update(steps => {
-      const idx = steps.findIndex(s => s.uid === uid);
-      if (idx === -1) return steps;
-      const next = dir === 'up' ? idx - 1 : idx + 1;
-      if (next < 0 || next >= steps.length) return steps;
-      const arr = [...steps];
-      [arr[idx], arr[next]] = [arr[next], arr[idx]];
-      return arr;
+  refreshArduinos() {
+    this.http.get<ArduinoDevice[]>(`${GATEWAY_URL}/sequence/arduinos`).subscribe({
+      next: (arduinos) => {
+        this.arduinos.set(arduinos);
+        if (this.selectedArduinoId() === null && arduinos.length > 0) {
+          this.selectedArduinoId.set(arduinos[0].arduino_id);
+        }
+      },
+      error: () => this.statusMessage.set('No se pudo listar Arduinos'),
     });
   }
 
-  clearSequence() {
-    this.sequence.set([]);
-    this.seqProgress.set(0);
+  scanPcas() {
+    const arduinoId = this.selectedArduinoId();
+    if (arduinoId === null) return;
+    this.http.get<{ arduino_id: number; pcas: number[] }>(`${GATEWAY_URL}/sequence/pcas`, {
+      params: { arduino_id: arduinoId },
+    }).subscribe({
+      next: (response) => this.scannedPcas.set(response.pcas),
+      error: () => this.statusMessage.set('No se pudieron escanear PCAs'),
+    });
+  }
+
+  addServoBlock() {
+    const arduinoId = this.selectedArduinoId();
+    if (arduinoId === null) {
+      this.statusMessage.set('Selecciona un Arduino');
+      return;
+    }
+
+    const nextInicio = this.blocks().reduce((acc, item) => Math.max(acc, item.inicio + 0.5), 0);
+    const name = this.addNombre.trim() || `P${this.addPca}_S${this.addServo}`;
+    const block: MotionBlock = {
+      arduino_id: arduinoId,
+      pca: this.addPca,
+      servo: this.addServo,
+      inicio: Math.round(nextInicio * 10) / 10,
+      dur: 2,
+      pos: 500,
+      vel: 5,
+      nombre: name,
+    };
+    this.blocks.update((items) => [...items, block]);
+    this.addNombre = '';
+  }
+
+  removeBlock(index: number) {
+    this.blocks.update((items) => items.filter((_, idx) => idx !== index));
+  }
+
+  updateBlock(index: number, patch: Partial<MotionBlock>) {
+    this.blocks.update((items) =>
+      items.map((item, idx) => {
+        if (idx !== index) return item;
+        const updated = { ...item, ...patch };
+        return {
+          ...updated,
+          inicio: Math.max(0, updated.inicio),
+          dur: Math.max(0.1, updated.dur),
+          pos: Math.min(1000, Math.max(0, updated.pos)),
+          vel: Math.min(10, Math.max(1, updated.vel)),
+        };
+      }),
+    );
   }
 
   playSequence() {
-    const steps = this.sequence();
-    if (!steps.length || this.isPlayingSeq()) return;
-    this.isPlayingSeq.set(true);
-    this.seqProgress.set(0);
-    this.playStep(steps, 0);
-  }
-
-  stopSequence() {
-    this.isPlayingSeq.set(false);
-  }
-
-  private playStep(steps: SequenceStep[], idx: number) {
-    if (!this.isPlayingSeq() || idx >= steps.length) {
-      this.isPlayingSeq.set(false);
-      return;
-    }
-    const step = steps[idx];
-    this.execStateMap.update(m => ({ ...m, [step.routine.id]: 'executing' }));
-    this.http.post(`${GATEWAY_URL}/robotics/execute`, { routine: step.routine.endpoint }).subscribe({
-      next:  () => this.afterStep(steps, idx, step, true),
-      error: () => this.afterStep(steps, idx, step, false),
+    const payload = { blocks: this.blocks() };
+    if (!payload.blocks.length) return;
+    this.http.post<{ status: string; message: string }>(`${GATEWAY_URL}/sequence/play`, payload).subscribe({
+      next: () => {
+        this.playing.set(true);
+        this.statusMessage.set('Secuencia iniciada');
+      },
+      error: () => this.statusMessage.set('No se pudo iniciar la secuencia'),
     });
   }
 
-  private afterStep(steps: SequenceStep[], idx: number, step: SequenceStep, ok: boolean) {
-    this.execStateMap.update(m => ({ ...m, [step.routine.id]: ok ? 'done' : 'error' }));
-    this.seqProgress.set(idx + 1);
-    setTimeout(() => {
-      this.execStateMap.update(m => ({ ...m, [step.routine.id]: 'idle' }));
-      this.playStep(steps, idx + 1);
-    }, step.delayMs);
+  stopSequence() {
+    this.http.post<{ status: string; message: string }>(`${GATEWAY_URL}/sequence/stop`, {}).subscribe({
+      next: () => {
+        this.playing.set(false);
+        this.statusMessage.set('Secuencia detenida');
+      },
+      error: () => this.statusMessage.set('No se pudo detener la secuencia'),
+    });
   }
 
   saveSequence() {
     const name = this.sequenceName().trim();
-    if (!name || !this.sequence().length) return;
-    this.savedSequences.update(saved => {
-      const idx = saved.findIndex(s => s.name === name);
-      const entry: SavedSequence = { name, steps: [...this.sequence()] };
-      const arr = [...saved];
-      idx !== -1 ? (arr[idx] = entry) : arr.push(entry);
-      return arr;
+    if (!name || !this.blocks().length) {
+      this.statusMessage.set('Define nombre y bloques');
+      return;
+    }
+    this.persistSequence(name, false);
+  }
+
+  private persistSequence(name: string, overwrite: boolean) {
+    const payload = {
+      sequence: {
+        version: 1,
+        name,
+        blocks: this.blocks(),
+      },
+      overwrite,
+    };
+
+    this.http.post<{ status: string; message: string }>(`${GATEWAY_URL}/sequence/file`, payload).subscribe({
+      next: () => {
+        this.refreshFiles();
+        this.statusMessage.set('Secuencia guardada');
+      },
+      error: () => {
+        if (!overwrite && confirm('La secuencia ya existe. ¿Sobrescribir?')) {
+          this.persistSequence(name, true);
+          return;
+        }
+        this.statusMessage.set('No se pudo guardar');
+      },
     });
-    localStorage.setItem(SEQ_STORAGE_KEY, JSON.stringify(this.savedSequences()));
-    this.sequenceName.set('');
   }
 
-  loadSaved(saved: SavedSequence) {
-    this.sequence.set(saved.steps.map(s => ({ ...s })));
-    this.activeSubTab.set('build');
+  refreshFiles() {
+    this.http.get<{ total: number; data: SequenceFile[] }>(`${GATEWAY_URL}/sequence/files`).subscribe({
+      next: (response) => this.files.set(response.data),
+      error: () => this.statusMessage.set('No se pudo listar archivos'),
+    });
   }
 
-  deleteSaved(name: string) {
-    this.savedSequences.update(s => s.filter(seq => seq.name !== name));
-    localStorage.setItem(SEQ_STORAGE_KEY, JSON.stringify(this.savedSequences()));
+  loadFile(fileName: string) {
+    this.http.get<{ version: number; name: string; blocks: MotionBlock[] }>(`${GATEWAY_URL}/sequence/file`, {
+      params: { name: fileName },
+    }).subscribe({
+      next: (sequence) => {
+        this.sequenceName.set(sequence.name);
+        this.blocks.set(sequence.blocks);
+        this.statusMessage.set(`Cargada: ${sequence.name}`);
+      },
+      error: () => this.statusMessage.set('No se pudo cargar la secuencia'),
+    });
   }
 
-  // ── HELPERS ───────────────────────────────────────────────────────────────
-  categoryBadgeClass(cat: Category): string {
-    switch (cat) {
-      case 'navigation':  return 'text-primary   bg-primary/10   border-primary/20';
-      case 'interaction': return 'text-secondary bg-secondary/10 border-secondary/20';
-      case 'system':      return 'text-tertiary  bg-tertiary/10  border-tertiary/20';
-    }
+  deleteFile(fileName: string) {
+    if (!confirm(`Eliminar '${fileName}'?`)) return;
+    this.http.delete<{ status: string }>(`${GATEWAY_URL}/sequence/file`, {
+      params: { name: fileName },
+    }).subscribe({
+      next: () => {
+        this.refreshFiles();
+        this.statusMessage.set('Secuencia eliminada');
+      },
+      error: () => this.statusMessage.set('No se pudo eliminar'),
+    });
   }
 
-  categoryLabel(cat: Category): string {
-    switch (cat) {
-      case 'navigation':  return 'NAV';
-      case 'interaction': return 'INT';
-      case 'system':      return 'SYS';
-    }
+  blockLeftPx(block: MotionBlock): number {
+    return block.inicio * this.pxPerSecond;
   }
 
-  stepStateClass(id: string): string {
-    switch (this.getExecState(id)) {
-      case 'executing': return 'border-primary bg-primary/10';
-      case 'done':      return 'border-secondary/50 bg-secondary/5';
-      case 'error':     return 'border-error/50 bg-error/5';
-      default:          return 'border-white/5';
-    }
+  blockWidthPx(block: MotionBlock): number {
+    return block.dur * this.pxPerSecond;
   }
 
-  // ── LIFECYCLE ─────────────────────────────────────────────────────────────
-  ngOnInit() {
-    try {
-      const raw = localStorage.getItem(SEQ_STORAGE_KEY);
-      if (raw) this.savedSequences.set(JSON.parse(raw));
-    } catch { /* ignore */ }
+  startDrag(event: PointerEvent, index: number) {
+    const block = this.blocks()[index];
+    this.dragState = {
+      index,
+      pointerStartX: event.clientX,
+      originalInicio: block.inicio,
+    };
+  }
+
+  @HostListener('window:pointermove', ['$event'])
+  onPointerMove(event: PointerEvent) {
+    if (!this.dragState) return;
+    const deltaPx = event.clientX - this.dragState.pointerStartX;
+    const deltaSeconds = deltaPx / this.pxPerSecond;
+    const newInicio = Math.max(0, this.dragState.originalInicio + deltaSeconds);
+    this.updateBlock(this.dragState.index, { inicio: Math.round(newInicio * 10) / 10 });
+  }
+
+  @HostListener('window:pointerup')
+  onPointerUp() {
+    this.dragState = null;
   }
 }
