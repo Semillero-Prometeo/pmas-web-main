@@ -21,6 +21,27 @@ interface SentenceEntry {
   status: 'sending' | 'done' | 'error';
 }
 
+interface SpeechRecognitionErrorEventLike extends Event {
+  error?: string;
+}
+
+interface SpeechRecognitionCtorLike {
+  new (): SpeechRecognitionLike;
+}
+
+interface SpeechRecognitionLike {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  maxAlternatives: number;
+  onstart: (() => void) | null;
+  onend: (() => void) | null;
+  onresult: ((event: Event) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
 @Component({
   selector: 'app-robotics-chat',
   imports: [FormsModule, RouterLink],
@@ -41,6 +62,9 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   chatMessages = signal<ChatMessage[]>([]);
   chatInput = signal('');
   chatBusy = signal(false);
+  sttAvailable = signal(false);
+  sttListening = signal(false);
+  sttError = signal<string | null>(null);
 
   // ── Decir Oración ──
   decirInput = signal('');
@@ -49,6 +73,7 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
 
   private shouldScrollChat = false;
   private shouldScrollDecir = false;
+  private speechRecognition: SpeechRecognitionLike | null = null;
 
   now(): string {
     return new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
@@ -59,6 +84,10 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   sendChat() {
     const text = this.chatInput().trim();
     if (!text || this.chatBusy()) return;
+
+    if (this.sttListening() && this.speechRecognition) {
+      this.speechRecognition.stop();
+    }
 
     const userMsg: ChatMessage = { from: 'user', text, timestamp: this.now(), status: 'done' };
     const robotMsg: ChatMessage = { from: 'robot', text: '...', timestamp: this.now(), status: 'sending' };
@@ -104,6 +133,25 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
     this.chatMessages.set([]);
   }
 
+  toggleChatVoiceInput() {
+    if (!this.speechRecognition || this.chatBusy()) {
+      return;
+    }
+
+    this.sttError.set(null);
+    if (this.sttListening()) {
+      this.speechRecognition.stop();
+      return;
+    }
+
+    try {
+      this.speechRecognition.start();
+    } catch {
+      this.sttError.set('No se pudo iniciar el dictado por voz.');
+      this.sttListening.set(false);
+    }
+  }
+
   // ── Decir Oración ──
 
   sendDecir() {
@@ -145,6 +193,8 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   }
 
   ngOnInit() {
+    this.setupSpeechRecognition();
+
     const params = this.route.snapshot.queryParamMap;
     if (params.get('tab') === 'decir') this.activeTab.set('decir');
   }
@@ -155,5 +205,72 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
       el.scrollTop = el.scrollHeight;
       this.shouldScrollChat = false;
     }
+  }
+
+  private setupSpeechRecognition() {
+    const speechWindow = window as Window & {
+      SpeechRecognition?: SpeechRecognitionCtorLike;
+      webkitSpeechRecognition?: SpeechRecognitionCtorLike;
+    };
+
+    const Ctor = speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
+    if (!Ctor) {
+      this.sttAvailable.set(false);
+      return;
+    }
+
+    const recognition = new Ctor();
+    recognition.lang = 'es-CO';
+    recognition.interimResults = true;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      this.sttListening.set(true);
+      this.sttError.set(null);
+    };
+
+    recognition.onend = () => {
+      this.sttListening.set(false);
+    };
+
+    recognition.onresult = (event: Event) => {
+      const speechEvent = event as Event & {
+        results?: ArrayLike<ArrayLike<{ transcript?: string }>>;
+        resultIndex?: number;
+      };
+
+      if (!speechEvent.results) {
+        return;
+      }
+
+      const start = speechEvent.resultIndex ?? 0;
+      let transcript = '';
+
+      for (let i = start; i < speechEvent.results.length; i += 1) {
+        const alt = speechEvent.results[i]?.[0];
+        if (alt?.transcript) {
+          transcript += `${alt.transcript} `;
+        }
+      }
+
+      if (transcript.trim()) {
+        this.chatInput.set(transcript.trim());
+      }
+    };
+
+    recognition.onerror = (event: SpeechRecognitionErrorEventLike) => {
+      if (event.error === 'not-allowed') {
+        this.sttError.set('Debes habilitar permisos de micrófono en el navegador.');
+      } else if (event.error === 'no-speech') {
+        this.sttError.set('No se detectó voz. Intenta de nuevo.');
+      } else {
+        this.sttError.set('Falló el reconocimiento de voz.');
+      }
+      this.sttListening.set(false);
+    };
+
+    this.speechRecognition = recognition;
+    this.sttAvailable.set(true);
   }
 }

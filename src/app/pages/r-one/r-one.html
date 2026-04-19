@@ -43,7 +43,7 @@
 
     <!-- ─────────────────────────────── MOVIMIENTOS TAB ──────────────────── -->
     @if (activeTab() === 'movements') {
-      <div class="flex flex-col h-full">
+      <div class="flex flex-col h-full min-h-0">
 
         <!-- Category filter bar -->
         <div class="flex gap-2 px-4 pt-4 pb-3 overflow-x-auto shrink-0"
@@ -71,7 +71,7 @@
         </div>
 
         <!-- Routine grid -->
-        <div class="flex-1 overflow-y-auto px-4 pb-4"
+        <div class="flex-1 overflow-y-auto px-4 pb-4 min-h-0"
              style="scrollbar-width: thin; scrollbar-color: #334155 transparent;">
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             @for (r of filteredRoutines(); track r.id) {
@@ -456,12 +456,12 @@
       <span class="text-[8px] font-label uppercase tracking-wider font-bold">Chat</span>
     </a>
 
-    <!-- Decir Oración → navega a /robotics/chat?tab=decir en modo compacto -->
-    <a routerLink="/robotics/chat" [queryParams]="{tab: 'decir', compact: 'true'}"
+    <!-- Cámaras → pantalla independiente de visión -->
+    <a routerLink="/robotics/vision"
        class="flex-1 flex flex-col items-center justify-center gap-0.5 transition-all no-underline
-              text-slate-600 hover:text-primary cursor-pointer relative">
-      <span class="material-symbols-outlined" style="font-size: 1.2rem; font-variation-settings: 'FILL' 1;">record_voice_over</span>
-      <span class="text-[8px] font-label uppercase tracking-wider font-bold">Decir</span>
+              text-slate-600 hover:text-tertiary cursor-pointer relative">
+      <span class="material-symbols-outlined" style="font-size: 1.2rem; font-variation-settings: 'FILL' 1;">videocam</span>
+      <span class="text-[8px] font-label uppercase tracking-wider font-bold">Cámaras</span>
     </a>
 
     <!-- Secuencias -->

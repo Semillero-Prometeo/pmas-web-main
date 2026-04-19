@@ -2,6 +2,7 @@ import { Component, signal, computed, inject, OnInit, ViewChild, ElementRef, Aft
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { GATEWAY_URL } from '../../core/constants/gateway';
+import { HealthService } from '../../core/services/health.service';
 import { catchError, forkJoin, map, of } from 'rxjs';
 
 interface MotionBlock {
@@ -50,6 +51,7 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
   @ViewChild('logScroll')  logScroll!:  ElementRef<HTMLDivElement>;
 
   private http = inject(HttpClient);
+  health = inject(HealthService);
   private chainStatusTimer: ReturnType<typeof setInterval> | null = null;
   private logCounter = 0;
 
@@ -77,6 +79,7 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
   ackCount = computed(() => this.commandLogs().filter((item) => item.status === 'ack').length);
 
   ngOnInit() {
+    this.health.checkAll();
     this.loadSequences();
     this.refreshChainStatus();
     this.chainStatusTimer = setInterval(() => this.refreshChainStatus(), 2000);

@@ -22,8 +22,9 @@
           Tecnológica.
         </h1>
         <p class="text-lg text-on-surface-variant max-w-xl font-light leading-relaxed mb-10">
-          Investigación en inteligencia artificial, visión por computador
-          y desarrollo sostenible para transformar el entorno social y productivo.
+          Semillero de investigación adscrito a la Universidad Libre, enfocado en el desarrollo
+          de soluciones tecnológicas innovadoras desde la Ingeniería de Sistemas, con impacto
+          académico, científico y social.
         </p>
         <div class="flex gap-4 flex-wrap">
           <a routerLink="/projects"
@@ -31,12 +32,6 @@
                     tracking-tight hover:opacity-90 active:scale-95 transition-all duration-200 no-underline flex items-center gap-2">
             <span class="material-symbols-outlined" style="font-size: 1rem;">folder_open</span>
             Ver proyectos
-          </a>
-          <a routerLink="/register"
-             class="border border-secondary/40 text-secondary px-7 py-3.5 rounded-lg font-headline font-bold text-sm
-                    tracking-tight hover:bg-secondary/10 active:scale-95 transition-all duration-200 no-underline flex items-center gap-2">
-            <span class="material-symbols-outlined" style="font-size: 1rem;">person_add</span>
-            Unirme
           </a>
         </div>
       </div>
@@ -66,7 +61,7 @@
   </section>
 
   <!-- ═══════════════════════════════ MODO COMPACTO (autenticado) ═══════════════════════════════ -->
-  @if (auth.isAuthenticated()) {
+  @if (env.compactMode && auth.isAuthenticated()) {
     <section class="px-4 md:px-8 max-w-7xl mx-auto mb-16">
       <a routerLink="/r-one" class="no-underline group block">
         <div class="relative rounded-2xl overflow-hidden border border-primary/20 bg-surface-container-low
@@ -140,8 +135,9 @@
           </span>
           <h2 class="font-headline text-3xl font-bold mb-5 tracking-tight">Nuestra Misión</h2>
           <p class="text-on-surface-variant text-base leading-relaxed mb-8 max-w-lg">
-            Impulsar la integración de la Ingeniería de Sistemas al desarrollo socioeconómico
-            mediante la investigación, la innovación tecnológica y la generación de soluciones sostenibles.
+            PROMETEO propende por la integración de la Facultad de Ingeniería de la Universidad Libre
+            al desarrollo del entorno socioeconómico mediante la investigación, identificando y solucionando
+            problemáticas reales con enfoque en ciencia, tecnología e innovación sostenible.
           </p>
           <div class="flex flex-wrap gap-2">
             @for (tag of ['IA', 'Innovación', 'Tecnología', 'Sostenibilidad']; track tag) {
@@ -163,8 +159,9 @@
             Visión
           </h3>
           <p class="text-on-surface-variant text-sm leading-relaxed">
-            Ser un semillero reconocido a nivel nacional e internacional
-            por su impacto en ciencia, tecnología e innovación.
+            Ser un semillero reconocido a nivel nacional e internacional por su excelencia
+            investigativa en ciencia y tecnología, consolidando líneas de investigación que generen
+            soluciones innovadoras a problemáticas globales mediante avances tecnológicos.
           </p>
         </div>
 
@@ -198,12 +195,13 @@
             Proyecto Principal // 2024
           </span>
           <h2 class="font-headline text-4xl font-bold tracking-tighter mb-6 leading-tight">
-            Inteligencia Artificial y<br/>
-            <span class="text-primary">Visión por Computador</span>
+            IA y Visión Artificial para<br/>
+            <span class="text-primary">Reconocimiento de Objetos</span>
           </h2>
           <p class="text-on-surface-variant text-base leading-relaxed mb-8 max-w-lg">
-            Desarrollo de modelos de reconocimiento de objetos con redes neuronales convolucionales,
-            abordando iluminación variable, oclusión y entornos reales.
+            Desarrollo de un modelo de IA y visión artificial para el reconocimiento automático
+            de objetos en entornos reales, capaz de clasificar y detectar elementos bajo condiciones
+            variables de iluminación y oclusión.
           </p>
 
           <!-- Métricas -->
@@ -226,29 +224,15 @@
         <!-- Visual lado derecho -->
         <div class="col-span-12 md:col-span-5 flex justify-center">
           <div class="w-full max-w-xs aspect-square rounded-xl bg-surface-container relative overflow-hidden">
-            <div class="absolute inset-0 industrial-grid opacity-60"></div>
-            <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6">
-              <span class="material-symbols-outlined text-primary" style="font-size: 4rem; font-variation-settings: 'FILL' 1;">
-                psychology
-              </span>
-              <div class="text-center">
-                <div class="text-[10px] font-mono text-secondary uppercase tracking-widest mb-1">CNN Model</div>
-                <div class="font-headline text-xl font-bold text-on-surface">YOLOv8 + ResNet</div>
-              </div>
-              <!-- Mini barras de progreso -->
-              <div class="w-full space-y-2">
-                @for (bar of modelBars; track bar.label) {
-                  <div>
-                    <div class="flex justify-between mb-1">
-                      <span class="text-[9px] font-mono text-outline uppercase">{{ bar.label }}</span>
-                      <span class="text-[9px] font-mono" [class]="bar.color">{{ bar.value }}</span>
-                    </div>
-                    <div class="w-full bg-surface-container-highest h-0.5 rounded-full overflow-hidden">
-                      <div class="h-full rounded-full" [class]="bar.bgClass" [style.width]="bar.width"></div>
-                    </div>
-                  </div>
-                }
-              </div>
+            <img
+              src="assets/assets/IMG_20241030_113304.jpg"
+              alt="Equipo PROMETEO con androide R-ONE"
+              class="w-full h-full object-cover opacity-70"
+            />
+            <div class="absolute inset-0 bg-linear-to-t from-surface-container via-transparent to-transparent"></div>
+            <div class="absolute bottom-4 left-4">
+              <div class="text-[10px] font-mono text-secondary uppercase tracking-widest mb-1">Proyecto Principal</div>
+              <div class="font-headline text-sm font-bold text-on-surface">ANDROIDE R-ONE</div>
             </div>
           </div>
         </div>
@@ -361,44 +345,6 @@
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════ CTA FINAL ═══════════════════════════════════ -->
-  <section class="px-4 md:px-8 max-w-7xl mx-auto">
-    <div class="bg-surface-container-low rounded-xl p-8 md:p-16 text-center relative overflow-hidden">
-
-      <!-- Glows decorativos -->
-      <div class="absolute top-0 left-1/4 w-96 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute bottom-0 right-1/4 w-64 h-48 bg-secondary/5 rounded-full blur-3xl pointer-events-none"></div>
-
-      <div class="relative z-10">
-        <span class="font-label text-[10px] uppercase tracking-[0.3em] text-tertiary mb-4 block">
-          Únete // Semillero Prometeo
-        </span>
-        <h2 class="font-headline text-4xl md:text-5xl font-bold tracking-tighter mb-4">
-          Únete al semillero<br/>
-          <span class="text-primary">PROMETEO</span>
-        </h2>
-        <p class="text-on-surface-variant text-base max-w-md mx-auto mb-10 leading-relaxed">
-          Forma parte de una comunidad de investigadores comprometidos
-          con la innovación y el impacto social.
-        </p>
-        <div class="flex gap-4 justify-center flex-wrap">
-          <a routerLink="/register"
-             class="bg-primary text-on-primary px-8 py-4 rounded-lg font-headline font-bold tracking-tight
-                    hover:opacity-90 active:scale-95 transition-all duration-200 no-underline flex items-center gap-2">
-            <span class="material-symbols-outlined" style="font-size: 1rem;">how_to_reg</span>
-            Aplicar
-          </a>
-          <a href="#"
-             class="border border-outline-variant text-on-surface-variant px-8 py-4 rounded-lg font-headline font-bold
-                    tracking-tight hover:bg-surface-container-high hover:text-on-surface transition-all duration-200
-                    no-underline flex items-center gap-2">
-            <span class="material-symbols-outlined" style="font-size: 1rem;">mail</span>
-            Contacto
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
 
 </main>
 

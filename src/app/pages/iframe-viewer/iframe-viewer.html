@@ -1,0 +1,106 @@
+<div class="industrial-grid min-h-[calc(100vh-6rem)]">
+
+  <!-- Header -->
+  <header class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+    <div>
+      <span class="font-label text-[10px] uppercase tracking-[0.3em] text-secondary mb-2 block">Vista integrada · Próximamente</span>
+      <h1 class="font-headline text-3xl md:text-4xl font-bold tracking-tighter text-on-surface">
+        Panel <span class="text-primary">Externo</span>
+      </h1>
+    </div>
+    <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-white/5">
+      <div class="w-2 h-2 rounded-full bg-outline animate-pulse"></div>
+      <span class="text-[10px] font-mono text-slate-400 uppercase tracking-widest">Próximamente</span>
+    </div>
+  </header>
+
+  <!-- URL bar -->
+  <div class="mb-6 flex gap-3">
+    <div class="flex-1 relative">
+      <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+            style="font-size: 1rem;">language</span>
+      <input
+        type="url"
+        placeholder="https://..."
+        [ngModel]="pendingUrl()"
+        (ngModelChange)="pendingUrl.set($event)"
+        (keydown.enter)="loadUrl()"
+        class="w-full bg-surface-container border border-white/5 rounded-xl pl-11 pr-4 py-3
+               text-sm text-on-surface placeholder:text-slate-600 outline-none focus:border-primary/40
+               transition-colors font-mono"
+      />
+    </div>
+    <button
+      (click)="loadUrl()"
+      [disabled]="!pendingUrl().trim()"
+      class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary
+             font-headline font-bold text-sm tracking-tight hover:opacity-90
+             active:scale-95 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+      <span class="material-symbols-outlined" style="font-size: 1rem;">open_in_browser</span>
+      Cargar
+    </button>
+    @if (hasSrc()) {
+      <button
+        (click)="clear()"
+        class="p-2.5 rounded-xl bg-surface-container border border-white/5 text-slate-500
+               hover:text-error hover:border-error/30 transition-all cursor-pointer">
+        <span class="material-symbols-outlined" style="font-size: 1.2rem;">close</span>
+      </button>
+    }
+  </div>
+
+  <!-- Iframe container -->
+  <div class="bg-surface-container rounded-2xl border border-white/5 overflow-hidden"
+       style="height: calc(100vh - 20rem); min-height: 400px;">
+
+    @if (!hasSrc()) {
+      <!-- Placeholder -->
+      <div class="w-full h-full flex flex-col items-center justify-center gap-6 text-slate-700">
+        <div class="relative">
+          <div class="w-24 h-24 rounded-2xl bg-surface-container-high border border-white/5 flex items-center justify-center">
+            <span class="material-symbols-outlined" style="font-size: 3rem; font-variation-settings: 'FILL' 1;">web</span>
+          </div>
+          <div class="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-primary/20 border border-primary/30
+                      flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary" style="font-size: 0.9rem;">schedule</span>
+          </div>
+        </div>
+        <div class="text-center">
+          <p class="font-headline font-bold text-xl text-on-surface-variant mb-2">Panel externo pendiente</p>
+          <p class="text-[11px] font-label uppercase tracking-widest text-slate-600">
+            Introduce una URL arriba para cargar contenido externo
+          </p>
+        </div>
+      </div>
+    } @else {
+      <!-- Loading indicator -->
+      @if (!loaded()) {
+        <div class="w-full h-1 bg-surface-container-high">
+          <div class="h-full bg-primary animate-pulse rounded-full" style="width: 60%"></div>
+        </div>
+      }
+
+      @if (error()) {
+        <div class="w-full h-full flex flex-col items-center justify-center gap-4 text-slate-600">
+          <span class="material-symbols-outlined text-error" style="font-size: 2.5rem;">error_outline</span>
+          <p class="text-sm text-error">No se pudo cargar el contenido. Verifica la URL o la política CORS del destino.</p>
+          <button (click)="clear()" class="text-[10px] font-label uppercase tracking-widest text-slate-500
+                                           hover:text-on-surface px-4 py-2 rounded-lg border border-white/10
+                                           hover:bg-surface-container-high transition-all cursor-pointer">
+            Limpiar
+          </button>
+        </div>
+      } @else {
+        <iframe
+          [src]="safeSrc()"
+          (load)="onLoad()"
+          (error)="onError()"
+          class="w-full h-full border-0"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+          title="Panel externo"
+        ></iframe>
+      }
+    }
+  </div>
+
+</div>

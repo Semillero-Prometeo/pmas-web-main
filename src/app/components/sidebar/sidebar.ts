@@ -11,7 +11,8 @@ export type SidebarItem =
   | 'roles'
   | 'management'
   | 'chat'
-  | 'vision';
+  | 'vision'
+  | 'iframe';
 
 type GroupHealthKey = 'robotics' | 'authMs' | 'management';
 
@@ -63,6 +64,7 @@ export class Sidebar implements OnInit {
         { id: 'vision', label: 'Visión', icon: 'videocam', route: '/robotics/vision' },
         { id: 'chat', label: 'Chat', icon: 'forum', route: '/robotics/chat' },
         { id: 'telemetry', label: 'Creación de Secuencias', icon: 'insights', route: '/sequences' },
+        { id: 'iframe', label: 'Panel Externo', icon: 'web', route: '/iframe' },
       ],
     },
     {

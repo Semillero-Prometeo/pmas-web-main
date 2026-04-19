@@ -213,18 +213,28 @@
                         rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
         </div>
 
-        <!-- Rol -->
+        <!-- Roles (multi-selección) -->
         <div>
-          <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Rol</label>
-          <select
-            [ngModel]="form().role_id"
-            (ngModelChange)="form.update(f => ({...f, role_id: +$event}))"
-            class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
-                   rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors cursor-pointer">
+          <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">
+            Roles
+            <span class="text-slate-600 normal-case tracking-normal font-normal ml-1">(selecciona uno o más)</span>
+          </label>
+          <div class="bg-surface-container-low border border-outline-variant/30 rounded-lg overflow-hidden divide-y divide-outline-variant/10">
             @for (role of roles(); track role.id) {
-              <option [value]="role.id">{{ role.name }}</option>
+              <label class="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-surface-container transition-colors">
+                <input
+                  type="checkbox"
+                  [checked]="isRoleSelected(role.id)"
+                  (change)="toggleRole(role.id)"
+                  class="w-4 h-4 accent-primary cursor-pointer rounded"
+                />
+                <span class="text-sm text-on-surface font-label">{{ role.name }}</span>
+                @if (isRoleSelected(role.id)) {
+                  <span class="ml-auto text-[9px] font-label uppercase tracking-widest text-primary">activo</span>
+                }
+              </label>
             }
-          </select>
+          </div>
         </div>
       </div>
 

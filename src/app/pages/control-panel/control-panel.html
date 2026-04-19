@@ -19,6 +19,32 @@
     </div>
   </header>
 
+  <!-- ══════════════════════════ HEALTH STATUS ══════════════════════════ -->
+  <section class="mb-8">
+    <div class="flex flex-wrap gap-3">
+      @for (svc of [
+        { label: 'Gateway',    status: health.gateway() },
+        { label: 'Auth',       status: health.authMs() },
+        { label: 'Robótica',   status: health.robotics() },
+        { label: 'Gestión',    status: health.management() },
+        { label: 'MAI Core',   status: health.maiCore() }
+      ]; track svc.label) {
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-white/5">
+          <div class="w-2 h-2 rounded-full flex-shrink-0"
+               [class]="svc.status === 'online' ? 'bg-secondary animate-pulse' :
+                        svc.status === 'offline' ? 'bg-error' : 'bg-outline animate-pulse'">
+          </div>
+          <span class="text-[10px] font-mono text-slate-400 uppercase tracking-widest">{{ svc.label }}</span>
+          <span class="text-[9px] font-label uppercase tracking-wider"
+                [class]="svc.status === 'online' ? 'text-secondary' :
+                         svc.status === 'offline' ? 'text-error' : 'text-outline'">
+            {{ health.statusLabel(svc.status) }}
+          </span>
+        </div>
+      }
+    </div>
+  </section>
+
   <!-- ══════════════════════════ SECUENCIAS POR ARDUINO ══════════════════════════ -->
   <section class="mt-6">
     <div class="flex items-center justify-between mb-4">
