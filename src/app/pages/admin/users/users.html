@@ -53,7 +53,7 @@
     <div class="bg-surface-container rounded-2xl border border-white/5 shadow-xl overflow-hidden">
 
       <!-- Table header -->
-      <div class="grid grid-cols-12 px-6 py-3 border-b border-white/5 bg-surface-container-high">
+      <div class="grid grid-cols-12 px-4 py-2.5 sm:px-6 sm:py-3 border-b border-white/5 bg-surface-container-high">
         <span class="col-span-3 text-[9px] font-mono text-slate-500 uppercase tracking-widest">Usuario</span>
         <span class="col-span-3 text-[9px] font-mono text-slate-500 uppercase tracking-widest">Nombre</span>
         <span class="col-span-3 text-[9px] font-mono text-slate-500 uppercase tracking-widest">Correo</span>
@@ -70,7 +70,7 @@
 
       <div class="divide-y divide-white/5">
         @for (user of filteredUsers(); track user.id) {
-          <div class="grid grid-cols-12 px-6 py-4 items-center hover:bg-surface-container-highest transition-colors">
+          <div class="grid grid-cols-12 px-4 py-3 sm:px-6 sm:py-4 items-center hover:bg-surface-container-highest transition-colors">
 
             <!-- Username -->
             <div class="col-span-3 flex items-center gap-3">
@@ -118,7 +118,7 @@
       </div>
 
       <!-- Footer count -->
-      <div class="px-6 py-3 border-t border-white/5 bg-surface-container-high">
+      <div class="px-4 py-2.5 sm:px-6 sm:py-3 border-t border-white/5 bg-surface-container-high">
         <span class="text-[9px] font-mono text-slate-600">
           {{ filteredUsers().length }} de {{ users().length }} usuarios
         </span>

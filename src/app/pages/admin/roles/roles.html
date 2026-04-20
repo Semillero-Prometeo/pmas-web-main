@@ -49,7 +49,7 @@
   } @else {
 
     <!-- Cards grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
 
       @if (filteredRoles().length === 0) {
         <div class="col-span-full flex flex-col items-center justify-center py-16 gap-3 text-slate-600">
@@ -59,7 +59,7 @@
       }
 
       @for (role of filteredRoles(); track role.id) {
-        <div class="bg-surface-container rounded-2xl border border-white/5 shadow-xl p-5 flex flex-col gap-4 hover:border-primary/20 transition-all">
+        <div class="bg-surface-container rounded-2xl border border-white/5 shadow-xl p-4 sm:p-5 flex flex-col gap-4 hover:border-primary/20 transition-all">
 
           <!-- Icon + name -->
           <div class="flex items-start gap-3">

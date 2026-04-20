@@ -50,7 +50,7 @@
     <div class="flex items-center justify-between mb-4">
       <div>
         <span class="font-label text-[10px] uppercase tracking-[0.3em] text-secondary mb-1 block">Secuencias</span>
-        <h2 class="font-headline text-2xl font-bold tracking-tighter text-on-surface">Panel de Ejecución</h2>
+        <h2 class="font-headline text-xl sm:text-2xl font-bold tracking-tighter text-on-surface">Panel de Ejecución</h2>
       </div>
       <div class="flex items-center gap-2 text-[10px] font-mono text-outline">
         <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
@@ -90,7 +90,7 @@
           @for (group of sequenceGroups(); track group.key) {
             <div class="bg-surface-container rounded-xl border border-white/5 shadow-xl overflow-hidden">
               <!-- Cabecera del grupo -->
-              <div class="flex items-center justify-between px-5 py-3 bg-surface-container-high border-b border-white/5">
+              <div class="flex items-center justify-between px-4 py-2.5 sm:px-5 sm:py-3 bg-surface-container-high border-b border-white/5">
                 <div class="flex items-center gap-3">
                   <div class="px-2 py-0.5 rounded bg-primary/15 border border-primary/25">
                     <span class="text-[9px] font-mono text-primary font-bold tracking-widest">{{ group.key }}</span>
@@ -179,7 +179,7 @@
 
             <div
               #logScroll
-              class="h-[300px] overflow-y-auto px-3 py-2 space-y-1 font-mono text-[10px]"
+              class="h-[260px] md:h-[350px] overflow-y-auto px-3 py-2 space-y-1 font-mono text-[10px]"
               style="scrollbar-width: thin; scrollbar-color: #41484d transparent;">
 
               @if (commandLogs().length === 0) {

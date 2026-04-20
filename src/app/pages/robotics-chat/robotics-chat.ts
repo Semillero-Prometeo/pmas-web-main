@@ -66,14 +66,38 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   sttListening = signal(false);
   sttError = signal<string | null>(null);
 
+  readonly chatQuickOptions = [
+    { label: '¿Qué puedes hacer?',              icon: 'help_outline'    },
+    { label: '¿Cómo te llamas?',                icon: 'smart_toy'       },
+    { label: '¿Cuál es tu estado actual?',      icon: 'monitor_heart'   },
+    { label: '¿Qué sensores tienes?',           icon: 'sensors'         },
+    { label: '¿Puedes moverte ahora mismo?',    icon: 'directions_walk' },
+    { label: '¿Qué ves con tus cámaras?',       icon: 'videocam'        },
+    { label: '¿Cuánta batería tienes?',         icon: 'battery_5_bar'   },
+    { label: '¿Estás conectado a internet?',    icon: 'wifi'            },
+  ];
+
   // ── Decir Oración ──
   decirInput = signal('');
   decirBusy = signal(false);
   decirHistory = signal<SentenceEntry[]>([]);
 
+  readonly decirQuickOptions = [
+    { label: 'Hola, ¿cómo están todos?',          icon: 'waving_hand'       },
+    { label: 'Buenos días, bienvenidos.',          icon: 'wb_sunny'          },
+    { label: 'Buenas tardes a todos.',             icon: 'partly_cloudy_day' },
+    { label: 'Por favor, guarden silencio.',       icon: 'volume_off'        },
+    { label: 'Estoy listo para comenzar.',         icon: 'check_circle'      },
+    { label: 'Muchas gracias por su atención.',    icon: 'favorite'          },
+    { label: 'Hasta luego, que tengan buen día.',  icon: 'emoji_people'      },
+    { label: 'Por favor, acérquense.',             icon: 'social_distance'   },
+    { label: 'Esperen un momento, por favor.',     icon: 'hourglass_top'     },
+  ];
+
   private shouldScrollChat = false;
   private shouldScrollDecir = false;
   private speechRecognition: SpeechRecognitionLike | null = null;
+  private speechCtor: SpeechRecognitionCtorLike | undefined;
 
   now(): string {
     return new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
@@ -133,16 +157,25 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
     this.chatMessages.set([]);
   }
 
+  applyChatQuick(text: string) {
+    if (this.chatBusy()) return;
+    this.chatInput.set(text);
+  }
+
   toggleChatVoiceInput() {
-    if (!this.speechRecognition || this.chatBusy()) {
+    if (!this.sttAvailable() || this.chatBusy()) {
       return;
     }
 
     this.sttError.set(null);
     if (this.sttListening()) {
-      this.speechRecognition.stop();
+      this.speechRecognition?.stop();
       return;
     }
+
+    // Must create a fresh instance — reusing a stopped SpeechRecognition throws InvalidStateError
+    this.speechRecognition = this.createRecognitionInstance();
+    if (!this.speechRecognition) return;
 
     try {
       this.speechRecognition.start();
@@ -192,6 +225,12 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
     this.decirHistory.set([]);
   }
 
+  applyDecirQuick(text: string) {
+    if (this.decirBusy()) return;
+    this.decirInput.set(text);
+    this.sendDecir();
+  }
+
   ngOnInit() {
     this.setupSpeechRecognition();
 
@@ -219,7 +258,14 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
       return;
     }
 
-    const recognition = new Ctor();
+    this.speechCtor = Ctor;
+    this.sttAvailable.set(true);
+  }
+
+  private createRecognitionInstance(): SpeechRecognitionLike | null {
+    if (!this.speechCtor) return null;
+
+    const recognition = new this.speechCtor();
     recognition.lang = 'es-CO';
     recognition.interimResults = true;
     recognition.continuous = false;
@@ -240,9 +286,7 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
         resultIndex?: number;
       };
 
-      if (!speechEvent.results) {
-        return;
-      }
+      if (!speechEvent.results) return;
 
       const start = speechEvent.resultIndex ?? 0;
       let transcript = '';
@@ -270,7 +314,6 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
       this.sttListening.set(false);
     };
 
-    this.speechRecognition = recognition;
-    this.sttAvailable.set(true);
+    return recognition;
   }
 }

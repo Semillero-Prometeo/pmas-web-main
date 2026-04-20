@@ -54,7 +54,7 @@
                 <span class="absolute top-2 left-2 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
               }
             </div>
-            <div class="px-2 py-2 border-t border-white/5">
+            <div class="px-2 py-2 sm:px-3 border-t border-white/5">
               <p class="text-[10px] font-bold font-label uppercase tracking-wide text-on-surface truncate">
                 {{ cam.name || cam.cameraId }}
               </p>
@@ -85,7 +85,7 @@
         </div>
       </div>
 
-      <div class="rounded-xl border border-white/10 bg-surface-container p-4 md:p-6">
+      <div class="rounded-xl border border-white/10 bg-surface-container p-3 sm:p-4 md:p-6">
         <div class="flex flex-wrap items-end justify-between gap-2 mb-4">
           <h2 class="font-headline text-sm font-bold uppercase text-slate-400 tracking-tight">Objetos observados</h2>
           @if (vision.snapshot(); as snap) {

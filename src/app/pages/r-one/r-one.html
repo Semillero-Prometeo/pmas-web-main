@@ -6,7 +6,7 @@
 
   <!-- ═══════ HEADER ════════════════════════════════════════════════════════ -->
   <header class="fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between
-                 px-4 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/60">
+                 px-4 sm:px-6 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/60">
 
     <!-- Title -->
     <div class="leading-none">
@@ -39,14 +39,14 @@
   </header>
 
   <!-- ═══════ CONTENT (pt-14 + pb-16) ════════════════════════════════════ -->
-  <main class="flex-1 flex flex-col pt-14 pb-16 overflow-hidden">
+  <main class="flex-1 flex flex-col pt-14 pb-16 overflow-hidden md:pl-16 md:pb-0">
 
     <!-- ─────────────────────────────── MOVIMIENTOS TAB ──────────────────── -->
     @if (activeTab() === 'movements') {
       <div class="flex flex-col h-full min-h-0">
 
         <!-- Category filter bar -->
-        <div class="flex gap-2 px-4 pt-4 pb-3 overflow-x-auto shrink-0"
+        <div class="flex gap-2 px-4 sm:px-6 pt-4 pb-3 overflow-x-auto shrink-0"
              style="scrollbar-width: none;">
           @for (cat of [
             { id: 'all',         label: 'Todo',        dot: '' },
@@ -71,7 +71,7 @@
         </div>
 
         <!-- Routine grid -->
-        <div class="flex-1 overflow-y-auto px-4 pb-4 min-h-0"
+        <div class="flex-1 overflow-y-auto px-4 sm:px-6 pb-4 min-h-0"
              style="scrollbar-width: thin; scrollbar-color: #334155 transparent;">
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             @for (r of filteredRoutines(); track r.id) {
@@ -151,7 +151,7 @@
       <div class="flex flex-col h-full overflow-hidden">
 
         <!-- Sub-tab toggle -->
-        <div class="flex px-4 pt-4 pb-3 gap-2 shrink-0">
+        <div class="flex px-4 sm:px-6 pt-4 pb-3 gap-2 shrink-0">
           <button
             (click)="seqSubTab.set('build')"
             class="flex-1 py-2.5 rounded-xl text-[11px] font-label font-bold uppercase tracking-wider
@@ -176,15 +176,15 @@
 
         <!-- ── BUILD sub-tab ──────────────────────────────────────────────── -->
         @if (seqSubTab() === 'build') {
-          <div class="flex-1 flex flex-col lg:flex-row gap-4 px-4 pb-4 overflow-hidden min-h-0">
+          <div class="flex-1 flex flex-col md:flex-row gap-4 px-4 sm:px-6 pb-4 overflow-hidden min-h-0">
 
             <!-- Left: palette of available movements -->
-            <div class="lg:w-72 flex flex-col shrink-0">
+            <div class="md:w-56 lg:w-72 flex flex-col shrink-0">
               <p class="text-[9px] font-mono text-slate-500 uppercase tracking-[0.2em] mb-2 shrink-0">
                 Toca para añadir →
               </p>
-              <div class="flex-1 overflow-y-auto space-y-1 pr-1"
-                   style="max-height: 240px; scrollbar-width: thin; scrollbar-color: #334155 transparent;">
+              <div class="flex-1 overflow-y-auto space-y-1 pr-1 max-h-60 md:max-h-none"
+                   style="scrollbar-width: thin; scrollbar-color: #334155 transparent;">
                 @for (r of routines; track r.id) {
                   <button
                     (click)="addToSequence(r)"
@@ -370,7 +370,7 @@
 
         <!-- ── SAVED sub-tab ──────────────────────────────────────────────── -->
         @if (seqSubTab() === 'saved') {
-          <div class="flex-1 overflow-y-auto px-4 pb-4"
+          <div class="flex-1 overflow-y-auto px-4 sm:px-6 pb-4"
                style="scrollbar-width: thin; scrollbar-color: #334155 transparent;">
 
             @if (!savedSequences().length) {
@@ -430,55 +430,62 @@
 
   </main>
 
-  <!-- ═══════ BOTTOM TAB BAR ═══════════════════════════════════════════════ -->
+  <!-- ═══════ TAB BAR (bottom en móvil, side rail en tablet+) ═══════════ -->
   <nav class="fixed bottom-0 left-0 right-0 z-50 h-16 flex items-stretch
-              bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/60">
+              bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/60
+              md:right-auto md:top-14 md:bottom-0 md:w-16 md:h-auto
+              md:flex-col md:items-center md:justify-start md:pt-4 md:pb-4
+              md:border-t-0 md:border-r md:border-slate-800/60">
 
     <!-- Movimientos -->
     <button
       (click)="activeTab.set('movements')"
-      class="flex-1 flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer relative"
+      class="flex-1 flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer relative
+             md:flex-none md:w-12 md:h-12 md:rounded-xl md:mb-1 md:hover:bg-white/5"
       [class]="activeTab() === 'movements' ? 'text-primary' : 'text-slate-600 hover:text-slate-400'">
       @if (activeTab() === 'movements') {
-        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-primary"></div>
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-primary md:hidden"></div>
       }
       <span class="material-symbols-outlined transition-all"
             style="font-variation-settings: 'FILL' 1;"
             [style.font-size]="activeTab() === 'movements' ? '1.4rem' : '1.2rem'">smart_toy</span>
-      <span class="text-[8px] font-label uppercase tracking-wider font-bold">Movim.</span>
+      <span class="text-[8px] font-label uppercase tracking-wider font-bold md:hidden">Movim.</span>
     </button>
 
     <!-- Chat → navega a /robotics/chat en modo compacto -->
     <a routerLink="/robotics/chat" [queryParams]="{compact: 'true'}"
        class="flex-1 flex flex-col items-center justify-center gap-0.5 transition-all no-underline
-              text-slate-600 hover:text-secondary cursor-pointer relative">
+              text-slate-600 hover:text-secondary cursor-pointer relative
+              md:flex-none md:w-12 md:h-12 md:rounded-xl md:mb-1 md:hover:bg-white/5">
       <span class="material-symbols-outlined" style="font-size: 1.2rem; font-variation-settings: 'FILL' 1;">chat_bubble</span>
-      <span class="text-[8px] font-label uppercase tracking-wider font-bold">Chat</span>
+      <span class="text-[8px] font-label uppercase tracking-wider font-bold md:hidden">Chat</span>
     </a>
 
     <!-- Cámaras → pantalla independiente de visión -->
     <a routerLink="/robotics/vision"
        class="flex-1 flex flex-col items-center justify-center gap-0.5 transition-all no-underline
-              text-slate-600 hover:text-tertiary cursor-pointer relative">
+              text-slate-600 hover:text-tertiary cursor-pointer relative
+              md:flex-none md:w-12 md:h-12 md:rounded-xl md:mb-1 md:hover:bg-white/5">
       <span class="material-symbols-outlined" style="font-size: 1.2rem; font-variation-settings: 'FILL' 1;">videocam</span>
-      <span class="text-[8px] font-label uppercase tracking-wider font-bold">Cámaras</span>
+      <span class="text-[8px] font-label uppercase tracking-wider font-bold md:hidden">Cámaras</span>
     </a>
 
     <!-- Secuencias -->
     <button
       (click)="activeTab.set('sequences')"
-      class="flex-1 flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer relative"
+      class="flex-1 flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer relative
+             md:flex-none md:w-12 md:h-12 md:rounded-xl md:mb-1 md:hover:bg-white/5"
       [class]="activeTab() === 'sequences' ? 'text-primary' : 'text-slate-600 hover:text-slate-400'">
       @if (activeTab() === 'sequences') {
-        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-primary"></div>
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-primary md:hidden"></div>
       }
       <span class="material-symbols-outlined transition-all"
             style="font-variation-settings: 'FILL' 1;"
             [style.font-size]="activeTab() === 'sequences' ? '1.4rem' : '1.2rem'">playlist_play</span>
-      <span class="text-[8px] font-label uppercase tracking-wider font-bold">Secuencias</span>
+      <span class="text-[8px] font-label uppercase tracking-wider font-bold md:hidden">Secuencias</span>
       @if (sequence().length > 0) {
         <div class="absolute top-2 right-1/4 w-4 h-4 rounded-full bg-primary text-on-primary
-                    text-[8px] font-bold flex items-center justify-center">
+                    text-[8px] font-bold flex items-center justify-center md:top-1 md:right-1">
           {{ sequence().length }}
         </div>
       }
