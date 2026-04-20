@@ -66,15 +66,9 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   sttListening = signal(false);
   sttError = signal<string | null>(null);
 
-  readonly chatQuickOptions = [
-    { label: '¿Qué puedes hacer?',              icon: 'help_outline'    },
-    { label: '¿Cómo te llamas?',                icon: 'smart_toy'       },
-    { label: '¿Cuál es tu estado actual?',      icon: 'monitor_heart'   },
-    { label: '¿Qué sensores tienes?',           icon: 'sensors'         },
-    { label: '¿Puedes moverte ahora mismo?',    icon: 'directions_walk' },
-    { label: '¿Qué ves con tus cámaras?',       icon: 'videocam'        },
-    { label: '¿Cuánta batería tienes?',         icon: 'battery_5_bar'   },
-    { label: '¿Estás conectado a internet?',    icon: 'wifi'            },
+  readonly chatQuickOptions: { label: string; prompt: string; icon: string }[] = [
+    { label: 'Poema de Diana Serrano',          prompt: 'Declara un poema para Diana Serrano, con un tono romantico y amoroso',              icon: 'help_outline'    },
+    { label: 'Quien es tu creador?',            prompt: 'Quien es tu creador?',            icon: 'smart_toy'       },
   ];
 
   // ── Decir Oración ──
@@ -160,6 +154,7 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   applyChatQuick(text: string) {
     if (this.chatBusy()) return;
     this.chatInput.set(text);
+    this.sendChat();
   }
 
   toggleChatVoiceInput() {

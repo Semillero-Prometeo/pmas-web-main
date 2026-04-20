@@ -144,7 +144,7 @@
              style="scrollbar-width: none; -ms-overflow-style: none;">
           @for (opt of chatQuickOptions; track opt.label) {
             <button
-              (click)="applyChatQuick(opt.label)"
+              (click)="applyChatQuick(opt.prompt)"
               [disabled]="chatBusy()"
               class="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border
                      border-secondary/25 bg-secondary/8 text-secondary hover:bg-secondary/15
