@@ -29,6 +29,12 @@ interface SpeechRecognitionCtorLike {
   new (): SpeechRecognitionLike;
 }
 
+interface SpeechRecognitionResultLike {
+  isFinal?: boolean;
+  readonly length: number;
+  [index: number]: { transcript?: string };
+}
+
 interface SpeechRecognitionLike {
   lang: string;
   interimResults: boolean;
@@ -92,6 +98,7 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   private shouldScrollDecir = false;
   private speechRecognition: SpeechRecognitionLike | null = null;
   private speechCtor: SpeechRecognitionCtorLike | undefined;
+  private finalTranscript = '';
 
   now(): string {
     return new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
@@ -263,10 +270,11 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
     const recognition = new this.speechCtor();
     recognition.lang = 'es-CO';
     recognition.interimResults = true;
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {
+      this.finalTranscript = this.chatInput().trim();
       this.sttListening.set(true);
       this.sttError.set(null);
     };
@@ -277,36 +285,41 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
 
     recognition.onresult = (event: Event) => {
       const speechEvent = event as Event & {
-        results?: ArrayLike<ArrayLike<{ transcript?: string }>>;
+        results?: ArrayLike<SpeechRecognitionResultLike>;
         resultIndex?: number;
       };
 
       if (!speechEvent.results) return;
 
+      let interim = '';
       const start = speechEvent.resultIndex ?? 0;
-      let transcript = '';
 
       for (let i = start; i < speechEvent.results.length; i += 1) {
-        const alt = speechEvent.results[i]?.[0];
-        if (alt?.transcript) {
-          transcript += `${alt.transcript} `;
+        const result = speechEvent.results[i];
+        const transcript = result?.[0]?.transcript ?? '';
+        if (result?.isFinal) {
+          if (transcript.trim()) {
+            this.finalTranscript += (this.finalTranscript ? ' ' : '') + transcript.trim();
+          }
+        } else {
+          interim += transcript;
         }
       }
 
-      if (transcript.trim()) {
-        this.chatInput.set(transcript.trim());
-      }
+      const display = this.finalTranscript
+        ? interim.trim() ? `${this.finalTranscript} ${interim.trim()}` : this.finalTranscript
+        : interim.trim();
+      if (display) this.chatInput.set(display);
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEventLike) => {
       if (event.error === 'not-allowed') {
         this.sttError.set('Debes habilitar permisos de micrófono en el navegador.');
       } else if (event.error === 'no-speech') {
-        this.sttError.set('No se detectó voz. Intenta de nuevo.');
       } else {
         this.sttError.set('Falló el reconocimiento de voz.');
+        this.sttListening.set(false);
       }
-      this.sttListening.set(false);
     };
 
     return recognition;
