@@ -38,7 +38,7 @@ export class AdminShell implements OnInit {
   readonly mainClasses = computed(() => {
     const c = this.compact();
     if (c) {
-      return 'min-h-screen pt-16 pb-[4.5rem] px-4 md:px-6';
+      return 'min-h-screen pt-16 pb-[4.5rem] px-3 sm:px-4 md:pb-4 md:ml-16 md:px-6';
     }
     const ml = this.chrome.sidebarCollapsed() ? 'md:ml-[4.5rem]' : 'md:ml-64';
     return `min-h-screen pt-20 px-4 md:px-8 pb-12 ${ml}`;

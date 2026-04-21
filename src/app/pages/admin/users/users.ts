@@ -46,7 +46,7 @@ export class Users implements OnInit {
     password: '',
     first_name: '',
     last_name: '',
-    role_id: 0,
+    role_ids: [] as number[],
   });
 
   // Delete confirm
@@ -89,7 +89,7 @@ export class Users implements OnInit {
   }
 
   openCreate() {
-    this.form.set({ id: 0, username: '', email: '', password: '', first_name: '', last_name: '', role_id: this.roles()[0]?.id ?? 0 });
+    this.form.set({ id: 0, username: '', email: '', password: '', first_name: '', last_name: '', role_ids: this.roles()[0] ? [this.roles()[0].id] : [] });
     this.modalMode.set('create');
     this.modalError.set(null);
     this.modalOpen.set(true);
@@ -103,11 +103,24 @@ export class Users implements OnInit {
       password: '',
       first_name: user.person?.first_name ?? '',
       last_name: user.person?.last_name ?? '',
-      role_id: user.user_role?.[0]?.role?.id ?? 0,
+      role_ids: user.user_role?.map(ur => ur.role.id) ?? [],
     });
     this.modalMode.set('edit');
     this.modalError.set(null);
     this.modalOpen.set(true);
+  }
+
+  isRoleSelected(roleId: number): boolean {
+    return this.form().role_ids.includes(roleId);
+  }
+
+  toggleRole(roleId: number) {
+    this.form.update(f => {
+      const ids = f.role_ids.includes(roleId)
+        ? f.role_ids.filter((id: number) => id !== roleId)
+        : [...f.role_ids, roleId];
+      return { ...f, role_ids: ids };
+    });
   }
 
   closeModal() {
@@ -128,7 +141,7 @@ export class Users implements OnInit {
       email: f.email,
       first_name: f.first_name,
       last_name: f.last_name,
-      role_id: f.role_id,
+      role_ids: f.role_ids,
     };
     if (f.password) payload.password = f.password;
 

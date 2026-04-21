@@ -2,6 +2,7 @@ import { Component, signal, computed, inject, OnInit, ViewChild, ElementRef, Aft
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { GATEWAY_URL } from '../../core/constants/gateway';
+import { HealthService } from '../../core/services/health.service';
 import { catchError, forkJoin, map, of } from 'rxjs';
 
 interface MotionBlock {
@@ -50,6 +51,7 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
   @ViewChild('logScroll')  logScroll!:  ElementRef<HTMLDivElement>;
 
   private http = inject(HttpClient);
+  health = inject(HealthService);
   private chainStatusTimer: ReturnType<typeof setInterval> | null = null;
   private logCounter = 0;
 
@@ -77,6 +79,7 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
   ackCount = computed(() => this.commandLogs().filter((item) => item.status === 'ack').length);
 
   ngOnInit() {
+    this.health.checkAll();
     this.loadSequences();
     this.refreshChainStatus();
     this.chainStatusTimer = setInterval(() => this.refreshChainStatus(), 2000);
@@ -117,8 +120,7 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
             for (const entry of entries) {
               if (!entry.sequence) continue;
               this.sequenceCache.set(entry.name, entry.sequence);
-              const uniqueIds = [...new Set(entry.sequence.blocks.map((block) => block.arduino_id))];
-              const key = uniqueIds.length === 1 ? `ARD-${uniqueIds[0]}` : 'MULTI';
+              const key = this.extractSequenceFolderKey(entry.name);
               const list = grouping.get(key) ?? [];
               list.push(entry.name);
               grouping.set(key, list);
@@ -128,7 +130,7 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
               .sort(([a], [b]) => a.localeCompare(b))
               .map(([key, sequenceNames]) => ({
                 key,
-                label: key === 'MULTI' ? 'Multi Arduino' : `Arduino ${key.replace('ARD-', '')}`,
+                label: key === 'ROOT' ? 'Sin carpeta' : key,
                 sequenceNames: sequenceNames.sort((a, b) => a.localeCompare(b)),
               }));
             this.sequenceGroups.set(groups);
@@ -314,4 +316,19 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   trackLog(_: number, log: SequenceLog) { return log.id; }
+
+  private extractSequenceFolderKey(sequenceName: string): string {
+    const normalized = sequenceName.replace(/\\/g, '/');
+    const separatorIndex = normalized.lastIndexOf('/');
+    if (separatorIndex <= 0) {
+      return 'ROOT';
+    }
+    return normalized.slice(0, separatorIndex);
+  }
+
+  displaySequenceName(sequenceName: string): string {
+    const normalized = sequenceName.replace(/\\/g, '/');
+    const separatorIndex = normalized.lastIndexOf('/');
+    return separatorIndex >= 0 ? normalized.slice(separatorIndex + 1) : normalized;
+  }
 }

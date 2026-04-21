@@ -80,6 +80,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/sequences/sequences').then((m) => m.Sequences),
         data: { sidebarActive: 'telemetry' },
       },
+      {
+        path: 'iframe',
+        loadComponent: () => import('./pages/iframe-viewer/iframe-viewer').then((m) => m.IframeViewer),
+        data: { sidebarActive: 'iframe' },
+      },
     ],
   },
 

@@ -4,4 +4,5 @@ export const environment = {
    * `false` (por defecto): sitio completo — landing (info, team, projects) accesible también con sesión.
    */
   compactMode: true,
+  gatewayUrl: 'http://192.168.1.115:3000',
 };

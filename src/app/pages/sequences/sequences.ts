@@ -27,6 +27,7 @@ interface SequenceFile {
 
 interface LegacyImportItem {
   sourceFileName: string;
+  sourceRelativePath: string;
   targetName: string;
   arduino_id: number | null;
   blocks: MotionBlock[];
@@ -282,7 +283,8 @@ export class Sequences {
     const blocks = item.blocks.map((block) => ({ ...block, arduino_id: item.arduino_id ?? 0 }));
     const payload = {
       sequence: { version: 1, name: item.targetName.trim(), blocks },
-      overwrite: false,
+      // Legacy imports should replace existing sequences by default.
+      overwrite: true,
     };
     await this.requestSaveSequence(payload, item.targetName.trim(), blocks);
   }
@@ -315,7 +317,8 @@ export class Sequences {
       const reader = new FileReader();
       reader.onload = () => {
         const rawText = String(reader.result ?? '');
-        const fileBaseName = file.name.replace(/\.json$/i, '');
+        const relativePath = this.getFileRelativePath(file);
+        const fileBaseName = relativePath.replace(/\.json$/i, '');
         try {
           const parsed = JSON.parse(rawText);
           if (!Array.isArray(parsed)) {
@@ -340,6 +343,7 @@ export class Sequences {
 
           resolve({
             sourceFileName: file.name,
+            sourceRelativePath: relativePath,
             targetName: fileBaseName,
             arduino_id: defaultArduinoId,
             blocks,
@@ -348,6 +352,7 @@ export class Sequences {
         } catch (error) {
           resolve({
             sourceFileName: file.name,
+            sourceRelativePath: relativePath,
             targetName: fileBaseName,
             arduino_id: defaultArduinoId,
             blocks: [],
@@ -356,9 +361,11 @@ export class Sequences {
         }
       };
       reader.onerror = () => {
+        const relativePath = this.getFileRelativePath(file);
         resolve({
           sourceFileName: file.name,
-          targetName: file.name.replace(/\.json$/i, ''),
+          sourceRelativePath: relativePath,
+          targetName: relativePath.replace(/\.json$/i, ''),
           arduino_id: defaultArduinoId,
           blocks: [],
           error: 'No se pudo leer el archivo',
@@ -366,6 +373,11 @@ export class Sequences {
       };
       reader.readAsText(file);
     });
+  }
+
+  private getFileRelativePath(file: File): string {
+    const candidate = (file as File & { webkitRelativePath?: string }).webkitRelativePath;
+    return candidate && candidate.trim().length > 0 ? candidate : file.name;
   }
 
   blockLeftPx(block: MotionBlock): number {

@@ -27,13 +27,11 @@
         </button>
       </div>
 
-      <!-- Status pill (oculto en compacto pequeño) -->
-      @if (!compact()) {
-        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-white/5 text-[10px] font-mono">
-          <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
-          <span class="text-secondary uppercase tracking-widest">R-One Online</span>
-        </div>
-      }
+      <!-- Status pill (visible en tablet+, oculto en móvil pequeño) -->
+      <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-white/5 text-[10px] font-mono">
+        <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+        <span class="text-secondary uppercase tracking-widest">R-One Online</span>
+      </div>
     </div>
 
     <!-- Clear button -->
@@ -55,7 +53,7 @@
       <div
         #chatScroll
         class="flex-1 overflow-y-auto py-4 space-y-4"
-        [class]="compact() ? 'px-3' : 'px-8 py-6 space-y-5'"
+        [class]="compact() ? 'px-3 sm:px-5 md:px-6' : 'px-8 py-6 space-y-5'"
         style="scrollbar-width: thin; scrollbar-color: #41484d transparent;">
 
         @if (chatMessages().length === 0) {
@@ -81,7 +79,7 @@
 
           @if (msg.from === 'user') {
             <div class="flex justify-end gap-2">
-              <div [class]="compact() ? 'max-w-[85%]' : 'max-w-[78%]'">
+              <div [class]="compact() ? 'max-w-[85%] sm:max-w-[72%]' : 'max-w-[78%]'">
                 <div class="bg-primary/15 border border-primary/20 rounded-2xl rounded-tr-sm px-4 py-3">
                   <p class="text-on-surface leading-relaxed whitespace-pre-wrap"
                      [class]="compact() ? 'text-sm' : 'text-base'">{{ msg.text }}</p>
@@ -109,7 +107,7 @@
                       [class]="msg.status === 'sending' ? 'text-secondary' : msg.status === 'error' ? 'text-error' : 'text-slate-400'"
                       style="font-size: 0.9rem; font-variation-settings: 'FILL' 1;">smart_toy</span>
               </div>
-              <div [class]="compact() ? 'max-w-[85%]' : 'max-w-[78%]'">
+              <div [class]="compact() ? 'max-w-[85%] sm:max-w-[72%]' : 'max-w-[78%]'">
                 <div class="rounded-2xl rounded-tl-sm px-4 py-3 transition-all"
                      [class]="msg.status === 'sending'
                        ? 'bg-secondary/10 border border-secondary/25'
@@ -139,11 +137,30 @@
 
       <!-- Input area -->
       <div class="border-t border-white/5 bg-surface-container-high flex-shrink-0"
-           [class]="compact() ? 'px-3 py-3' : 'px-8 py-5'">
+           [class]="compact() ? 'px-3 py-3 sm:px-5 sm:py-4' : 'px-8 py-5'">
+
+        <!-- Quick options -->
+        <div class="flex gap-2 overflow-x-auto pb-2 mb-3"
+             style="scrollbar-width: none; -ms-overflow-style: none;">
+          @for (opt of chatQuickOptions; track opt.label) {
+            <button
+              (click)="applyChatQuick(opt.prompt)"
+              [disabled]="chatBusy()"
+              class="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border
+                     border-secondary/25 bg-secondary/8 text-secondary hover:bg-secondary/15
+                     hover:border-secondary/40 transition-all cursor-pointer
+                     disabled:opacity-40 disabled:cursor-not-allowed font-label"
+              [class]="compact() ? 'text-[10px] sm:text-xs' : 'text-xs'">
+              <span class="material-symbols-outlined" style="font-size: 0.8rem; font-variation-settings: 'FILL' 1;">{{ opt.icon }}</span>
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+
         <div class="flex items-end gap-3">
           <div class="flex-1 relative">
             <textarea
-              [rows]="compact() ? 3 : 5"
+              [rows]="compact() ? 4 : 5"
               maxlength="500"
               placeholder="Escribe un mensaje para R-One..."
               [ngModel]="chatInput()"
@@ -161,6 +178,22 @@
             </span>
           </div>
           <button
+            (click)="toggleChatVoiceInput()"
+            [disabled]="chatBusy() || !sttAvailable()"
+            [attr.aria-label]="sttListening() ? 'Detener dictado por voz' : 'Iniciar dictado por voz'"
+            class="flex-shrink-0 rounded-2xl flex items-center justify-center transition-all
+                   cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            [class]="(sttListening()
+              ? 'bg-primary hover:opacity-90 active:scale-90 shadow-[0_0_18px_rgba(172,199,255,0.3)]'
+              : 'bg-surface-container-highest hover:bg-surface-container')
+              + (compact() ? ' w-11 h-11 sm:w-12 sm:h-12' : ' w-14 h-14')">
+            <span class="material-symbols-outlined"
+                  [class]="sttListening() ? 'text-on-primary' : 'text-on-surface-variant'"
+                  style="font-size: 1.3rem; font-variation-settings: 'FILL' 1;">
+              {{ sttListening() ? 'stop_circle' : 'mic' }}
+            </span>
+          </button>
+          <button
             (click)="sendChat()"
             [disabled]="chatBusy() || !chatInput().trim()"
             class="flex-shrink-0 rounded-2xl flex items-center justify-center transition-all
@@ -168,16 +201,20 @@
             [class]="(chatBusy() || !chatInput().trim()
               ? 'bg-surface-container-highest'
               : 'bg-secondary hover:opacity-90 active:scale-90 shadow-[0_0_20px_rgba(99,214,177,0.3)]')
-              + (compact() ? ' w-11 h-11' : ' w-14 h-14')">
+              + (compact() ? ' w-11 h-11 sm:w-12 sm:h-12' : ' w-14 h-14')">
             <span class="material-symbols-outlined"
                   [class]="chatBusy() || !chatInput().trim() ? 'text-slate-600' : 'text-on-secondary'"
                   style="font-size: 1.3rem; font-variation-settings: 'FILL' 1;">send</span>
           </button>
         </div>
-        @if (!compact()) {
-          <p class="text-[10px] font-label text-outline uppercase tracking-wide mt-2">
-            Enter para enviar &nbsp;·&nbsp; Shift+Enter nueva línea
-          </p>
+        <p class="hidden sm:block text-[10px] font-label text-outline uppercase tracking-wide mt-2">
+          Enter para enviar &nbsp;·&nbsp; Shift+Enter nueva línea
+        </p>
+        @if (sttError()) {
+          <p class="text-[11px] text-rose-300 mt-2">{{ sttError() }}</p>
+        }
+        @if (!sttAvailable()) {
+          <p class="text-[11px] text-outline mt-2">Tu navegador no soporta dictado por voz.</p>
         }
       </div>
     </div>
@@ -189,11 +226,12 @@
 
       <!-- Input fijo de oración -->
       <div class="flex-shrink-0 border-b border-white/5 bg-surface-container-high"
-           [class]="compact() ? 'px-3 py-3' : 'px-6 py-5'">
+           [class]="compact() ? 'px-3 py-3 sm:px-5 sm:py-4' : 'px-6 py-5'">
+
         <div class="flex items-end gap-3">
           <div class="flex-1 relative">
             <textarea
-              [rows]="compact() ? 3 : 5"
+              [rows]="compact() ? 4 : 5"
               maxlength="400"
               placeholder="Escribe lo que el robot debe decir..."
               [ngModel]="decirInput()"
@@ -216,7 +254,7 @@
             [class]="(decirBusy() || !decirInput().trim()
               ? 'bg-surface-container-highest'
               : 'bg-primary text-on-primary hover:opacity-90 active:scale-95 shadow-[0_0_16px_rgba(172,199,255,0.25)]')
-              + (compact() ? ' w-11 h-11' : ' w-14 h-14')">
+              + (compact() ? ' w-11 h-11 sm:w-12 sm:h-12' : ' w-14 h-14')">
             <span class="material-symbols-outlined"
                   [class]="decirBusy() || !decirInput().trim() ? 'text-slate-600' : 'text-on-primary'"
                   style="font-size: 1.3rem; font-variation-settings: 'FILL' 1;">
@@ -224,37 +262,45 @@
             </span>
           </button>
         </div>
-        @if (!compact()) {
-          <p class="text-[10px] font-label text-outline uppercase tracking-wide mt-2">
-            Enter para enviar &nbsp;·&nbsp; Shift+Enter nueva línea
-          </p>
-        }
+        <p class="hidden sm:block text-[10px] font-label text-outline uppercase tracking-wide mt-2">
+          Enter para enviar &nbsp;·&nbsp; Shift+Enter nueva línea
+        </p>
       </div>
 
       <!-- Historial scrollable -->
       <div class="flex-1 overflow-y-auto"
            style="scrollbar-width: thin; scrollbar-color: #41484d transparent;">
 
-        @if (decirHistory().length === 0) {
-          <div class="flex flex-col items-center justify-center h-full gap-3 text-slate-600">
-            <div class="rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center"
-                 [class]="compact() ? 'w-12 h-12' : 'w-16 h-16'">
-              <span class="material-symbols-outlined text-primary/50"
-                    [style.font-size]="compact() ? '1.4rem' : '2rem'">chat_bubble_outline</span>
-            </div>
-            <div class="text-center">
-              <p class="font-headline font-bold text-slate-500" [class]="compact() ? 'text-xs' : 'text-sm'">Sin oraciones enviadas</p>
-              <p class="text-[10px] font-label uppercase tracking-wider text-slate-600 mt-1">
-                Las oraciones dichas aparecerán aquí
-              </p>
-            </div>
+        <!-- Cajitas de frases rápidas -->
+        <div [class]="compact() ? 'px-3 pt-3 sm:px-5' : 'px-6 pt-5'">
+          <p class="text-[9px] font-mono text-slate-500 uppercase tracking-[0.2em] mb-3">Frases rápidas</p>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+            @for (opt of decirQuickOptions; track opt.label) {
+              <button
+                (click)="applyDecirQuick(opt.label)"
+                [disabled]="decirBusy()"
+                class="flex flex-col items-start gap-2 p-3 rounded-xl border
+                       border-white/8 bg-surface-container
+                       hover:border-primary/40 hover:bg-primary/8
+                       transition-all cursor-pointer text-left
+                       disabled:opacity-40 disabled:cursor-not-allowed
+                       active:scale-[0.97]">
+                <span class="material-symbols-outlined text-primary/70"
+                      style="font-size: 1.1rem; font-variation-settings: 'FILL' 1;">{{ opt.icon }}</span>
+                <span class="text-[11px] sm:text-xs font-label text-on-surface-variant leading-snug">{{ opt.label }}</span>
+              </button>
+            }
           </div>
-        }
+          @if (decirHistory().length > 0) {
+            <div class="border-t border-white/5 mb-1"></div>
+          }
+        </div>
+
 
         <div class="divide-y divide-white/5">
           @for (entry of decirHistory(); track $index) {
             <div class="flex items-start gap-3 hover:bg-surface-container-highest transition-colors"
-                 [class]="compact() ? 'px-3 py-3' : 'px-6 py-4'">
+                 [class]="compact() ? 'px-3 py-3 sm:px-5' : 'px-6 py-4'">
               <div class="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center mt-0.5"
                    [class]="entry.status === 'sending'
                      ? 'bg-primary/10 border border-primary/20'
@@ -270,7 +316,7 @@
                 }
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-on-surface leading-relaxed" [class]="compact() ? 'text-xs' : 'text-sm'">{{ entry.text }}</p>
+                <p class="text-on-surface leading-relaxed" [class]="compact() ? 'text-xs sm:text-sm' : 'text-sm'">{{ entry.text }}</p>
                 <div class="flex items-center gap-2 mt-0.5">
                   <span class="text-[9px] font-mono text-outline">{{ entry.timestamp }}</span>
                   @if (entry.status === 'sending') {

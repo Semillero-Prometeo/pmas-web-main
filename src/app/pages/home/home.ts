@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { Navbar } from '../../components/navbar/navbar';
 import { Footer } from '../../components/footer/footer';
 import { AuthService } from '../../core/services/auth.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-home',
@@ -11,12 +12,13 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class Home {
   auth = inject(AuthService);
+  readonly env = environment;
   enfoques = [
-    'Inteligencia artificial y computación en la nube',
-    'Soluciones en ciberseguridad',
-    'Innovación para el desarrollo sostenible',
-    'Colaboración internacional',
-    'Formación continua',
+    'Creación de proyectos de investigación aplicada en problemáticas tecnológicas emergentes.',
+    'Metodologías en inteligencia artificial, computación en la nube y ciberseguridad.',
+    'Colaboración interinstitucional e internacional.',
+    'Formación continua en nuevas tecnologías.',
+    'Soluciones tecnológicas alineadas con los ODS.',
   ];
 
   modelBars = [
@@ -37,25 +39,25 @@ export class Home {
 
   projects = [
     {
-      tag: 'CNN // Visión',
+      tag: 'IA // Visión Artificial',
       date: '2024',
-      title: 'Modelo de reconocimiento de objetos',
-      desc: 'Redes neuronales convolucionales para detección en tiempo real bajo condiciones variables de iluminación y oclusión.',
+      title: 'Reconocimiento automático de objetos en entornos reales',
+      desc: 'Sistema basado en inteligencia artificial capaz de reconocer y clasificar objetos en entornos reales mediante Machine Learning y visión artificial.',
       icon: 'blur_on',
     },
     {
-      tag: 'Deep Learning',
+      tag: 'Robótica // Hardware',
       date: '2024',
-      title: 'Entrenamiento con deep learning',
-      desc: 'Pipeline de entrenamiento optimizado con datasets anotados y técnicas de data augmentation adaptadas al contexto local.',
-      icon: 'model_training',
+      title: 'ANDROIDE R-ONE',
+      desc: 'Desarrollo de un androide funcional integrando hardware, software y electrónica con capacidades de inteligencia artificial.',
+      icon: 'smart_toy',
     },
     {
-      tag: 'Robótica // IA',
+      tag: 'Robótica // Sensores',
       date: '2024',
-      title: 'Aplicación en robótica',
-      desc: 'Integración de modelos de visión en sistemas robóticos autónomos para navegación inteligente y manipulación de objetos.',
-      icon: 'smart_toy',
+      title: 'CLAUD-IA',
+      desc: 'Sistema robótico con sensores y capacidades de visión artificial optimizadas, integrando hardware, software y electrónica.',
+      icon: 'sensors',
     },
   ];
 
