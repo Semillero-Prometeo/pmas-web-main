@@ -8,8 +8,6 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
 import { GATEWAY_URL } from '../../core/constants/gateway';
 
-// const GATEWAY_URL = 'http://192.168.1.115:3000';
-const GATEWAY_URL = 'http://localhost:3000';
 const SEQ_STORAGE_KEY = 'r1_sequences';
 
 export type Tab = 'movements' | 'sequences';
