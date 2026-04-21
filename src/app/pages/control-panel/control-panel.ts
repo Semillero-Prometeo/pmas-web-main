@@ -120,8 +120,7 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
             for (const entry of entries) {
               if (!entry.sequence) continue;
               this.sequenceCache.set(entry.name, entry.sequence);
-              const uniqueIds = [...new Set(entry.sequence.blocks.map((block) => block.arduino_id))];
-              const key = uniqueIds.length === 1 ? `ARD-${uniqueIds[0]}` : 'MULTI';
+              const key = this.extractSequenceFolderKey(entry.name);
               const list = grouping.get(key) ?? [];
               list.push(entry.name);
               grouping.set(key, list);
@@ -131,7 +130,7 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
               .sort(([a], [b]) => a.localeCompare(b))
               .map(([key, sequenceNames]) => ({
                 key,
-                label: key === 'MULTI' ? 'Multi Arduino' : `Arduino ${key.replace('ARD-', '')}`,
+                label: key === 'ROOT' ? 'Sin carpeta' : key,
                 sequenceNames: sequenceNames.sort((a, b) => a.localeCompare(b)),
               }));
             this.sequenceGroups.set(groups);
@@ -317,4 +316,19 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   trackLog(_: number, log: SequenceLog) { return log.id; }
+
+  private extractSequenceFolderKey(sequenceName: string): string {
+    const normalized = sequenceName.replace(/\\/g, '/');
+    const separatorIndex = normalized.lastIndexOf('/');
+    if (separatorIndex <= 0) {
+      return 'ROOT';
+    }
+    return normalized.slice(0, separatorIndex);
+  }
+
+  displaySequenceName(sequenceName: string): string {
+    const normalized = sequenceName.replace(/\\/g, '/');
+    const separatorIndex = normalized.lastIndexOf('/');
+    return separatorIndex >= 0 ? normalized.slice(separatorIndex + 1) : normalized;
+  }
 }

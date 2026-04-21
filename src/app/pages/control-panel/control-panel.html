@@ -104,7 +104,7 @@
                 @for (name of group.sequenceNames; track name) {
                   <div class="rounded-lg border border-white/5 bg-surface-container-low px-3 py-2 flex items-center justify-between gap-2">
                     <div class="min-w-0">
-                      <p class="text-[11px] font-mono text-on-surface truncate">{{ name }}</p>
+                      <p class="text-[11px] font-mono text-on-surface truncate">{{ displaySequenceName(name) }}</p>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                       <button
