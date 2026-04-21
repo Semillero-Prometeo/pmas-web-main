@@ -75,6 +75,8 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   readonly chatQuickOptions: { label: string; prompt: string; icon: string }[] = [
     { label: 'Poema de Diana Serrano',          prompt: 'Declara un poema para Diana Serrano, con un tono romantico y amoroso',              icon: 'help_outline'    },
     { label: 'Quien es tu creador?',            prompt: 'Quien es tu creador?',            icon: 'smart_toy'       },
+    { label: 'Porque estudiar Ingenieria de Sistemas en la Universidad Libre de Colombia?',            prompt: 'Porque estudiar Ingenieria de Sistemas en la Universidad Libre de Colombia?',            icon: 'smart_toy'       },
+    { label: 'Di un chiste',            prompt: 'Cuenta un chiste divertido y muy comico. Siempre debe ser diferente cada vez',            icon: 'smart_toy'       },
   ];
 
   // ── Decir Oración ──
@@ -83,15 +85,23 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   decirHistory = signal<SentenceEntry[]>([]);
 
   readonly decirQuickOptions = [
-    { label: 'Hola, ¿cómo están todos?',          icon: 'waving_hand'       },
-    { label: 'Buenos días, bienvenidos.',          icon: 'wb_sunny'          },
-    { label: 'Buenas tardes a todos.',             icon: 'partly_cloudy_day' },
-    { label: 'Por favor, guarden silencio.',       icon: 'volume_off'        },
-    { label: 'Estoy listo para comenzar.',         icon: 'check_circle'      },
-    { label: 'Muchas gracias por su atención.',    icon: 'favorite'          },
-    { label: 'Hasta luego, que tengan buen día.',  icon: 'emoji_people'      },
-    { label: 'Por favor, acérquense.',             icon: 'social_distance'   },
-    { label: 'Esperen un momento, por favor.',     icon: 'hourglass_top'     },
+    { label: '¡Hola! ¡Bienvenido a la Feria del Libro 2026! Es un gusto recibirle en el stand de la Universidad Libre. Soy R-One, también llamado Federico, el asistente del semillero Prometeo. ¡Puede interactuar conmigo en cualquier momento! Estoy aquí para orientarle, explicarle y acompañarle en lo que necesite. ¡Adelante, pregunte con total confianza!', icon: 'menu_book' },
+    { label: 'Soy R-One, también llamado Federico, el asistente del semillero Prometeo.', icon: 'menu_book' },
+    { label: '¡Puede interactuar conmigo en cualquier momento! Estoy aquí para orientarle, explicarle y acompañarle en lo que necesite. ¡Adelante, pregunte con total confianza!', icon: 'menu_book' },
+    { label: 'Hola, es un gusto saludarle. Puedo ayudarle con información académica, tecnológica o administrativa.', icon: 'waving_hand' },
+    { label: '¡Le cuento un poco sobre mí! Soy R-One, también llamado Federico, un androide desarrollado por estudiantes de diferentes semestres de la Universidad Libre. Fui construido desde cero tomando como base la plataforma InMoov, y todas mis piezas fueron impresas en la universidad. Además, el software que me permite interactuar con usted también fue diseñado y desarrollado allí. ¡Soy el resultado del trabajo colaborativo, la innovación y el aprendizaje continuo!', icon: 'waving_hand' },
+    { label: '¡Permiso! ¡Robot pasando en mi nuevo carrito! Por favor, déjeme espacio para desplazarme con seguridad.', icon: 'directions_car' },
+    { label: '¡Ohh! ¡Aquí están mis creadores! Qué gusto ver al equipo que hizo posible mi desarrollo.', icon: 'groups' },
+    { label: '¡Miren, padres! ¡Soy famoso! Estoy representando con orgullo a la Universidad Libre en este evento.', icon: 'star' },
+    { label: '¡Hola, Yohel! Te veo desde aquí. ¿Va a hacerle mantenimiento a mi código? ¡Espero que todo esté funcionando perfectamente!', icon: 'code' },
+    { label: '¡Hola, ingeniero Mauricio! Tengo entendido que usted es el director de Ingeniería de Sistemas. ¡Aquí estoy representando a la Universidad Libre con mucho orgullo! Si tienen preguntas, pueden acercarse a él o interactuar conmigo.', icon: 'school' },
+    { label: '¡Marce! Le cuento que ya he avanzado hasta sexto semestre de Ingeniería de Sistemas en la Universidad Libre. ¡El aprendizaje ha sido increíble!', icon: 'psychology' },
+    { label: '¡Pablo! Por favor, no me saque del semillero Prometeo. ¡Aún tengo mucho por aprender y aportar!', icon: 'science' },
+    { label: '¡Juan Manuel! Necesito su ayuda, no estoy moviendo mis deditos correctamente. ¿Podría revisar mis servitos? Creo que requieren mantenimiento.', icon: 'build' },
+    { label: '¡Foooootoo! ¡Sonrían, por favor! Este es un gran momento para recordar.', icon: 'photo_camera' },
+    { label: '¡Hasta la vista beibi!', icon: 'waving_hand' },
+    { label: '¡La familia es lo primero! Siempre es importante apoyarnos y crecer juntos.', icon: 'favorite' },
+    { label: '¡Atención, por favor! El stand de la Universidad Libre se encuentra en el pabellón 3, piso 2, stand 526. ¡Le invito a visitarnos y conocer más sobre nuestros proyectos!', icon: 'location_on' },
   ];
 
   private shouldScrollChat = false;
