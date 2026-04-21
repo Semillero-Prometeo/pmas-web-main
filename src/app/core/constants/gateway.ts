@@ -1,5 +1,7 @@
+import { environment } from "../../../environments/environment";
+
 /** Base URL for the Nest gateway (HTTP). Align with Docker / env in deployments. */
-export const GATEWAY_URL = 'https://localhost:3000';
+export const GATEWAY_URL = environment.gatewayUrl;
 
 /** Build a WebSocket URL on the same host as ``GATEWAY_URL``. */
 export function gatewayWsUrl(path: string): string {
