@@ -102,6 +102,11 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
     { label: '¡Hasta la vista beibi!', icon: 'waving_hand' },
     { label: '¡La familia es lo primero! Siempre es importante apoyarnos y crecer juntos.', icon: 'favorite' },
     { label: '¡Atención, por favor! El stand de la Universidad Libre se encuentra en el pabellón 3, piso 2, stand 526. ¡Le invito a visitarnos y conocer más sobre nuestros proyectos!', icon: 'location_on' },
+    { label: '¡Acerquence por favor! No muerdo ha ha ha', icon: 'location_on' },
+    { label: '¡Quieren una foto? ¡Aquí estoy!', icon: 'location_on' },
+    { label: '¡Que bonita! ¿Quieres que te saque una foto?', icon: 'location_on' },
+    { label: '¡Hola guapos, como estan el dia de hoy!', icon: 'location_on' },
+    { label: 'Si puedo moverme, en estos dias sufri un problema pero en unas horas podre moverme con normalidad.', icon: 'location_on' },
   ];
 
   private shouldScrollChat = false;
