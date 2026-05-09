@@ -293,9 +293,12 @@
                        transition-all cursor-pointer text-left
                        disabled:opacity-40 disabled:cursor-not-allowed
                        active:scale-[0.97]">
-                <span class="material-symbols-outlined text-primary/70"
-                      style="font-size: 1.1rem; font-variation-settings: 'FILL' 1;">{{ opt.icon }}</span>
-                <span class="text-[11px] sm:text-xs font-label text-on-surface-variant leading-snug">{{ opt.label }}</span>
+                
+                <span class="text-[11px] sm:text-xs font-label text-on-surface-variant leading-snug">
+                  <span class="material-symbols-outlined text-primary/70"
+                      style="font-size: 0.8rem; font-variation-settings: 'FILL' 1;">{{ opt.icon }}</span>
+
+                  {{ opt.label }}</span>
               </button>
             }
             @if (filteredDecirQuickOptions().length === 0) {
