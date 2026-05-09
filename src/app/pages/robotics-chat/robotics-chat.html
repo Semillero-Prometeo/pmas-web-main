@@ -1,48 +1,49 @@
 <div class="flex flex-col min-h-[calc(100dvh-8rem)] max-h-[calc(100dvh-8rem)] md:max-h-none md:min-h-[calc(100dvh-6rem)] bg-background industrial-grid">
 
   <!-- ══ BARRA DE TABS / HEADER ════════════════════════════════════════════ -->
-  <div class="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-surface/80 backdrop-blur-sm flex-shrink-0"
-       [class]="compact() ? 'h-14' : ''">
-    <div class="flex items-center gap-3">
-
-      <!-- Tabs -->
-      <div class="flex gap-1 p-1 bg-surface-container rounded-xl border border-white/5">
-        <button
-          (click)="activeTab.set('chatbot')"
-          [class]="activeTab() === 'chatbot'
-            ? 'bg-secondary text-on-secondary shadow'
-            : 'text-slate-400 hover:text-on-surface hover:bg-surface-container-highest'"
-          class="flex items-center gap-1.5 px-3 py-2 rounded-lg font-headline font-bold text-sm tracking-tight transition-all cursor-pointer">
-          <span class="material-symbols-outlined" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">smart_toy</span>
-          <span [class]="compact() ? 'hidden sm:inline' : ''">Chatbot IA</span>
-        </button>
-        <button
-          (click)="activeTab.set('decir')"
-          [class]="activeTab() === 'decir'
-            ? 'bg-primary text-on-primary shadow'
-            : 'text-slate-400 hover:text-on-surface hover:bg-surface-container-highest'"
-          class="flex items-center gap-1.5 px-3 py-2 rounded-lg font-headline font-bold text-sm tracking-tight transition-all cursor-pointer">
-          <span class="material-symbols-outlined" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">record_voice_over</span>
-          <span [class]="compact() ? 'hidden sm:inline' : ''">Decir Oración</span>
-        </button>
-      </div>
-
-      <!-- Status pill (visible en tablet+, oculto en móvil pequeño) -->
-      <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-white/5 text-[10px] font-mono">
-        <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
-        <span class="text-secondary uppercase tracking-widest">R-One Online</span>
-      </div>
+  <div class="flex flex-col gap-2 px-3 sm:px-4 py-3 border-b border-white/5 bg-surface/80 backdrop-blur-sm flex-shrink-0">
+    <!-- Tabs: ancho completo, dos columnas -->
+    <div class="grid grid-cols-2 gap-2 w-full">
+      <button
+        type="button"
+        (click)="activeTab.set('chatbot')"
+        [class]="activeTab() === 'chatbot'
+          ? 'bg-secondary text-on-secondary shadow'
+          : 'text-slate-400 hover:text-on-surface hover:bg-surface-container-highest'"
+        class="flex items-center justify-center gap-1.5 min-h-11 sm:min-h-12 px-2 py-2.5 rounded-xl border border-white/5
+               bg-surface-container font-headline font-bold text-xs sm:text-sm tracking-tight transition-all cursor-pointer">
+        <span class="material-symbols-outlined shrink-0" style="font-size: 1.1rem; font-variation-settings: 'FILL' 1;">smart_toy</span>
+        <span class="truncate">Chatbot IA</span>
+      </button>
+      <button
+        type="button"
+        (click)="activeTab.set('decir')"
+        [class]="activeTab() === 'decir'
+          ? 'bg-primary text-on-primary shadow border-primary/30'
+          : 'text-slate-400 hover:text-on-surface hover:bg-surface-container-highest'"
+        class="flex items-center justify-center gap-1.5 min-h-11 sm:min-h-12 px-2 py-2.5 rounded-xl border border-white/5
+               bg-surface-container font-headline font-bold text-xs sm:text-sm tracking-tight transition-all cursor-pointer">
+        <span class="material-symbols-outlined shrink-0" style="font-size: 1.1rem; font-variation-settings: 'FILL' 1;">record_voice_over</span>
+        <span class="truncate">Decir Oración</span>
+      </button>
     </div>
 
-    <!-- Clear button -->
-    <button
-      (click)="activeTab() === 'chatbot' ? clearChat() : clearDecir()"
-      class="flex items-center gap-1.5 text-[10px] font-label uppercase tracking-wider text-slate-500
-             hover:text-on-surface transition-colors cursor-pointer px-3 py-2 rounded-lg
-             hover:bg-surface-container">
-      <span class="material-symbols-outlined" style="font-size: 0.9rem;">delete_sweep</span>
-      <span class="hidden sm:inline">Limpiar</span>
-    </button>
+    <div class="flex items-center justify-between gap-2 min-h-0">
+      <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-white/5 text-[10px] font-mono">
+        <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse shrink-0"></span>
+        <span class="text-secondary uppercase tracking-widest">R-One Online</span>
+      </div>
+      <div class="flex sm:flex-1 sm:justify-end">
+        <button
+          type="button"
+          (click)="activeTab() === 'chatbot' ? clearChat() : clearDecir()"
+          class="flex items-center gap-1.5 text-[10px] font-label uppercase tracking-wider text-slate-500
+                 hover:text-on-surface transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-surface-container w-full sm:w-auto justify-center sm:justify-start">
+          <span class="material-symbols-outlined" style="font-size: 0.9rem;">delete_sweep</span>
+          <span>Limpiar</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- ══ CHATBOT IA ════════════════════════════════════════════════════════ -->
@@ -139,21 +140,25 @@
       <div class="border-t border-white/5 bg-surface-container-high flex-shrink-0"
            [class]="compact() ? 'px-3 py-3 sm:px-5 sm:py-4' : 'px-8 py-5'">
 
-        <!-- Quick options -->
-        <div class="flex flex-wrap gap-2 pb-2 mb-3">
-          @for (opt of chatQuickOptions; track opt.label) {
-            <button
-              (click)="applyChatQuick(opt.prompt)"
-              [disabled]="chatBusy()"
-              class="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border
-                     border-secondary/25 bg-secondary/8 text-secondary hover:bg-secondary/15
-                     hover:border-secondary/40 transition-all cursor-pointer
-                     disabled:opacity-40 disabled:cursor-not-allowed font-label"
-              [class]="compact() ? 'text-[10px] sm:text-xs' : 'text-xs'">
-              <span class="material-symbols-outlined" style="font-size: 0.8rem; font-variation-settings: 'FILL' 1;">{{ opt.icon }}</span>
-              {{ opt.label }}
-            </button>
-          }
+        <!-- Quick options: una sola fila, scroll horizontal tipo carrusel -->
+        <div class="pb-2 mb-3 -mx-1 px-1 overflow-x-auto overflow-y-hidden overscroll-x-contain snap-x snap-mandatory scrollbar-thin"
+             style="scrollbar-width: thin; scrollbar-color: #41484d transparent;">
+          <div class="flex flex-nowrap gap-2 w-max max-w-none min-w-0">
+            @for (opt of chatQuickOptions; track opt.label) {
+              <button
+                type="button"
+                (click)="applyChatQuick(opt.prompt)"
+                [disabled]="chatBusy()"
+                class="snap-start shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border max-w-[min(85vw,20rem)]
+                       border-secondary/25 bg-secondary/8 text-secondary hover:bg-secondary/15
+                       hover:border-secondary/40 transition-all cursor-pointer text-left
+                       disabled:opacity-40 disabled:cursor-not-allowed font-label"
+                [class]="compact() ? 'text-[10px] sm:text-xs' : 'text-xs'">
+                <span class="material-symbols-outlined shrink-0" style="font-size: 0.8rem; font-variation-settings: 'FILL' 1;">{{ opt.icon }}</span>
+                <span class="truncate">{{ opt.label }}</span>
+              </button>
+            }
+          </div>
         </div>
 
         <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 sm:gap-3">

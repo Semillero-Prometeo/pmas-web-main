@@ -6,6 +6,9 @@ import { AuthService } from '../../core/services/auth.service';
 import { GATEWAY_URL } from '../../core/constants/gateway';
 import { environment } from '../../../environments/environment';
 
+const CHAT_MESSAGES_STORAGE_KEY = 'prometeo_robotics_chat_messages_v1';
+const MAX_STORED_CHAT_MESSAGES = 250;
+
 type Tab = 'chatbot' | 'decir';
 
 interface ChatMessage {
@@ -116,6 +119,54 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
     return this.decirQuickOptions.filter((item) => item.label.toLowerCase().includes(query));
   });
 
+  private isStoredChatMessage(value: unknown): value is ChatMessage {
+    if (!value || typeof value !== 'object') return false;
+    const m = value as Record<string, unknown>;
+    const from = m['from'];
+    const status = m['status'];
+    const text = m['text'];
+    const timestamp = m['timestamp'];
+    const fromOk = from === 'user' || from === 'robot';
+    const statusOk = status === 'done' || status === 'error' || status === 'sending';
+    return fromOk && typeof text === 'string' && typeof timestamp === 'string' && statusOk;
+  }
+
+  private normalizeStoredChatMessages(list: ChatMessage[]): ChatMessage[] {
+    return list.map((m) => {
+      if (m.status !== 'sending') return m;
+      if (m.from === 'robot') {
+        return {
+          ...m,
+          status: 'error',
+          text: 'La respuesta anterior quedó incompleta al recargar la página.',
+        };
+      }
+      return m;
+    });
+  }
+
+  private persistChatMessages() {
+    try {
+      const slice = this.chatMessages().slice(-MAX_STORED_CHAT_MESSAGES);
+      localStorage.setItem(CHAT_MESSAGES_STORAGE_KEY, JSON.stringify(slice));
+    } catch {
+      /* ignore quota / private mode */
+    }
+  }
+
+  private restoreChatMessages() {
+    try {
+      const raw = localStorage.getItem(CHAT_MESSAGES_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as unknown;
+      if (!Array.isArray(parsed)) return;
+      const list = parsed.filter((x) => this.isStoredChatMessage(x));
+      this.chatMessages.set(this.normalizeStoredChatMessages(list));
+    } catch {
+      /* ignore */
+    }
+  }
+
   private shouldScrollChat = false;
   private shouldScrollDecir = false;
   private speechRecognition: SpeechRecognitionLike | null = null;
@@ -140,6 +191,7 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
     const robotMsg: ChatMessage = { from: 'robot', text: '...', timestamp: this.now(), status: 'sending' };
 
     this.chatMessages.update(msgs => [...msgs, userMsg, robotMsg]);
+    this.persistChatMessages();
     this.chatInput.set('');
     this.chatBusy.set(true);
     this.shouldScrollChat = true;
@@ -153,6 +205,7 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
               : m
             )
           );
+          this.persistChatMessages();
           this.chatBusy.set(false);
           this.shouldScrollChat = true;
         },
@@ -163,6 +216,7 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
               : m
             )
           );
+          this.persistChatMessages();
           this.chatBusy.set(false);
           this.shouldScrollChat = true;
         },
@@ -178,6 +232,11 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
 
   clearChat() {
     this.chatMessages.set([]);
+    try {
+      localStorage.removeItem(CHAT_MESSAGES_STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
   }
 
   applyChatQuick(text: string) {
@@ -256,6 +315,7 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   }
 
   ngOnInit() {
+    this.restoreChatMessages();
     this.setupSpeechRecognition();
 
     const params = this.route.snapshot.queryParamMap;
