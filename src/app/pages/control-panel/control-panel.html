@@ -37,6 +37,22 @@
       </div>
     </div>
 
+    <div class="mb-4 grid grid-cols-1 sm:grid-cols-[1fr_220px] gap-2">
+      <input
+        [ngModel]="movementSearch()"
+        (ngModelChange)="updateMovementSearch($event)"
+        placeholder="Buscar movimiento o secuencia..."
+        class="w-full rounded-lg bg-surface-container border border-white/10 px-3 py-2 text-sm text-on-surface placeholder:text-slate-600" />
+      <select
+        [ngModel]="selectedGroupFilter()"
+        (ngModelChange)="updateGroupFilter($event)"
+        class="w-full rounded-lg bg-surface-container border border-white/10 px-3 py-2 text-sm text-on-surface">
+        @for (opt of groupFilterOptions(); track opt.value) {
+          <option [ngValue]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
       <!-- Tarjetas de grupos de secuencias (2/3 del ancho en xl) -->
@@ -60,13 +76,13 @@
               Reintentar
             </button>
           </div>
-        } @else if (sequenceGroups().length === 0) {
+        } @else if (filteredSequenceGroups().length === 0) {
           <div class="flex flex-col items-center justify-center py-16 gap-3 text-slate-600">
             <span class="material-symbols-outlined" style="font-size: 2rem;">robot_2</span>
-            <p class="text-[10px] font-label uppercase tracking-wider">No hay secuencias configuradas</p>
+            <p class="text-[10px] font-label uppercase tracking-wider">Sin resultados para el filtro actual</p>
           </div>
         } @else {
-          @for (group of sequenceGroups(); track group.key) {
+          @for (group of filteredSequenceGroups(); track group.key) {
             <div class="bg-surface-container rounded-xl border border-white/5 shadow-xl overflow-hidden">
               <!-- Cabecera del grupo -->
               <div class="flex items-center justify-between px-4 py-2.5 sm:px-5 sm:py-3 bg-surface-container-high border-b border-white/5">
@@ -80,27 +96,27 @@
               </div>
 
               <div class="p-3 sm:p-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div [class]="group.sequenceNames.length >= 2 ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-1 gap-2'">
                 @for (name of group.sequenceNames; track name) {
                   <div class="rounded-lg border border-white/5 bg-surface-container-low p-2.5 sm:p-3 space-y-2">
                     <button
                       (click)="executeSequence(name)"
                       [disabled]="executingSequenceName() === name"
-                      class="w-full text-left rounded-lg border border-primary/20 bg-primary/10 hover:bg-primary/20 transition-colors p-3 cursor-pointer disabled:opacity-50">
-                      <p class="text-[11px] sm:text-xs font-mono text-on-surface leading-snug break-words min-h-[2.5rem]">
+                      class="w-full rounded-lg border border-primary/20 bg-primary/10 hover:bg-primary/20 transition-colors p-3 cursor-pointer disabled:opacity-50 flex items-center justify-center min-h-[4.25rem]">
+                      <p class="text-[11px] sm:text-xs font-mono text-on-surface leading-snug break-words text-center">
                         {{ displaySequenceName(name) }}
                       </p>
-                      <div class="mt-2 text-[10px] text-primary font-label uppercase tracking-wide">
+                    </button>
+                    <!-- <div class="flex items-center justify-between gap-2">
+                      <div class="text-[10px] text-primary font-label uppercase tracking-wide">
                         {{ executingSequenceName() === name ? 'Ejecutando...' : 'Ejecutar' }}
                       </div>
-                    </button>
-                    <div class="flex justify-end">
                       <button
                         (click)="addToChain(name)"
                         class="px-2.5 py-1.5 rounded text-[10px] bg-surface-container-high text-slate-300 hover:text-on-surface cursor-pointer">
                         Añadir a cadena
                       </button>
-                    </div>
+                    </div> -->
                   </div>
                 }
                 </div>

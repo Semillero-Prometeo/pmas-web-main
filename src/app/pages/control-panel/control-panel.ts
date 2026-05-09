@@ -69,6 +69,8 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
   sequenceGroups = signal<SequenceGroup[]>([]);
   sequenceLoading = signal(true);
   sequenceError = signal<string | null>(null);
+  movementSearch = signal('');
+  selectedGroupFilter = signal('ALL');
   selectedChain = signal<string[]>([]);
   sequenceCache = new Map<string, SequenceDetail>();
   executingSequenceName = signal<string | null>(null);
@@ -80,6 +82,31 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
 
   commandLogs = signal<SequenceLog[]>([]);
   ackCount = computed(() => this.commandLogs().filter((item) => item.status === 'ack').length);
+  groupFilterOptions = computed(() => [
+    { value: 'ALL', label: 'Todos los grupos' },
+    ...this.sequenceGroups().map((group) => ({ value: group.key, label: group.label })),
+  ]);
+  filteredSequenceGroups = computed(() => {
+    const selectedGroup = this.selectedGroupFilter();
+    const query = this.movementSearch().trim().toLowerCase();
+
+    const byGroup =
+      selectedGroup === 'ALL'
+        ? this.sequenceGroups()
+        : this.sequenceGroups().filter((group) => group.key === selectedGroup);
+
+    if (!query) return byGroup;
+
+    return byGroup
+      .map((group) => ({
+        ...group,
+        sequenceNames: group.sequenceNames.filter((name) => {
+          const display = this.displaySequenceName(name).toLowerCase();
+          return display.includes(query) || name.toLowerCase().includes(query);
+        }),
+      }))
+      .filter((group) => group.sequenceNames.length > 0);
+  });
 
   ngOnInit() {
     this.restoreLogsFromStorage();
@@ -363,5 +390,13 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
     const normalized = sequenceName.replace(/\\/g, '/');
     const separatorIndex = normalized.lastIndexOf('/');
     return separatorIndex >= 0 ? normalized.slice(separatorIndex + 1) : normalized;
+  }
+
+  updateMovementSearch(value: string) {
+    this.movementSearch.set(value);
+  }
+
+  updateGroupFilter(value: string) {
+    this.selectedGroupFilter.set(value);
   }
 }
