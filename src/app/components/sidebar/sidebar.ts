@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { HealthStatusDropdown } from '../health-status-dropdown/health-status-dropdown';
 import { AdminChromeService } from '../../core/services/admin-chrome.service';
 import { HealthService, ServiceStatus } from '../../core/services/health.service';
 
@@ -32,7 +33,7 @@ interface SidebarGroup {
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterLink],
+  imports: [RouterLink, HealthStatusDropdown],
   templateUrl: './sidebar.html',
 })
 export class Sidebar implements OnInit {

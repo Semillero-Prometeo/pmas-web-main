@@ -1,4 +1,4 @@
-import { Component, inject, signal, ElementRef, ViewChild, AfterViewChecked, OnInit } from '@angular/core';
+import { Component, computed, inject, signal, ElementRef, ViewChild, AfterViewChecked, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -83,6 +83,7 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   decirInput = signal('');
   decirBusy = signal(false);
   decirHistory = signal<SentenceEntry[]>([]);
+  quickPhraseSearch = signal('');
 
   readonly decirQuickOptions = [
     { label: '¡Hola! ¡Bienvenido a la Feria del Libro 2026! Es un gusto recibirle en el stand de la Universidad Libre. Soy R-One, también llamado Federico, el asistente del semillero Prometeo. ¡Puede interactuar conmigo en cualquier momento! Estoy aquí para orientarle, explicarle y acompañarle en lo que necesite. ¡Adelante, pregunte con total confianza!', icon: 'menu_book' },
@@ -108,6 +109,12 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
     { label: '¡Hola guapos, como estan el dia de hoy!', icon: 'location_on' },
     { label: 'Si puedo moverme, en estos dias sufri un problema pero en unas horas podre moverme con normalidad.', icon: 'location_on' },
   ];
+
+  readonly filteredDecirQuickOptions = computed(() => {
+    const query = this.quickPhraseSearch().trim().toLowerCase();
+    if (!query) return this.decirQuickOptions;
+    return this.decirQuickOptions.filter((item) => item.label.toLowerCase().includes(query));
+  });
 
   private shouldScrollChat = false;
   private shouldScrollDecir = false;

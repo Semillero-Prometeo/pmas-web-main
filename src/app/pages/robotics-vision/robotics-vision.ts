@@ -70,6 +70,11 @@ export class RoboticsVision implements OnInit, OnDestroy {
     return `data:image/jpeg;base64,${tile.thumbnailJpegBase64}`;
   }
 
+  objectImageSrc(base64: string | null): string | null {
+    if (!base64) return null;
+    return `data:image/jpeg;base64,${base64}`;
+  }
+
   formatPct(conf: number): string {
     return `${Math.round(conf * 100)}%`;
   }

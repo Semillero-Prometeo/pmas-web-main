@@ -41,6 +41,8 @@ export class VisionWebSocketService {
 
     ws.onopen = () => {
       this.connectionState.set('connected');
+      // Request lighter JPEG sizes to improve effective update cadence on constrained links.
+      this.sendClientMessage({ type: 'setQuality', thumbMaxWidth: 320, previewMaxWidth: 960 });
     };
 
     ws.onmessage = (event: MessageEvent<string>) => {

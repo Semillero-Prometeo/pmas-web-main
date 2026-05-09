@@ -1,6 +1,7 @@
 import { Component, signal, computed, inject, OnInit, ViewChild, ElementRef, AfterViewChecked, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { HealthStatusDropdown } from '../../components/health-status-dropdown/health-status-dropdown';
 import { GATEWAY_URL } from '../../core/constants/gateway';
 import { HealthService } from '../../core/services/health.service';
 import { catchError, forkJoin, map, of } from 'rxjs';
@@ -42,9 +43,11 @@ interface SequenceLog {
   message?: string;
 }
 
+const EXECUTION_LOG_STORAGE_KEY = 'prometeo_execution_logs_v1';
+
 @Component({
   selector: 'app-control-panel',
-  imports: [FormsModule],
+  imports: [FormsModule, HealthStatusDropdown],
   templateUrl: './control-panel.html',
 })
 export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
@@ -79,10 +82,11 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
   ackCount = computed(() => this.commandLogs().filter((item) => item.status === 'ack').length);
 
   ngOnInit() {
+    this.restoreLogsFromStorage();
     this.health.checkAll();
     this.loadSequences();
     this.refreshChainStatus();
-    this.chainStatusTimer = setInterval(() => this.refreshChainStatus(), 2000);
+    this.chainStatusTimer = setInterval(() => this.refreshChainStatus(), 60000);
   }
 
   ngOnDestroy() {
@@ -280,10 +284,14 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
       ...log,
     };
     this.commandLogs.update((items) => [nextLog, ...items].slice(0, 300));
+    this.persistLogsToStorage();
     this.shouldScrollLog = true;
   }
 
-  clearLogs() { this.commandLogs.set([]); }
+  clearLogs() {
+    this.commandLogs.set([]);
+    this.persistLogsToStorage();
+  }
 
   logStatusColor(status: SequenceLog['status']): string {
     switch (status) {
@@ -316,6 +324,31 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   trackLog(_: number, log: SequenceLog) { return log.id; }
+
+  private persistLogsToStorage() {
+    try {
+      localStorage.setItem(EXECUTION_LOG_STORAGE_KEY, JSON.stringify(this.commandLogs()));
+    } catch {
+      // Ignore storage quota errors silently to avoid blocking execution UX.
+    }
+  }
+
+  private restoreLogsFromStorage() {
+    try {
+      const raw = localStorage.getItem(EXECUTION_LOG_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return;
+      const logs = parsed
+        .filter((item) => item && typeof item === 'object')
+        .slice(0, 300) as SequenceLog[];
+      this.commandLogs.set(logs);
+      this.logCounter = logs.reduce((max, item) => Math.max(max, item.id ?? 0), 0);
+    } catch {
+      this.commandLogs.set([]);
+      this.logCounter = 0;
+    }
+  }
 
   private extractSequenceFolderKey(sequenceName: string): string {
     const normalized = sequenceName.replace(/\\/g, '/');

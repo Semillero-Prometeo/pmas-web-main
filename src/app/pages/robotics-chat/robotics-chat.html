@@ -1,4 +1,4 @@
-<div class="flex flex-col min-h-[calc(100vh-8rem)] max-h-[calc(100vh-8rem)] md:max-h-none md:min-h-[calc(100vh-6rem)] bg-background industrial-grid">
+<div class="flex flex-col min-h-[calc(100dvh-8rem)] max-h-[calc(100dvh-8rem)] md:max-h-none md:min-h-[calc(100dvh-6rem)] bg-background industrial-grid">
 
   <!-- ══ BARRA DE TABS / HEADER ════════════════════════════════════════════ -->
   <div class="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-surface/80 backdrop-blur-sm flex-shrink-0"
@@ -140,8 +140,7 @@
            [class]="compact() ? 'px-3 py-3 sm:px-5 sm:py-4' : 'px-8 py-5'">
 
         <!-- Quick options -->
-        <div class="flex gap-2 overflow-x-auto pb-2 mb-3"
-             style="scrollbar-width: none; -ms-overflow-style: none;">
+        <div class="flex flex-wrap gap-2 pb-2 mb-3">
           @for (opt of chatQuickOptions; track opt.label) {
             <button
               (click)="applyChatQuick(opt.prompt)"
@@ -157,10 +156,10 @@
           }
         </div>
 
-        <div class="flex items-end gap-3">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 sm:gap-3">
           <div class="flex-1 relative">
             <textarea
-              [rows]="compact() ? 4 : 5"
+              [rows]="compact() ? 3 : 5"
               maxlength="500"
               placeholder="Escribe un mensaje para R-One..."
               [ngModel]="chatInput()"
@@ -177,35 +176,37 @@
               {{ chatInput().length }}/500
             </span>
           </div>
-          <button
-            (click)="toggleChatVoiceInput()"
-            [disabled]="chatBusy() || !sttAvailable()"
-            [attr.aria-label]="sttListening() ? 'Detener dictado por voz' : 'Iniciar dictado por voz'"
-            class="flex-shrink-0 rounded-2xl flex items-center justify-center transition-all
-                   cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-            [class]="(sttListening()
-              ? 'bg-primary hover:opacity-90 active:scale-90 shadow-[0_0_18px_rgba(172,199,255,0.3)]'
-              : 'bg-surface-container-highest hover:bg-surface-container')
-              + (compact() ? ' w-11 h-11 sm:w-12 sm:h-12' : ' w-14 h-14')">
-            <span class="material-symbols-outlined"
-                  [class]="sttListening() ? 'text-on-primary' : 'text-on-surface-variant'"
-                  style="font-size: 1.3rem; font-variation-settings: 'FILL' 1;">
-              {{ sttListening() ? 'stop_circle' : 'mic' }}
-            </span>
-          </button>
-          <button
-            (click)="sendChat()"
-            [disabled]="chatBusy() || !chatInput().trim()"
-            class="flex-shrink-0 rounded-2xl flex items-center justify-center transition-all
-                   cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-            [class]="(chatBusy() || !chatInput().trim()
-              ? 'bg-surface-container-highest'
-              : 'bg-secondary hover:opacity-90 active:scale-90 shadow-[0_0_20px_rgba(99,214,177,0.3)]')
-              + (compact() ? ' w-11 h-11 sm:w-12 sm:h-12' : ' w-14 h-14')">
-            <span class="material-symbols-outlined"
-                  [class]="chatBusy() || !chatInput().trim() ? 'text-slate-600' : 'text-on-secondary'"
-                  style="font-size: 1.3rem; font-variation-settings: 'FILL' 1;">send</span>
-          </button>
+          <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3">
+            <button
+              (click)="toggleChatVoiceInput()"
+              [disabled]="chatBusy() || !sttAvailable()"
+              [attr.aria-label]="sttListening() ? 'Detener dictado por voz' : 'Iniciar dictado por voz'"
+              class="rounded-2xl flex items-center justify-center transition-all
+                     cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              [class]="(sttListening()
+                ? 'bg-primary hover:opacity-90 active:scale-90 shadow-[0_0_18px_rgba(172,199,255,0.3)]'
+                : 'bg-surface-container-highest hover:bg-surface-container')
+                + (compact() ? ' h-11 sm:w-12 sm:h-12' : ' h-14 w-14')">
+              <span class="material-symbols-outlined"
+                    [class]="sttListening() ? 'text-on-primary' : 'text-on-surface-variant'"
+                    style="font-size: 1.3rem; font-variation-settings: 'FILL' 1;">
+                {{ sttListening() ? 'stop_circle' : 'mic' }}
+              </span>
+            </button>
+            <button
+              (click)="sendChat()"
+              [disabled]="chatBusy() || !chatInput().trim()"
+              class="rounded-2xl flex items-center justify-center transition-all
+                     cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              [class]="(chatBusy() || !chatInput().trim()
+                ? 'bg-surface-container-highest'
+                : 'bg-secondary hover:opacity-90 active:scale-90 shadow-[0_0_20px_rgba(99,214,177,0.3)]')
+                + (compact() ? ' h-11 sm:w-12 sm:h-12' : ' h-14 w-14')">
+              <span class="material-symbols-outlined"
+                    [class]="chatBusy() || !chatInput().trim() ? 'text-slate-600' : 'text-on-secondary'"
+                    style="font-size: 1.3rem; font-variation-settings: 'FILL' 1;">send</span>
+            </button>
+          </div>
         </div>
         <p class="hidden sm:block text-[10px] font-label text-outline uppercase tracking-wide mt-2">
           Enter para enviar &nbsp;·&nbsp; Shift+Enter nueva línea
@@ -228,10 +229,10 @@
       <div class="flex-shrink-0 border-b border-white/5 bg-surface-container-high"
            [class]="compact() ? 'px-3 py-3 sm:px-5 sm:py-4' : 'px-6 py-5'">
 
-        <div class="flex items-end gap-3">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 sm:gap-3">
           <div class="flex-1 relative">
             <textarea
-              [rows]="compact() ? 4 : 5"
+              [rows]="compact() ? 3 : 5"
               maxlength="400"
               placeholder="Escribe lo que el robot debe decir..."
               [ngModel]="decirInput()"
@@ -249,12 +250,12 @@
           <button
             (click)="sendDecir()"
             [disabled]="decirBusy() || !decirInput().trim()"
-            class="flex-shrink-0 rounded-2xl flex items-center justify-center
+            class="rounded-2xl flex items-center justify-center
                    transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             [class]="(decirBusy() || !decirInput().trim()
               ? 'bg-surface-container-highest'
               : 'bg-primary text-on-primary hover:opacity-90 active:scale-95 shadow-[0_0_16px_rgba(172,199,255,0.25)]')
-              + (compact() ? ' w-11 h-11 sm:w-12 sm:h-12' : ' w-14 h-14')">
+              + (compact() ? ' h-11 sm:w-12 sm:h-12' : ' h-14 w-14')">
             <span class="material-symbols-outlined"
                   [class]="decirBusy() || !decirInput().trim() ? 'text-slate-600' : 'text-on-primary'"
                   style="font-size: 1.3rem; font-variation-settings: 'FILL' 1;">
@@ -273,9 +274,16 @@
 
         <!-- Cajitas de frases rápidas -->
         <div [class]="compact() ? 'px-3 pt-3 sm:px-5' : 'px-6 pt-5'">
-          <p class="text-[9px] font-mono text-slate-500 uppercase tracking-[0.2em] mb-3">Frases rápidas</p>
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-            @for (opt of decirQuickOptions; track opt.label) {
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+            <p class="text-[9px] font-mono text-slate-500 uppercase tracking-[0.2em]">Frases rápidas</p>
+            <input
+              [ngModel]="quickPhraseSearch()"
+              (ngModelChange)="quickPhraseSearch.set($event)"
+              placeholder="Buscar frase..."
+              class="w-full sm:w-64 bg-surface-container-low border border-white/10 rounded-lg px-3 py-2 text-xs text-on-surface placeholder:text-slate-600"/>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
+            @for (opt of filteredDecirQuickOptions(); track opt.label) {
               <button
                 (click)="applyDecirQuick(opt.label)"
                 [disabled]="decirBusy()"
@@ -289,6 +297,11 @@
                       style="font-size: 1.1rem; font-variation-settings: 'FILL' 1;">{{ opt.icon }}</span>
                 <span class="text-[11px] sm:text-xs font-label text-on-surface-variant leading-snug">{{ opt.label }}</span>
               </button>
+            }
+            @if (filteredDecirQuickOptions().length === 0) {
+              <div class="col-span-full text-[11px] text-slate-500 border border-dashed border-white/10 rounded-lg px-3 py-4 text-center">
+                No hay frases que coincidan con la búsqueda.
+              </div>
             }
           </div>
           @if (decirHistory().length > 0) {

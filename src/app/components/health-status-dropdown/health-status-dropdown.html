@@ -1,0 +1,31 @@
+<details class="rounded-xl border border-white/10 bg-surface-container overflow-hidden">
+  <summary class="list-none cursor-pointer px-3 py-2.5 bg-surface-container-high border-b border-white/5">
+    <div class="flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="material-symbols-outlined text-secondary" style="font-size: 1rem;">monitor_heart</span>
+        <span class="font-label uppercase tracking-wider text-[10px] text-slate-400 truncate">{{ title }}</span>
+      </div>
+      <span class="text-[10px] font-mono text-slate-500">{{ onlineCount() }}/{{ entries().length }} up</span>
+    </div>
+  </summary>
+
+  <div class="p-2.5 space-y-1.5">
+    @for (item of entries(); track item.label) {
+      <div class="rounded-lg border border-white/5 bg-surface-container-low px-2.5 py-2 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" [class]="statusDot(item.status)"></span>
+          <span class="text-[10px] font-label uppercase tracking-wide text-on-surface truncate">{{ item.label }}</span>
+        </div>
+        <span class="text-[9px] font-mono text-slate-500">{{ statusText(item.status) }}</span>
+      </div>
+    }
+    <button
+      type="button"
+      (click)="health.checkAll()"
+      class="w-full mt-1 px-3 py-2 rounded-lg text-[10px] font-label uppercase tracking-wider
+             bg-surface-container-high text-slate-300 hover:text-on-surface hover:bg-surface-container-highest
+             transition-colors cursor-pointer">
+      Actualizar estado
+    </button>
+  </div>
+</details>

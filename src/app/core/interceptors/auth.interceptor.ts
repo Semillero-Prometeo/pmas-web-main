@@ -16,6 +16,10 @@ function shouldLogoutOn401(err: unknown): boolean {
   return message === INACTIVE_SESSION_MESSAGE;
 }
 
+function shouldLogoutOn403(err: unknown): boolean {
+  return err instanceof HttpErrorResponse && err.status === 403;
+}
+
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = authService.token() ?? localStorage.getItem(TOKEN_KEY);
@@ -24,7 +28,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req).pipe(
       tap({
         error: (err) => {
-          if (shouldLogoutOn401(err)) authService.logout();
+          if (shouldLogoutOn401(err) || shouldLogoutOn403(err)) authService.logout();
         },
       }),
     );
@@ -40,7 +44,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(cloned).pipe(
     tap({
       error: (err) => {
-        if (shouldLogoutOn401(err)) authService.logout();
+        if (shouldLogoutOn401(err) || shouldLogoutOn403(err)) authService.logout();
       },
     }),
   );

@@ -45,56 +45,7 @@
   </div>
 
   <div class="px-3 mb-4" [class.px-2]="variant === 'docked' && !expandedUi()">
-    <div class="bg-slate-900 rounded-lg p-2 border border-slate-800 space-y-1.5">
-      @if (expandedUi()) {
-        <p class="text-[9px] font-mono text-slate-600 uppercase tracking-widest mb-1 px-1">Estado de servicios</p>
-      }
-      <div class="flex items-center justify-between gap-1 px-1" [class.flex-col]="variant === 'docked' && !expandedUi()" [class.gap-2]="variant === 'docked' && !expandedUi()">
-        <span class="text-[9px] font-label text-slate-500 uppercase tracking-wide truncate" [class.hidden]="!expandedUi()">Gateway</span>
-        <div class="flex items-center gap-1 justify-end min-w-0">
-          <div class="w-1.5 h-1.5 rounded-full shrink-0" [class]="statusColor(health.gateway())"></div>
-          @if (expandedUi()) {
-            <span class="text-[9px] font-mono text-slate-500 truncate">{{ health.statusLabel(health.gateway()) }}</span>
-          }
-        </div>
-      </div>
-      <div class="flex items-center justify-between gap-1 px-1" [class.flex-col]="variant === 'docked' && !expandedUi()">
-        <span class="text-[9px] font-label text-slate-500 uppercase truncate" [class.hidden]="!expandedUi()">Auth MS</span>
-        <div class="flex items-center gap-1 justify-end">
-          <div class="w-1.5 h-1.5 rounded-full shrink-0" [class]="statusColor(health.authMs())"></div>
-          @if (expandedUi()) {
-            <span class="text-[9px] font-mono text-slate-500 truncate">{{ health.statusLabel(health.authMs()) }}</span>
-          }
-        </div>
-      </div>
-      <div class="flex items-center justify-between gap-1 px-1" [class.flex-col]="variant === 'docked' && !expandedUi()">
-        <span class="text-[9px] font-label text-slate-500 uppercase truncate" [class.hidden]="!expandedUi()">Gestión</span>
-        <div class="flex items-center gap-1 justify-end">
-          <div class="w-1.5 h-1.5 rounded-full shrink-0" [class]="statusColor(health.management())"></div>
-          @if (expandedUi()) {
-            <span class="text-[9px] font-mono text-slate-500 truncate">{{ health.statusLabel(health.management()) }}</span>
-          }
-        </div>
-      </div>
-      <div class="flex items-center justify-between gap-1 px-1" [class.flex-col]="variant === 'docked' && !expandedUi()">
-        <span class="text-[9px] font-label text-slate-500 uppercase truncate" [class.hidden]="!expandedUi()">Robótica</span>
-        <div class="flex items-center gap-1 justify-end">
-          <div class="w-1.5 h-1.5 rounded-full shrink-0" [class]="statusColor(health.robotics())"></div>
-          @if (expandedUi()) {
-            <span class="text-[9px] font-mono text-slate-500 truncate">{{ health.statusLabel(health.robotics()) }}</span>
-          }
-        </div>
-      </div>
-      <div class="flex items-center justify-between gap-1 px-1" [class.flex-col]="variant === 'docked' && !expandedUi()">
-        <span class="text-[9px] font-label text-slate-500 uppercase truncate" [class.hidden]="!expandedUi()">IA Multimodal</span>
-        <div class="flex items-center gap-1 justify-end">
-          <div class="w-1.5 h-1.5 rounded-full shrink-0" [class]="statusColor(health.maiCore())"></div>
-          @if (expandedUi()) {
-            <span class="text-[9px] font-mono text-slate-500 truncate">{{ health.statusLabel(health.maiCore()) }}</span>
-          }
-        </div>
-      </div>
-    </div>
+    <app-health-status-dropdown title="Health checks"></app-health-status-dropdown>
   </div>
 
   <nav class="flex-1 space-y-1 px-2 min-h-0">

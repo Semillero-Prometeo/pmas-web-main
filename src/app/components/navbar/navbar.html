@@ -1,4 +1,4 @@
-<nav class="fixed top-0 w-full z-50 bg-surface/60 backdrop-blur-xl flex justify-between items-center px-6 md:px-8 h-16">
+<nav class="fixed top-0 w-full z-50 bg-surface/60 backdrop-blur-xl flex justify-between items-center px-3 sm:px-4 md:px-8 h-16">
   <div class="flex items-center gap-6">
     @if (auth.isAuthenticated() && adminCompactLayout) {
       <button
@@ -139,6 +139,22 @@
         }
       </div>
 
+      @if (adminCompactLayout || showMobileAdminMenu) {
+        <a
+          routerLink="/profile"
+          class="md:hidden p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors cursor-pointer no-underline"
+          aria-label="Ver perfil">
+          <span class="material-symbols-outlined" style="font-size: 1.2rem;">manage_accounts</span>
+        </a>
+        <button
+          type="button"
+          (click)="auth.logout()"
+          class="md:hidden p-2 rounded-lg text-error hover:bg-error/10 transition-colors cursor-pointer"
+          aria-label="Cerrar sesión">
+          <span class="material-symbols-outlined" style="font-size: 1.2rem;">logout</span>
+        </button>
+      }
+
     } @else {
       <!-- Sin sesión: botones de acceso (desktop) -->
       <a routerLink="/login"
@@ -167,7 +183,7 @@
 
 <!-- Mobile dropdown menu -->
 @if (mobileMenuOpen()) {
-  <div class="fixed top-16 left-0 right-0 z-40 md:hidden bg-surface/95 backdrop-blur-xl border-b border-outline-variant/20 px-6 py-4 space-y-1">
+  <div class="fixed top-16 left-0 right-0 z-40 md:hidden bg-surface/95 backdrop-blur-xl border-b border-outline-variant/20 px-4 py-4 space-y-1 max-h-[calc(100dvh-4rem)] overflow-y-auto">
     @if (auth.isAuthenticated() && fullSiteMode) {
       <a routerLink="/info" (click)="mobileMenuOpen.set(false)"
          routerLinkActive="text-primary"

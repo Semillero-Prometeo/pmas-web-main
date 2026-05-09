@@ -1,15 +1,12 @@
-<div class="flex flex-col min-h-[calc(100vh-8rem)] max-h-[calc(100vh-8rem)] md:max-h-none md:min-h-[calc(100vh-6rem)] bg-background industrial-grid overflow-y-auto">
+<div class="flex flex-col min-h-[calc(100dvh-8rem)] max-h-[calc(100dvh-8rem)] md:max-h-none md:min-h-[calc(100dvh-6rem)] bg-background industrial-grid overflow-y-auto">
 
-  <header class="flex-shrink-0 px-4 md:px-8 py-6 border-b border-white/5 bg-surface/80 backdrop-blur-sm">
+  <header class="flex-shrink-0 px-4 md:px-8 py-4 border-b border-white/5 bg-surface/80 backdrop-blur-sm">
     <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
       <div>
-        <p class="text-[10px] font-mono text-secondary tracking-widest uppercase mb-1">Robótica · PMAI</p>
-        <h1 class="font-headline text-2xl md:text-4xl font-bold tracking-tight text-on-surface">
-          Visión <span class="text-primary">multicámara</span>
+        <p class="text-[10px] font-mono text-secondary tracking-widest uppercase mb-1">Visión</p>
+        <h1 class="font-headline text-lg md:text-2xl font-bold tracking-tight text-on-surface">
+          Multicámara
         </h1>
-        <p class="text-slate-500 text-xs mt-1 max-w-xl">
-          Vista en vivo de las cámaras registradas y objetos rastreados (ReID). Los datos llegan por WebSocket desde el gateway.
-        </p>
       </div>
       <div class="flex flex-col items-start sm:items-end gap-1 text-[10px] font-mono text-slate-500">
         <span [class.text-secondary]="vision.connectionState() === 'connected'"
@@ -29,12 +26,11 @@
     </div>
   }
 
-  <div class="flex-1 px-4 md:px-8 py-6 grid grid-cols-1 xl:grid-cols-12 gap-6">
+  <div class="flex-1 px-3 sm:px-4 md:px-8 py-4 md:py-6 grid grid-cols-1 xl:grid-cols-12 gap-4 md:gap-6">
 
     <!-- Camera grid -->
-    <section class="xl:col-span-5 space-y-3">
-      <h2 class="font-label text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500">Cámaras</h2>
-      <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-2 gap-3">
+    <section class="xl:col-span-4 space-y-2">
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
         @for (cam of vision.snapshot()?.cameras ?? []; track cam.cameraId) {
           <button
             type="button"
@@ -54,11 +50,11 @@
                 <span class="absolute top-2 left-2 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
               }
             </div>
-            <div class="px-2 py-2 sm:px-3 border-t border-white/5">
+            <div class="px-2 py-1.5 sm:px-3 border-t border-white/5">
               <p class="text-[10px] font-bold font-label uppercase tracking-wide text-on-surface truncate">
                 {{ cam.name || cam.cameraId }}
               </p>
-              <p class="text-[9px] font-mono text-slate-500 truncate">{{ cam.status }}</p>
+              <p class="text-[9px] font-mono text-slate-500 truncate">{{ cam.status }} · {{ cam.fps }}fps</p>
             </div>
           </button>
         } @empty {
@@ -68,10 +64,10 @@
     </section>
 
     <!-- Preview + objects -->
-    <section class="xl:col-span-7 flex flex-col gap-6">
+    <section class="xl:col-span-8 flex flex-col gap-4 md:gap-6">
       <div class="rounded-xl overflow-hidden border border-white/10 bg-surface-container shadow-xl shadow-blue-900/10">
         <div class="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-surface-container-high">
-          <h2 class="font-label text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">Vista seleccionada</h2>
+          <h2 class="font-label text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">Preview</h2>
           @if (selectedTile(); as t) {
             <span class="text-[10px] font-mono text-secondary">{{ t.cameraId }}</span>
           }
@@ -94,7 +90,28 @@
             </span>
           }
         </div>
-        <div class="overflow-x-auto">
+        <div class="grid grid-cols-1 sm:hidden gap-2 mb-3">
+          @for (obj of vision.snapshot()?.globalObjects ?? []; track obj.id_global) {
+            <div class="rounded-lg border border-white/10 p-2 bg-surface-container-high">
+              <div class="flex items-center gap-2">
+                @if (objectImageSrc(obj.image_base64); as imgSrc) {
+                  <img [src]="imgSrc" alt="Objeto" class="w-14 h-14 rounded object-cover border border-white/10" />
+                } @else {
+                  <div class="w-14 h-14 rounded border border-dashed border-white/10 flex items-center justify-center text-[9px] text-slate-500">Sin img</div>
+                }
+                <div class="min-w-0">
+                  <p class="text-xs font-mono text-secondary truncate">{{ obj.id_global }}</p>
+                  <p class="text-xs text-on-surface truncate">{{ obj.etiqueta }}</p>
+                  <p class="text-[10px] text-slate-400">{{ formatPct(obj.confianza) }}</p>
+                </div>
+              </div>
+            </div>
+          } @empty {
+            <div class="text-center text-[11px] text-slate-500 py-3">No hay objetos globales en este snapshot.</div>
+          }
+        </div>
+
+        <div class="hidden sm:block overflow-x-auto">
           <table class="w-full text-left text-xs font-mono border-collapse">
             <thead>
               <tr class="text-slate-500 border-b border-white/10">
