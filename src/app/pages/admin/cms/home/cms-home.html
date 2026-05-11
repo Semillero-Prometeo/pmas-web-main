@@ -1,0 +1,130 @@
+<div class="p-6 md:p-10 max-w-4xl mx-auto">
+
+  <!-- Header -->
+  <div class="mb-8">
+    <span class="text-secondary font-label text-[10px] uppercase tracking-[0.2em] mb-2 block">CMS // Gestión de Contenido</span>
+    <h1 class="text-3xl font-headline font-bold tracking-tight">Editar Página de Inicio</h1>
+    <p class="text-on-surface-variant text-sm mt-2">Al guardar se descarga el JSON actualizado. Reemplázalo en <code>public/data/home.json</code>.</p>
+  </div>
+
+  @if (loading()) {
+    <div class="flex items-center gap-3 text-on-surface-variant py-10">
+      <span class="material-symbols-outlined animate-spin">progress_activity</span>
+      Cargando contenido...
+    </div>
+  } @else {
+
+    <div class="space-y-10">
+
+      <!-- Hero Section -->
+      <section class="bg-surface-container-low rounded-xl p-6 space-y-4">
+        <h2 class="font-headline font-bold text-lg flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">title</span>
+          Hero
+        </h2>
+        <div>
+          <label class="text-[10px] uppercase tracking-widest text-on-surface-variant block mb-1">Título Principal</label>
+          <input type="text" [value]="form().hero_title" (input)="setHeroTitle($any($event.target).value)"
+                 class="w-full bg-surface-container border border-outline-variant rounded-lg px-4 py-3 text-on-surface text-sm focus:outline-none focus:border-primary transition-colors" />
+        </div>
+        <div>
+          <label class="text-[10px] uppercase tracking-widest text-on-surface-variant block mb-1">Descripción</label>
+          <textarea [value]="form().hero_desc" (input)="setHeroDesc($any($event.target).value)"
+                    rows="3"
+                    class="w-full bg-surface-container border border-outline-variant rounded-lg px-4 py-3 text-on-surface text-sm focus:outline-none focus:border-primary transition-colors resize-none"></textarea>
+        </div>
+      </section>
+
+      <!-- Enfoques -->
+      <section class="bg-surface-container-low rounded-xl p-6 space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="font-headline font-bold text-lg flex items-center gap-2">
+            <span class="material-symbols-outlined text-secondary">hub</span>
+            Enfoques
+          </h2>
+          <button type="button" (click)="addEnfoque()"
+                  class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-primary border border-primary/30 px-3 py-1.5 rounded hover:bg-primary/10 transition-colors cursor-pointer">
+            <span class="material-symbols-outlined text-sm">add</span> Agregar
+          </button>
+        </div>
+        @for (e of form().enfoques; track $index) {
+          <div class="flex gap-2">
+            <input type="text" [value]="e" (input)="updateEnfoque($index, $any($event.target).value)"
+                   class="flex-1 bg-surface-container border border-outline-variant rounded-lg px-4 py-2.5 text-on-surface text-sm focus:outline-none focus:border-primary transition-colors" />
+            <button type="button" (click)="removeEnfoque($index)"
+                    class="text-error hover:text-error/70 transition-colors cursor-pointer px-2">
+              <span class="material-symbols-outlined text-sm">delete</span>
+            </button>
+          </div>
+        }
+      </section>
+
+      <!-- Metodología -->
+      <section class="bg-surface-container-low rounded-xl p-6 space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="font-headline font-bold text-lg flex items-center gap-2">
+            <span class="material-symbols-outlined text-tertiary">account_tree</span>
+            Metodología
+          </h2>
+          <button type="button" (click)="addStep()"
+                  class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-primary border border-primary/30 px-3 py-1.5 rounded hover:bg-primary/10 transition-colors cursor-pointer">
+            <span class="material-symbols-outlined text-sm">add</span> Agregar paso
+          </button>
+        </div>
+        @for (step of form().methodology; track $index) {
+          <div class="grid grid-cols-12 gap-2 items-end">
+            <div class="col-span-2">
+              <label class="text-[9px] uppercase tracking-widest text-on-surface-variant block mb-1">Paso</label>
+              <input type="text" [value]="step.step" (input)="updateStep($index, 'step', $any($event.target).value)"
+                     class="w-full bg-surface-container border border-outline-variant rounded px-2 py-2 text-on-surface text-xs focus:outline-none focus:border-primary" />
+            </div>
+            <div class="col-span-6">
+              <label class="text-[9px] uppercase tracking-widest text-on-surface-variant block mb-1">Etiqueta</label>
+              <input type="text" [value]="step.label" (input)="updateStep($index, 'label', $any($event.target).value)"
+                     class="w-full bg-surface-container border border-outline-variant rounded px-3 py-2 text-on-surface text-xs focus:outline-none focus:border-primary" />
+            </div>
+            <div class="col-span-3">
+              <label class="text-[9px] uppercase tracking-widest text-on-surface-variant block mb-1">Icono Material</label>
+              <input type="text" [value]="step.icon" (input)="updateStep($index, 'icon', $any($event.target).value)"
+                     class="w-full bg-surface-container border border-outline-variant rounded px-3 py-2 text-on-surface text-xs focus:outline-none focus:border-primary" />
+            </div>
+            <div class="col-span-1 flex justify-center pb-0.5">
+              <button type="button" (click)="removeStep($index)"
+                      class="text-error hover:text-error/70 transition-colors cursor-pointer">
+                <span class="material-symbols-outlined text-sm">delete</span>
+              </button>
+            </div>
+          </div>
+        }
+      </section>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-4 pt-2">
+        <button type="button" (click)="save()" [disabled]="saving()"
+                class="bg-primary text-on-primary px-8 py-3 rounded-lg font-bold text-sm uppercase tracking-widest hover:opacity-90 transition-all disabled:opacity-50 cursor-pointer flex items-center gap-2">
+          @if (saving()) {
+            <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+          } @else {
+            <span class="material-symbols-outlined text-sm">download</span>
+          }
+          {{ saving() ? 'Generando...' : 'Descargar home.json' }}
+        </button>
+
+        @if (saved()) {
+          <div class="flex items-center gap-2 text-tertiary text-sm font-medium">
+            <span class="material-symbols-outlined text-sm">check_circle</span>
+            JSON descargado. Reemplaza <code>public/data/home.json</code>
+          </div>
+        }
+
+        @if (error()) {
+          <div class="flex items-center gap-2 text-error text-sm">
+            <span class="material-symbols-outlined text-sm">error</span>
+            {{ error() }}
+          </div>
+        }
+      </div>
+
+    </div>
+  }
+</div>

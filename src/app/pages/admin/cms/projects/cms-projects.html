@@ -1,0 +1,249 @@
+<div class="p-6 md:p-10">
+
+  <!-- Header -->
+  <div class="flex justify-between items-start mb-8">
+    <div>
+      <span class="text-secondary font-label text-[10px] uppercase tracking-[0.2em] mb-2 block">CMS // Gestión de Contenido</span>
+      <h1 class="text-3xl font-headline font-bold tracking-tight">Proyectos</h1>
+      <p class="text-on-surface-variant text-sm mt-1">{{ projects().length }} proyecto(s) registrado(s)</p>
+    </div>
+    <button (click)="openCreate()"
+            class="flex items-center gap-2 bg-primary text-on-primary px-5 py-2.5 rounded-lg font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-all cursor-pointer">
+      <span class="material-symbols-outlined text-sm">add</span> Nuevo proyecto
+    </button>
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="flex items-center gap-3 text-on-surface-variant py-10">
+      <span class="material-symbols-outlined animate-spin">progress_activity</span> Cargando...
+    </div>
+  }
+
+  <!-- Empty state -->
+  @if (!loading() && projects().length === 0) {
+    <div class="flex flex-col items-center justify-center py-24 gap-4 text-center">
+      <span class="material-symbols-outlined text-outline-variant" style="font-size: 3rem;">folder_open</span>
+      <p class="text-on-surface-variant text-sm">No hay proyectos aún. Crea el primero.</p>
+    </div>
+  }
+
+  <!-- Projects table -->
+  @if (!loading() && projects().length > 0) {
+    <div class="rounded-xl overflow-hidden border border-outline-variant/30">
+      <table class="w-full text-sm">
+        <thead class="bg-surface-container-high">
+          <tr>
+            <th class="text-left px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Proyecto</th>
+            <th class="text-left px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hidden md:table-cell">Tags</th>
+            <th class="text-left px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hidden lg:table-cell">Estado</th>
+            <th class="text-left px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hidden lg:table-cell">Año</th>
+            <th class="text-right px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="bg-surface-container-low divide-y divide-outline-variant/20">
+          @for (p of projects(); track p.id) {
+            <tr class="hover:bg-surface-container transition-colors">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  @if (p.image) {
+                    <img [src]="p.image" class="w-10 h-10 rounded object-cover" [alt]="p.title" />
+                  } @else {
+                    <div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center">
+                      <span class="material-symbols-outlined text-outline-variant text-sm">{{ p.icon || 'folder' }}</span>
+                    </div>
+                  }
+                  <div>
+                    <div class="font-medium text-on-surface flex items-center gap-2">
+                      {{ p.title }}
+                      @if (p.featured) {
+                        <span class="text-[9px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold uppercase">Destacado</span>
+                      }
+                    </div>
+                    <div class="text-[11px] text-on-surface-variant line-clamp-1 max-w-xs">{{ p.description }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-4 hidden md:table-cell">
+                <div class="flex flex-wrap gap-1">
+                  @for (tag of p.tags.slice(0, 2); track tag) {
+                    <span class="text-[9px] bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded-full">{{ tag }}</span>
+                  }
+                </div>
+              </td>
+              <td class="px-4 py-4 hidden lg:table-cell">
+                <span class="text-[10px] text-tertiary font-medium">{{ p.status }}</span>
+              </td>
+              <td class="px-4 py-4 hidden lg:table-cell">
+                <span class="text-[11px] text-on-surface-variant">{{ p.year }}</span>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex items-center justify-end gap-2">
+                  <button (click)="openEdit(p)"
+                          class="p-2 rounded hover:bg-surface-container-high transition-colors cursor-pointer text-on-surface-variant hover:text-primary">
+                    <span class="material-symbols-outlined text-sm">edit</span>
+                  </button>
+                  <button (click)="confirmDelete(p.id)"
+                          class="p-2 rounded hover:bg-error/10 transition-colors cursor-pointer text-on-surface-variant hover:text-error">
+                    <span class="material-symbols-outlined text-sm">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Delete confirm modal -->
+  @if (confirmDeleteId()) {
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-surface-container-low rounded-2xl p-8 max-w-sm w-full">
+        <span class="material-symbols-outlined text-error text-3xl mb-4 block">warning</span>
+        <h3 class="font-headline font-bold text-xl mb-2">¿Eliminar proyecto?</h3>
+        <p class="text-on-surface-variant text-sm mb-6">Esta acción no se puede deshacer.</p>
+        <div class="flex gap-3">
+          <button (click)="cancelDelete()"
+                  class="flex-1 border border-outline-variant px-4 py-2.5 rounded-lg text-sm font-bold cursor-pointer hover:bg-surface-container transition-colors">
+            Cancelar
+          </button>
+          <button (click)="deleteProject()" [disabled]="!!deleting()"
+                  class="flex-1 bg-error text-on-error px-4 py-2.5 rounded-lg text-sm font-bold cursor-pointer hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+            @if (deleting()) {
+              <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+            }
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Create/Edit modal -->
+  @if (showModal()) {
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
+      <div class="bg-surface-container-low rounded-2xl w-full max-w-2xl my-8">
+
+        <!-- Modal header -->
+        <div class="flex justify-between items-center px-8 py-6 border-b border-outline-variant/30">
+          <h2 class="font-headline font-bold text-xl">
+            {{ modalMode() === 'create' ? 'Nuevo Proyecto' : 'Editar Proyecto' }}
+          </h2>
+          <button (click)="closeModal()" class="text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="p-8 space-y-6">
+
+          <!-- Title -->
+          <div>
+            <label class="text-[10px] uppercase tracking-widest text-on-surface-variant block mb-1">Título *</label>
+            <input type="text" [value]="form().title" (input)="form.update(f => ({...f, title: $any($event.target).value}))"
+                   class="w-full bg-surface-container border border-outline-variant rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors" />
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="text-[10px] uppercase tracking-widest text-on-surface-variant block mb-1">Descripción *</label>
+            <textarea [value]="form().description" (input)="form.update(f => ({...f, description: $any($event.target).value}))"
+                      rows="3" class="w-full bg-surface-container border border-outline-variant rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors resize-none"></textarea>
+          </div>
+
+          <!-- Tags -->
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <label class="text-[10px] uppercase tracking-widest text-on-surface-variant">Tags</label>
+              <button type="button" (click)="addTag()"
+                      class="text-[9px] font-bold uppercase tracking-widest text-primary border border-primary/30 px-2 py-1 rounded hover:bg-primary/10 transition-colors cursor-pointer flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs">add</span> Tag
+              </button>
+            </div>
+            @for (tag of form().tags; track $index) {
+              <div class="flex gap-2 mb-2">
+                <input type="text" [value]="tag" (input)="updateTag($index, $any($event.target).value)"
+                       placeholder="ej: IA, Robótica..."
+                       class="flex-1 bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary transition-colors" />
+                <button type="button" (click)="removeTag($index)"
+                        class="text-error hover:text-error/70 transition-colors cursor-pointer px-2">
+                  <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+              </div>
+            }
+          </div>
+
+          <!-- Row: Year, Status, Icon -->
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="text-[10px] uppercase tracking-widest text-on-surface-variant block mb-1">Año</label>
+              <input type="text" [value]="form().year" (input)="form.update(f => ({...f, year: $any($event.target).value}))"
+                     class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary" />
+            </div>
+            <div>
+              <label class="text-[10px] uppercase tracking-widest text-on-surface-variant block mb-1">Estado</label>
+              <input type="text" [value]="form().status" (input)="form.update(f => ({...f, status: $any($event.target).value}))"
+                     class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary" />
+            </div>
+            <div>
+              <label class="text-[10px] uppercase tracking-widest text-on-surface-variant block mb-1">Icono Material</label>
+              <input type="text" [value]="form().icon" (input)="form.update(f => ({...f, icon: $any($event.target).value}))"
+                     class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary" />
+            </div>
+          </div>
+
+          <!-- Featured + Order -->
+          <div class="flex gap-6 items-center">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" [checked]="form().featured" (change)="form.update(f => ({...f, featured: $any($event.target).checked}))"
+                     class="rounded" />
+              <span class="text-sm text-on-surface-variant">Proyecto destacado</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <label class="text-[10px] uppercase tracking-widest text-on-surface-variant">Orden:</label>
+              <input type="number" [value]="form().display_order" (input)="form.update(f => ({...f, display_order: +$any($event.target).value}))"
+                     class="w-20 bg-surface-container border border-outline-variant rounded px-2 py-1.5 text-sm focus:outline-none focus:border-primary" />
+            </div>
+          </div>
+
+          <!-- Image upload -->
+          <div>
+            <label class="text-[10px] uppercase tracking-widest text-on-surface-variant block mb-2">Imagen (Base64)</label>
+            <div class="flex gap-4 items-start">
+              @if (form().image) {
+                <img [src]="form().image" class="w-24 h-24 rounded-lg object-cover border border-outline-variant/30" alt="preview" />
+              }
+              <label class="flex items-center gap-2 bg-surface-container border border-outline-variant/50 border-dashed px-4 py-3 rounded-lg cursor-pointer hover:border-primary/50 transition-colors text-sm text-on-surface-variant">
+                <span class="material-symbols-outlined text-sm">upload</span>
+                Subir imagen
+                <input type="file" accept="image/*" (change)="onImageChange($event)" class="hidden" />
+              </label>
+            </div>
+          </div>
+
+          <!-- Error -->
+          @if (error()) {
+            <div class="flex items-center gap-2 text-error text-sm bg-error/10 px-4 py-3 rounded-lg">
+              <span class="material-symbols-outlined text-sm">error</span>
+              {{ error() }}
+            </div>
+          }
+        </div>
+
+        <!-- Modal footer -->
+        <div class="flex justify-end gap-3 px-8 py-5 border-t border-outline-variant/30">
+          <button (click)="closeModal()"
+                  class="px-6 py-2.5 rounded-lg border border-outline-variant text-sm font-bold hover:bg-surface-container transition-colors cursor-pointer">
+            Cancelar
+          </button>
+          <button (click)="save()" [disabled]="saving()"
+                  class="px-6 py-2.5 bg-primary text-on-primary rounded-lg text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50 cursor-pointer flex items-center gap-2">
+            @if (saving()) { <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> }
+            {{ saving() ? 'Guardando...' : (modalMode() === 'create' ? 'Crear' : 'Guardar') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

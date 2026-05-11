@@ -12,9 +12,12 @@ export type SidebarItem =
   | 'management'
   | 'chat'
   | 'vision'
-  | 'iframe';
+  | 'iframe'
+  | 'cms-home'
+  | 'cms-projects'
+  | 'cms-members';
 
-type GroupHealthKey = 'robotics' | 'authMs' | 'management';
+type GroupHealthKey = 'robotics' | 'authMs' | 'management' | 'none';
 
 interface SidebarGroup {
   id: string;
@@ -50,7 +53,7 @@ export class Sidebar implements OnInit {
     return this.variant === 'drawer' || !this.chrome.sidebarCollapsed();
   }
 
-  openGroups = signal<string[]>(['robotica', 'autenticacion', 'gestion']);
+  openGroups = signal<string[]>(['robotica', 'autenticacion', 'gestion', 'contenido']);
 
   /** Robótica primero, luego Autenticación y Gestión. */
   readonly groups: SidebarGroup[] = [
@@ -84,6 +87,17 @@ export class Sidebar implements OnInit {
       healthKey: 'management',
       items: [{ id: 'management', label: 'Panel', icon: 'dashboard', route: '/admin/management' }],
     },
+    {
+      id: 'contenido',
+      label: 'Contenido',
+      icon: 'edit_document',
+      healthKey: 'none',
+      items: [
+        { id: 'cms-home', label: 'Inicio', icon: 'home', route: '/admin/cms/home' },
+        { id: 'cms-projects', label: 'Proyectos', icon: 'folder_open', route: '/admin/cms/projects' },
+        { id: 'cms-members', label: 'Integrantes', icon: 'group', route: '/admin/cms/members' },
+      ],
+    },
   ];
 
   ngOnInit() {
@@ -106,6 +120,8 @@ export class Sidebar implements OnInit {
         return this.health.authMs();
       case 'management':
         return this.health.management();
+      case 'none':
+        return 'online';
     }
   }
 

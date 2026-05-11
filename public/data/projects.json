@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1",
+    "title": "Reconocimiento automático de objetos en entornos reales",
+    "description": "Sistema basado en inteligencia artificial capaz de reconocer y clasificar objetos en entornos reales mediante Machine Learning y visión artificial.",
+    "tags": ["IA", "Visión Artificial", "Machine Learning"],
+    "status": "En Desarrollo",
+    "image": null,
+    "year": "2024",
+    "icon": "blur_on",
+    "display_order": 0,
+    "featured": true
+  },
+  {
+    "id": "2",
+    "title": "ANDROIDE R-ONE",
+    "description": "Desarrollo de un androide funcional integrando hardware, software y electrónica con capacidades de inteligencia artificial.",
+    "tags": ["Robótica", "Hardware", "IA"],
+    "status": "En Desarrollo",
+    "image": null,
+    "year": "2024",
+    "icon": "smart_toy",
+    "display_order": 1,
+    "featured": false
+  },
+  {
+    "id": "3",
+    "title": "CLAUD-IA",
+    "description": "Sistema robótico con sensores y capacidades de visión artificial optimizadas, integrando hardware, software y electrónica.",
+    "tags": ["Robótica", "Sensores", "IA"],
+    "status": "En Desarrollo",
+    "image": null,
+    "year": "2024",
+    "icon": "sensors",
+    "display_order": 2,
+    "featured": false
+  }
+]

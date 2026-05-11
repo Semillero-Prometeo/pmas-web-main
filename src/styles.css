@@ -67,8 +67,12 @@
   --radius-full: 0.75rem;
 }
 
-.material-symbols-outlined {
+/* Evita que los traductores (Google Translate, etc.) rompan los iconos */
+.material-symbols-outlined,
+.material-symbols-rounded {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  /* La propiedad translate: no equivale al atributo HTML translate="no" en CSS */
+  font-family: 'Material Symbols Outlined', 'Material Symbols Rounded' !important;
 }
 
 .editorial-grid {

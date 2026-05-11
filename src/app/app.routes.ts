@@ -85,6 +85,21 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/iframe-viewer/iframe-viewer').then((m) => m.IframeViewer),
         data: { sidebarActive: 'iframe' },
       },
+      {
+        path: 'admin/cms/home',
+        loadComponent: () => import('./pages/admin/cms/home/cms-home').then((m) => m.CmsHome),
+        data: { sidebarActive: 'cms-home' },
+      },
+      {
+        path: 'admin/cms/projects',
+        loadComponent: () => import('./pages/admin/cms/projects/cms-projects').then((m) => m.CmsProjects),
+        data: { sidebarActive: 'cms-projects' },
+      },
+      {
+        path: 'admin/cms/members',
+        loadComponent: () => import('./pages/admin/cms/members/cms-members').then((m) => m.CmsMembers),
+        data: { sidebarActive: 'cms-members' },
+      },
     ],
   },
 

@@ -19,26 +19,22 @@
 
         <!-- Filters -->
         <div class="flex flex-wrap gap-2 pb-2">
-          <button
-            (click)="setFilter('all')"
+          <button (click)="setFilter('all')"
             [class]="activeFilter() === 'all' ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'"
             class="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all cursor-pointer">
             All Projects
           </button>
-          <button
-            (click)="setFilter('robotics')"
+          <button (click)="setFilter('robotics')"
             [class]="activeFilter() === 'robotics' ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'"
             class="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all cursor-pointer">
             Robotics
           </button>
-          <button
-            (click)="setFilter('ai')"
+          <button (click)="setFilter('ai')"
             [class]="activeFilter() === 'ai' ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'"
             class="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all cursor-pointer">
             AI
           </button>
-          <button
-            (click)="setFilter('hardware')"
+          <button (click)="setFilter('hardware')"
             [class]="activeFilter() === 'hardware' ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'"
             class="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all cursor-pointer">
             Hardware
@@ -47,123 +43,97 @@
       </div>
     </header>
 
+    <!-- Loading skeleton -->
+    @if (loading()) {
+      <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div class="md:col-span-8 h-96 bg-surface-container-low rounded-xl animate-pulse"></div>
+        <div class="md:col-span-4 h-96 bg-surface-container-low rounded-xl animate-pulse"></div>
+      </div>
+    }
+
+    <!-- Empty state -->
+    @if (!loading() && filteredProjects().length === 0) {
+      <div class="max-w-7xl mx-auto flex flex-col items-center justify-center py-32 gap-4">
+        <span class="material-symbols-outlined text-outline-variant" style="font-size: 3rem;">folder_open</span>
+        <p class="text-on-surface-variant text-sm">No hay proyectos en esta categoría aún.</p>
+      </div>
+    }
+
     <!-- Projects Bento Grid -->
-    <section class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6">
+    @if (!loading() && filteredProjects().length > 0) {
+      <section class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6">
 
-      <!-- Feature Project (Wide) -->
-      <div class="md:col-span-8 group relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:bg-surface-container-highest hover:-translate-y-1">
-        <div class="aspect-video w-full relative">
-          <img
-            src="assets/assets/2564dc84-IMG-20250509-WA0004.jpg"
-            alt="Semillero PROMETEO en evento CIFI"
-            class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 opacity-70"
-          />
-          <div class="absolute inset-0 bg-linear-to-t from-surface-container-low via-transparent to-transparent"></div>
-          <div class="absolute top-6 left-6 flex gap-2">
-            <span class="px-3 py-1 rounded bg-primary/20 backdrop-blur-md text-primary text-[10px] font-bold uppercase tracking-widest border border-primary/30">IA</span>
-            <span class="px-3 py-1 rounded bg-secondary/20 backdrop-blur-md text-secondary text-[10px] font-bold uppercase tracking-widest border border-secondary/30">Visión Artificial</span>
-            <span class="px-3 py-1 rounded bg-tertiary/20 backdrop-blur-md text-tertiary text-[10px] font-bold uppercase tracking-widest border border-tertiary/30">En Desarrollo</span>
-          </div>
-        </div>
-        <div class="p-8">
-          <div class="flex justify-between items-start mb-6">
-            <h3 class="text-3xl font-headline font-bold tracking-tight text-on-background">Reconocimiento automático de objetos en entornos reales</h3>
-            <span class="text-slate-500 font-label text-[10px] tracking-widest uppercase">ID: 2024-IA</span>
-          </div>
-          <p class="text-on-surface-variant mb-8 leading-relaxed max-w-2xl">
-            Sistema basado en inteligencia artificial capaz de reconocer y clasificar objetos en entornos reales.
-            Tecnologías: IA, Visión Artificial, Machine Learning.
-          </p>
-          <button class="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-widest group cursor-pointer">
-            Ver proyecto
-            <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- ANDROIDE R-ONE -->
-      <div class="md:col-span-4 group relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:bg-surface-container-highest hover:-translate-y-1">
-        <div class="aspect-square w-full relative">
-          <img
-            src="assets/assets/IMG-20251031-WA0005.jpg"
-            alt="Androide R-ONE en evento"
-            class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 opacity-70"
-          />
-          <div class="absolute inset-0 bg-linear-to-t from-surface-container-low to-transparent"></div>
-          <div class="absolute top-6 left-6">
-            <span class="px-3 py-1 rounded bg-secondary/20 backdrop-blur-md text-secondary text-[10px] font-bold uppercase tracking-widest border border-secondary/30">Robótica</span>
-          </div>
-        </div>
-        <div class="p-8">
-          <span class="text-tertiary font-label text-[10px] tracking-widest uppercase mb-2 block">En Desarrollo</span>
-          <h3 class="text-xl font-headline font-bold tracking-tight text-on-background mb-4">ANDROIDE R-ONE</h3>
-          <p class="text-on-surface-variant text-sm leading-relaxed mb-6">
-            Desarrollo de un androide funcional integrando hardware, software y electrónica con capacidades de inteligencia artificial.
-          </p>
-          <button class="bg-surface-container-high w-full py-3 text-on-surface text-[10px] font-bold uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-all rounded cursor-pointer">
-            Ver proyecto
-          </button>
-        </div>
-      </div>
-
-      <!-- CLAUD-IA -->
-      <div class="md:col-span-4 group relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:bg-surface-container-highest hover:-translate-y-1">
-        <div class="aspect-square w-full relative">
-          <img
-            src="assets/assets/IMG-20251106-WA0035.jpg"
-            alt="Presentación poster robot humanoide R-ONE"
-            class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 opacity-70"
-          />
-          <div class="absolute inset-0 bg-linear-to-t from-surface-container-low to-transparent"></div>
-          <div class="absolute top-6 left-6">
-            <span class="px-3 py-1 rounded bg-tertiary/20 backdrop-blur-md text-tertiary text-[10px] font-bold uppercase tracking-widest border border-tertiary/30">Sensores</span>
-          </div>
-        </div>
-        <div class="p-8">
-          <span class="text-primary font-label text-[10px] tracking-widest uppercase mb-2 block">En Desarrollo</span>
-          <h3 class="text-xl font-headline font-bold tracking-tight text-on-background mb-4">CLAUD-IA</h3>
-          <p class="text-on-surface-variant text-sm leading-relaxed mb-6">
-            Sistema robótico con sensores y capacidades de visión artificial optimizadas, integrando hardware, software y electrónica con IA.
-          </p>
-          <button class="bg-surface-container-high w-full py-3 text-on-surface text-[10px] font-bold uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-all rounded cursor-pointer">
-            Ver proyecto
-          </button>
-        </div>
-      </div>
-
-      <!-- Objetivo General (Wide) -->
-      <div class="md:col-span-8 group relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:bg-surface-container-highest hover:-translate-y-1">
-        <div class="flex flex-col md:flex-row h-full">
-          <div class="md:w-1/2 relative h-64 md:h-auto overflow-hidden">
-            <img
-              src="assets/assets/IMG-20250529-WA0038.jpg"
-              alt="Premios a la Ingeniería Nacional — PROMETEO"
-              class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 opacity-70"
-            />
-            <div class="absolute inset-0 bg-linear-to-r from-transparent via-transparent to-surface-container-low hidden md:block"></div>
-          </div>
-          <div class="md:w-1/2 p-8 flex flex-col justify-center">
-            <span class="text-secondary font-label text-[10px] tracking-widest uppercase mb-4 block">Objetivo General</span>
-            <h3 class="text-2xl font-headline font-bold tracking-tight text-on-background mb-4">Investigación de Alto Impacto</h3>
-            <p class="text-on-surface-variant text-sm leading-relaxed mb-8">
-              Desarrollar investigaciones en Ingeniería de Sistemas adaptadas a las demandas tecnológicas
-              de la sociedad, impulsando la frontera del conocimiento y contribuyendo al desarrollo sostenible
-              y la innovación de alto impacto.
-            </p>
-            <div class="flex gap-4">
-              <a routerLink="/register" class="bg-primary text-on-primary px-6 py-2 rounded-lg font-bold text-[10px] uppercase tracking-widest no-underline cursor-pointer">Unirme</a>
-              <a routerLink="/team" class="border border-outline-variant px-6 py-2 rounded-lg font-bold text-[10px] uppercase tracking-widest hover:bg-surface-container-highest transition-all no-underline cursor-pointer">Equipo</a>
+        <!-- Feature Project (Wide) — primer featured o primero de la lista -->
+        @if (featuredProject(); as fp) {
+          <div class="md:col-span-8 group relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:bg-surface-container-highest hover:-translate-y-1">
+            <div class="aspect-video w-full relative">
+              @if (fp.image) {
+                <img [src]="fp.image" [alt]="fp.title"
+                     class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 opacity-70" />
+              } @else {
+                <div class="w-full h-full bg-surface-container flex items-center justify-center">
+                  <span class="material-symbols-outlined text-primary/30" style="font-size: 5rem; font-variation-settings: 'FILL' 1;">{{ fp.icon || 'folder' }}</span>
+                </div>
+              }
+              <div class="absolute inset-0 bg-linear-to-t from-surface-container-low via-transparent to-transparent"></div>
+              <div class="absolute top-6 left-6 flex gap-2 flex-wrap">
+                @for (tag of fp.tags; track tag) {
+                  <span class="px-3 py-1 rounded bg-primary/20 backdrop-blur-md text-primary text-[10px] font-bold uppercase tracking-widest border border-primary/30">{{ tag }}</span>
+                }
+                <span class="px-3 py-1 rounded bg-tertiary/20 backdrop-blur-md text-tertiary text-[10px] font-bold uppercase tracking-widest border border-tertiary/30">{{ fp.status }}</span>
+              </div>
+            </div>
+            <div class="p-8">
+              <div class="flex justify-between items-start mb-6">
+                <h3 class="text-3xl font-headline font-bold tracking-tight text-on-background">{{ fp.title }}</h3>
+                <span class="text-slate-500 font-label text-[10px] tracking-widest uppercase">{{ fp.year }}</span>
+              </div>
+              <p class="text-on-surface-variant mb-8 leading-relaxed max-w-2xl">{{ fp.description }}</p>
+              <button class="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-widest group cursor-pointer">
+                Ver proyecto
+                <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+              </button>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
+        }
+
+        <!-- Resto de proyectos -->
+        @for (p of filteredProjects().slice(1); track p.id) {
+          <div class="md:col-span-4 group relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:bg-surface-container-highest hover:-translate-y-1">
+            <div class="aspect-square w-full relative">
+              @if (p.image) {
+                <img [src]="p.image" [alt]="p.title"
+                     class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 opacity-70" />
+              } @else {
+                <div class="w-full h-full bg-surface-container flex items-center justify-center">
+                  <span class="material-symbols-outlined text-primary/30" style="font-size: 4rem; font-variation-settings: 'FILL' 1;">{{ p.icon || 'folder' }}</span>
+                </div>
+              }
+              <div class="absolute inset-0 bg-linear-to-t from-surface-container-low to-transparent"></div>
+              <div class="absolute top-6 left-6 flex gap-2 flex-wrap">
+                @for (tag of p.tags.slice(0, 1); track tag) {
+                  <span class="px-3 py-1 rounded bg-secondary/20 backdrop-blur-md text-secondary text-[10px] font-bold uppercase tracking-widest border border-secondary/30">{{ tag }}</span>
+                }
+              </div>
+            </div>
+            <div class="p-8">
+              <span class="text-tertiary font-label text-[10px] tracking-widest uppercase mb-2 block">{{ p.status }}</span>
+              <h3 class="text-xl font-headline font-bold tracking-tight text-on-background mb-4">{{ p.title }}</h3>
+              <p class="text-on-surface-variant text-sm leading-relaxed mb-6">{{ p.description }}</p>
+              <button class="bg-surface-container-high w-full py-3 text-on-surface text-[10px] font-bold uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-all rounded cursor-pointer">
+                Ver proyecto
+              </button>
+            </div>
+          </div>
+        }
+      </section>
+    }
 
     <!-- Stats -->
     <section class="max-w-7xl mx-auto mt-24 py-16 border-t border-slate-800/30">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
         <div>
-          <span class="text-4xl font-headline font-bold text-primary">03</span>
+          <span class="text-4xl font-headline font-bold text-primary">{{ allProjects().length.toString().padStart(2, '0') }}</span>
           <p class="text-slate-500 text-[10px] uppercase tracking-widest mt-2">Proyectos Activos</p>
         </div>
         <div>

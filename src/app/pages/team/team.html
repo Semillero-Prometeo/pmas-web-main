@@ -63,7 +63,7 @@
     </div>
 
     <!-- Member Cards -->
-    @for (member of members; track member.name) {
+    @for (member of members(); track member.name) {
       <div class="col-span-12 md:col-span-4 lg:col-span-3 bg-surface-container-low p-6 rounded-xl group hover:bg-surface-container-highest transition-all duration-300 hover:-translate-y-1">
         <div class="mb-6 aspect-square rounded-lg overflow-hidden relative">
           <img

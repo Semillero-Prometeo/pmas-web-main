@@ -1,0 +1,159 @@
+
+<div class="p-6 md:p-10">
+
+  <!-- Header -->
+  <div class="flex justify-between items-start mb-8">
+    <div>
+      <span class="text-secondary font-label text-[10px] uppercase tracking-[0.2em] mb-2 block">CMS // Gestión de Contenido</span>
+      <h1 class="text-3xl font-headline font-bold tracking-tight">Integrantes</h1>
+      <p class="text-on-surface-variant text-sm mt-1">{{ members().length }} integrante(s) registrado(s)</p>
+    </div>
+    <button (click)="openCreate()"
+            class="flex items-center gap-2 bg-primary text-on-primary px-5 py-2.5 rounded-lg font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-all cursor-pointer">
+      <span class="material-symbols-outlined text-sm">add</span> Nuevo integrante
+    </button>
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="flex items-center gap-3 text-on-surface-variant py-10">
+      <span class="material-symbols-outlined animate-spin">progress_activity</span> Cargando...
+    </div>
+  }
+
+  <!-- Empty -->
+  @if (!loading() && members().length === 0) {
+    <div class="flex flex-col items-center justify-center py-24 gap-4 text-center">
+      <span class="material-symbols-outlined text-outline-variant" style="font-size: 3rem;">group</span>
+      <p class="text-on-surface-variant text-sm">No hay integrantes aún. Agrega el primero.</p>
+    </div>
+  }
+
+  <!-- Members grid -->
+  @if (!loading() && members().length > 0) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      @for (m of members(); track m.id) {
+        <div class="bg-surface-container-low rounded-xl overflow-hidden group hover:bg-surface-container transition-all duration-300">
+          <div class="aspect-square relative">
+            @if (m.image) {
+              <img [src]="m.image" [alt]="m.name" class="w-full h-full object-cover" />
+            } @else {
+              <div class="w-full h-full bg-surface-container flex items-center justify-center">
+                <span class="material-symbols-outlined text-outline-variant" style="font-size: 3rem; font-variation-settings: 'FILL' 1;">person</span>
+              </div>
+            }
+            <!-- Order badge -->
+            <div class="absolute top-3 left-3 bg-surface-container-highest/80 backdrop-blur px-2 py-0.5 rounded text-[9px] font-bold uppercase">
+              #{{ m.display_order + 1 }}
+            </div>
+          </div>
+          <div class="p-5">
+            <span class="text-primary font-label text-[9px] uppercase tracking-widest block mb-1">{{ m.role }}</span>
+            <h3 class="font-headline font-bold text-lg mb-1">{{ m.name }}</h3>
+            <p class="text-on-surface-variant text-xs leading-relaxed line-clamp-2 mb-4">{{ m.bio }}</p>
+            <div class="flex gap-2">
+              <button (click)="openEdit(m)"
+                      class="flex-1 flex items-center justify-center gap-1 border border-outline-variant/50 px-3 py-1.5 rounded text-xs font-bold hover:border-primary/50 hover:text-primary transition-colors cursor-pointer">
+                <span class="material-symbols-outlined text-xs">edit</span> Editar
+              </button>
+              <button (click)="confirmDelete(m.id)"
+                      class="px-3 py-1.5 rounded border border-error/30 text-error hover:bg-error/10 transition-colors cursor-pointer">
+                <span class="material-symbols-outlined text-xs">delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Delete confirm modal -->
+  @if (confirmDeleteId()) {
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-surface-container-low rounded-2xl p-8 max-w-sm w-full">
+        <span class="material-symbols-outlined text-error text-3xl mb-4 block">warning</span>
+        <h3 class="font-headline font-bold text-xl mb-2">¿Eliminar integrante?</h3>
+        <p class="text-on-surface-variant text-sm mb-6">Esta acción no se puede deshacer.</p>
+        <div class="flex gap-3">
+          <button (click)="cancelDelete()" class="flex-1 border border-outline-variant px-4 py-2.5 rounded-lg text-sm font-bold cursor-pointer hover:bg-surface-container transition-colors">Cancelar</button>
+          <button (click)="deleteMember()" [disabled]="!!deleting()"
+                  class="flex-1 bg-error text-on-error px-4 py-2.5 rounded-lg text-sm font-bold cursor-pointer hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
+            @if (deleting()) { <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> }
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Create/Edit modal -->
+  @if (showModal()) {
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
+      <div class="bg-surface-container-low rounded-2xl w-full max-w-lg my-8">
+
+        <div class="flex justify-between items-center px-8 py-6 border-b border-outline-variant/30">
+          <h2 class="font-headline font-bold text-xl">{{ modalMode() === 'create' ? 'Nuevo Integrante' : 'Editar Integrante' }}</h2>
+          <button (click)="closeModal()" class="text-on-surface-variant hover:text-on-surface cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="p-8 space-y-5">
+
+          <div>
+            <label class="text-[10px] uppercase tracking-widest text-on-surface-variant block mb-1">Nombre *</label>
+            <input type="text" [value]="form().name" (input)="form.update(f => ({...f, name: $any($event.target).value}))"
+                   class="w-full bg-surface-container border border-outline-variant rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary" />
+          </div>
+
+          <div>
+            <label class="text-[10px] uppercase tracking-widest text-on-surface-variant block mb-1">Rol *</label>
+            <input type="text" [value]="form().role" (input)="form.update(f => ({...f, role: $any($event.target).value}))"
+                   class="w-full bg-surface-container border border-outline-variant rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary" />
+          </div>
+
+          <div>
+            <label class="text-[10px] uppercase tracking-widest text-on-surface-variant block mb-1">Biografía *</label>
+            <textarea [value]="form().bio" (input)="form.update(f => ({...f, bio: $any($event.target).value}))"
+                      rows="3" class="w-full bg-surface-container border border-outline-variant rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary resize-none"></textarea>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <label class="text-[10px] uppercase tracking-widest text-on-surface-variant">Orden:</label>
+            <input type="number" [value]="form().display_order" (input)="form.update(f => ({...f, display_order: +$any($event.target).value}))"
+                   class="w-20 bg-surface-container border border-outline-variant rounded px-2 py-1.5 text-sm focus:outline-none focus:border-primary" />
+          </div>
+
+          <div>
+            <label class="text-[10px] uppercase tracking-widest text-on-surface-variant block mb-2">Foto (Base64)</label>
+            <div class="flex gap-4 items-center">
+              @if (form().image) {
+                <img [src]="form().image" class="w-16 h-16 rounded-lg object-cover border border-outline-variant/30" alt="preview" />
+              }
+              <label class="flex items-center gap-2 bg-surface-container border border-outline-variant/50 border-dashed px-4 py-3 rounded-lg cursor-pointer hover:border-primary/50 transition-colors text-sm text-on-surface-variant">
+                <span class="material-symbols-outlined text-sm">upload</span>
+                Subir foto
+                <input type="file" accept="image/*" (change)="onImageChange($event)" class="hidden" />
+              </label>
+            </div>
+          </div>
+
+          @if (error()) {
+            <div class="flex items-center gap-2 text-error text-sm bg-error/10 px-4 py-3 rounded-lg">
+              <span class="material-symbols-outlined text-sm">error</span> {{ error() }}
+            </div>
+          }
+        </div>
+
+        <div class="flex justify-end gap-3 px-8 py-5 border-t border-outline-variant/30">
+          <button (click)="closeModal()" class="px-6 py-2.5 rounded-lg border border-outline-variant text-sm font-bold hover:bg-surface-container cursor-pointer">Cancelar</button>
+          <button (click)="save()" [disabled]="saving()"
+                  class="px-6 py-2.5 bg-primary text-on-primary rounded-lg text-sm font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer flex items-center gap-2">
+            @if (saving()) { <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> }
+            {{ saving() ? 'Guardando...' : (modalMode() === 'create' ? 'Crear' : 'Guardar') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
