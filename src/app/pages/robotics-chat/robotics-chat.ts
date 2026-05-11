@@ -71,6 +71,7 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   sttAvailable = signal(false);
   sttListening = signal(false);
   sttError = signal<string | null>(null);
+  sttInterimText = signal('');
 
   readonly chatQuickOptions: { label: string; prompt: string; icon: string }[] = [
     { label: 'Poema de Diana Serrano',          prompt: 'Declara un poema para Diana Serrano, con un tono romantico y amoroso',              icon: 'help_outline'    },
@@ -109,6 +110,7 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   private speechRecognition: SpeechRecognitionLike | null = null;
   private speechCtor: SpeechRecognitionCtorLike | undefined;
   private finalTranscript = '';
+  private _sendOnVoiceEnd = false;
 
   now(): string {
     return new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
@@ -175,16 +177,18 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   }
 
   toggleChatVoiceInput() {
-    if (!this.sttAvailable() || this.chatBusy()) {
-      return;
-    }
+    if (!this.sttAvailable() || this.chatBusy()) return;
 
     this.sttError.set(null);
     if (this.sttListening()) {
+      this._sendOnVoiceEnd = true;
       this.speechRecognition?.stop();
       return;
     }
 
+    this.finalTranscript = '';
+    this.chatInput.set('');
+    this.sttInterimText.set('');
     // Must create a fresh instance — reusing a stopped SpeechRecognition throws InvalidStateError
     this.speechRecognition = this.createRecognitionInstance();
     if (!this.speechRecognition) return;
@@ -258,6 +262,10 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
     }
   }
 
+  private isMobile(): boolean {
+    return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }
+
   private setupSpeechRecognition() {
     const speechWindow = window as Window & {
       SpeechRecognition?: SpeechRecognitionCtorLike;
@@ -280,7 +288,8 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
     const recognition = new this.speechCtor();
     recognition.lang = 'es-CO';
     recognition.interimResults = true;
-    recognition.continuous = true;
+    // On mobile, continuous mode is unreliable — use single-utterance with auto-restart
+    recognition.continuous = !this.isMobile();
     recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {
@@ -290,7 +299,26 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
     };
 
     recognition.onend = () => {
-      this.sttListening.set(false);
+      this.sttInterimText.set('');
+      if (this._sendOnVoiceEnd) {
+        this._sendOnVoiceEnd = false;
+        this.sttListening.set(false);
+        const text = (this.finalTranscript || this.chatInput()).trim();
+        if (text) {
+          this.chatInput.set(text);
+          Promise.resolve().then(() => this.sendChat());
+        }
+      } else if (this.sttListening() && this.isMobile()) {
+        // On mobile non-continuous mode: restart automatically to keep listening
+        try {
+          this.speechRecognition = this.createRecognitionInstance();
+          this.speechRecognition?.start();
+        } catch {
+          this.sttListening.set(false);
+        }
+      } else {
+        this.sttListening.set(false);
+      }
     };
 
     recognition.onresult = (event: Event) => {
@@ -316,6 +344,7 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
         }
       }
 
+      this.sttInterimText.set(interim.trim());
       const display = this.finalTranscript
         ? interim.trim() ? `${this.finalTranscript} ${interim.trim()}` : this.finalTranscript
         : interim.trim();

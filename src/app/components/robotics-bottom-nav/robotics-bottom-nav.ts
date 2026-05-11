@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import type { SidebarItem } from '../sidebar/sidebar';
+import { AuthService } from '../../core/services/auth.service';
 
 /** Navegación compacta solo Robótica (estilo móvil). */
 @Component({
@@ -10,6 +11,7 @@ import type { SidebarItem } from '../sidebar/sidebar';
 })
 export class RoboticsBottomNav {
   @Input() activeItem: SidebarItem | null = null;
+  auth = inject(AuthService);
 
   readonly links: { id: SidebarItem; label: string; icon: string; route: string }[] = [
     { id: 'control', label: 'Mov.', icon: 'settings_remote', route: '/control-panel' },

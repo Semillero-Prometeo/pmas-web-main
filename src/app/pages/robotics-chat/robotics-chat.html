@@ -1,4 +1,6 @@
-<div class="flex flex-col min-h-[calc(100vh-8rem)] max-h-[calc(100vh-8rem)] md:max-h-none md:min-h-[calc(100vh-6rem)] bg-background industrial-grid">
+<div [class]="compact()
+  ? 'flex flex-col h-full bg-background industrial-grid overflow-hidden'
+  : 'flex flex-col min-h-[calc(100vh-6rem)] bg-background industrial-grid'">
 
   <!-- ══ BARRA DE TABS / HEADER ════════════════════════════════════════════ -->
   <div class="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-surface/80 backdrop-blur-sm flex-shrink-0"
@@ -133,6 +135,27 @@
           }
 
         }
+        <!-- Preview de voz en tiempo real -->
+        @if (sttListening() && (chatInput() || sttInterimText())) {
+          <div class="flex justify-end gap-2">
+            <div [class]="compact() ? 'max-w-[85%] sm:max-w-[72%]' : 'max-w-[78%]'">
+              <div class="bg-primary/8 border border-primary/20 border-dashed rounded-2xl rounded-tr-sm px-4 py-3">
+                <p class="text-on-surface/70 leading-relaxed whitespace-pre-wrap italic"
+                   [class]="compact() ? 'text-sm' : 'text-base'">
+                  {{ chatInput() || sttInterimText() }}
+                </p>
+              </div>
+              <div class="flex items-center justify-end gap-1.5 mt-1 pr-1">
+                <span class="material-symbols-outlined text-primary animate-pulse" style="font-size: 0.8rem;">mic</span>
+                <span class="text-[10px] font-mono text-primary/60">Dictando...</span>
+              </div>
+            </div>
+            <div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0 mt-1 animate-pulse">
+              <span class="material-symbols-outlined text-primary" style="font-size: 0.9rem;">mic</span>
+            </div>
+          </div>
+        }
+
       </div>
 
       <!-- Input area -->
@@ -180,17 +203,20 @@
           <button
             (click)="toggleChatVoiceInput()"
             [disabled]="chatBusy() || !sttAvailable()"
+            [title]="!sttAvailable() ? 'Dictado no disponible en este navegador (usa Chrome)' : sttListening() ? 'Detener dictado' : 'Dictar mensaje'"
             [attr.aria-label]="sttListening() ? 'Detener dictado por voz' : 'Iniciar dictado por voz'"
             class="flex-shrink-0 rounded-2xl flex items-center justify-center transition-all
                    cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             [class]="(sttListening()
               ? 'bg-primary hover:opacity-90 active:scale-90 shadow-[0_0_18px_rgba(172,199,255,0.3)]'
-              : 'bg-surface-container-highest hover:bg-surface-container')
+              : !sttAvailable()
+                ? 'bg-surface-container-highest'
+                : 'bg-surface-container-highest hover:bg-surface-container')
               + (compact() ? ' w-11 h-11 sm:w-12 sm:h-12' : ' w-14 h-14')">
             <span class="material-symbols-outlined"
-                  [class]="sttListening() ? 'text-on-primary' : 'text-on-surface-variant'"
+                  [class]="sttListening() ? 'text-on-primary' : !sttAvailable() ? 'text-slate-700' : 'text-on-surface-variant'"
                   style="font-size: 1.3rem; font-variation-settings: 'FILL' 1;">
-              {{ sttListening() ? 'stop_circle' : 'mic' }}
+              {{ sttListening() ? 'stop_circle' : !sttAvailable() ? 'mic_off' : 'mic' }}
             </span>
           </button>
           <button
@@ -211,10 +237,16 @@
           Enter para enviar &nbsp;·&nbsp; Shift+Enter nueva línea
         </p>
         @if (sttError()) {
-          <p class="text-[11px] text-rose-300 mt-2">{{ sttError() }}</p>
+          <p class="text-[11px] text-rose-300 mt-2 flex items-center gap-1">
+            <span class="material-symbols-outlined" style="font-size: 0.9rem;">warning</span>
+            {{ sttError() }}
+          </p>
         }
         @if (!sttAvailable()) {
-          <p class="text-[11px] text-outline mt-2">Tu navegador no soporta dictado por voz.</p>
+          <p class="text-[11px] text-outline mt-2 flex items-center gap-1">
+            <span class="material-symbols-outlined" style="font-size: 0.9rem;">info</span>
+            Dictado por voz no disponible. Usa Chrome o Edge para habilitarlo.
+          </p>
         }
       </div>
     </div>

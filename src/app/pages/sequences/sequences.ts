@@ -58,6 +58,8 @@ export class Sequences {
   addServo = 0;
   addNombre = '';
 
+  activeMobileSection = signal<'controls' | 'timeline' | 'blocks'>('controls');
+
   readonly timelineSeconds = computed(() => {
     const items = this.blocks();
     const maxEnd = items.reduce((acc, item) => Math.max(acc, item.inicio + item.dur), 0);

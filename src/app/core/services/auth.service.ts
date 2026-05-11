@@ -100,6 +100,27 @@ export class AuthService {
     this._roleSelected.set(true);
   }
 
+  changePassword(newPassword: string) {
+    const userId = this._profile()?.id;
+    if (!userId) return throwError(() => new Error('No user session'));
+    this._loading.set(true);
+    this._error.set(null);
+    return this.http
+      .put<UserProfile>(`${GATEWAY_URL}/users/${userId}`, { password: newPassword })
+      .pipe(
+        switchMap(() => this.http.get<UserProfile>(`${GATEWAY_URL}/auth/me`)),
+        tap(profile => {
+          this._profile.set(profile);
+          this._loading.set(false);
+        }),
+        catchError((err: HttpErrorResponse) => {
+          this._loading.set(false);
+          this._error.set(this.parseError(err));
+          return throwError(() => err);
+        })
+      );
+  }
+
   logout() {
     this._token.set(null);
     this._profile.set(null);

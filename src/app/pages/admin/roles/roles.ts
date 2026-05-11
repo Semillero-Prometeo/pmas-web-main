@@ -88,8 +88,8 @@ export class Roles implements OnInit {
     const payload = { name: f.name.trim(), description: f.description.trim() };
 
     const req = this.modalMode() === 'create'
-      ? this.http.post<Role>(`${GATEWAY_URL}/auth/roles`, payload)
-      : this.http.patch<Role>(`${GATEWAY_URL}/auth/roles/${f.id}`, payload);
+      ? this.http.post<Role>(`${GATEWAY_URL}/roles`, payload)
+      : this.http.patch<Role>(`${GATEWAY_URL}/roles/${f.id}`, payload);
 
     req.subscribe({
       next: () => {
@@ -112,7 +112,7 @@ export class Roles implements OnInit {
     const r = this.deleteTarget();
     if (!r) return;
     this.deleting.set(true);
-    this.http.delete(`${GATEWAY_URL}/auth/roles/${r.id}`).subscribe({
+    this.http.delete(`${GATEWAY_URL}/roles/${r.id}`).subscribe({
       next: () => {
         this.deleting.set(false);
         this.deleteTarget.set(null);

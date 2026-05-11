@@ -87,7 +87,7 @@
 
             <!-- Email -->
             <div class="col-span-3">
-              <span class="text-sm font-mono text-slate-400 truncate block">{{ user.email ?? '—' }}</span>
+              <span class="text-sm font-mono text-slate-400 truncate block">{{ user.person?.email ?? '—' }}</span>
             </div>
 
             <!-- Roles -->
@@ -152,7 +152,7 @@
       </div>
 
       <!-- Body -->
-      <div class="px-6 py-5 space-y-4">
+      <div class="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto" style="scrollbar-width: thin;">
 
         @if (modalError()) {
           <div class="flex items-start gap-3 p-3 bg-error/10 rounded-lg border border-error/25">
@@ -161,78 +161,142 @@
           </div>
         }
 
-        <!-- Nombres -->
-        <div class="grid grid-cols-2 gap-3">
+        <!-- ── Sección persona ── -->
+        <div class="space-y-3">
+          <p class="text-[9px] font-mono uppercase tracking-widest text-secondary flex items-center gap-1.5">
+            <span class="material-symbols-outlined" style="font-size: 0.85rem;">person_pin</span>
+            Datos personales
+          </p>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Nombre *</label>
+              <input type="text" placeholder="Juan"
+                     [ngModel]="form().first_name"
+                     (ngModelChange)="form.update(f => ({...f, first_name: $event}))"
+                     class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
+                            rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
+            </div>
+            <div>
+              <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Apellido *</label>
+              <input type="text" placeholder="Pérez"
+                     [ngModel]="form().last_name"
+                     (ngModelChange)="form.update(f => ({...f, last_name: $event}))"
+                     class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
+                            rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
+            </div>
+          </div>
+
           <div>
-            <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Nombre</label>
-            <input type="text" placeholder="John"
-                   [ngModel]="form().first_name"
-                   (ngModelChange)="form.update(f => ({...f, first_name: $event}))"
+            <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Correo electrónico *</label>
+            <input type="email" placeholder="juan.perez@unilibre.edu.co"
+                   [ngModel]="form().email"
+                   (ngModelChange)="form.update(f => ({...f, email: $event}))"
                    class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
                           rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
           </div>
+
           <div>
-            <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Apellido</label>
-            <input type="text" placeholder="Doe"
-                   [ngModel]="form().last_name"
-                   (ngModelChange)="form.update(f => ({...f, last_name: $event}))"
+            <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Teléfono</label>
+            <input type="tel" placeholder="3001234567"
+                   [ngModel]="form().phone"
+                   (ngModelChange)="form.update(f => ({...f, phone: $event}))"
+                   class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
+                          rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3" > 
+            <div>
+              <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Tipo doc.</label>
+              @if (documentTypes().length > 0) {
+                <select
+                  [ngModel]="form().document_type_id"
+                  (ngModelChange)="form.update(f => ({...f, document_type_id: $event}))"
+                  class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
+                         rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors">
+                  @for (dt of documentTypes(); track dt.id) {
+                    <option [ngValue]="dt.id">{{ dt.name }}</option>
+                  }
+                </select>
+              } @else {
+                <input type="text" placeholder="ID tipo doc."
+                       [ngModel]="form().document_type_id"
+                       (ngModelChange)="form.update(f => ({...f, document_type_id: $event}))"
+                       class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
+                              rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
+              }
+            </div>
+            <div>
+              <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">
+                N° documento {{ modalMode() === 'create' ? '*' : '' }}
+              </label>
+              <input type="text" placeholder="1234567890"
+                     [ngModel]="form().document_number"
+                     (ngModelChange)="form.update(f => ({...f, document_number: $event}))"
+                     class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
+                            rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Sección cuenta ── -->
+        <div class="space-y-3 pt-3 border-t border-white/5">
+          <p class="text-[9px] font-mono uppercase tracking-widest text-primary flex items-center gap-1.5">
+            <span class="material-symbols-outlined" style="font-size: 0.85rem;">account_circle</span>
+            Cuenta de acceso
+          </p>
+
+          @if (modalMode() === 'edit') {
+            <div>
+              <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Usuario (username)</label>
+              <input type="text" placeholder="usuario@unilibre.edu.co"
+                     [ngModel]="form().username"
+                     (ngModelChange)="form.update(f => ({...f, username: $event}))"
+                     class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
+                            rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
+            </div>
+          } @else {
+            <div class="flex items-start gap-2 p-2.5 bg-primary/8 rounded-lg border border-primary/20">
+              <span class="material-symbols-outlined text-primary/70 mt-0.5" style="font-size: 0.85rem;">info</span>
+              <p class="text-[10px] text-primary/70 font-label leading-relaxed">
+                El username se asignará automáticamente igual al correo electrónico.
+              </p>
+            </div>
+          }
+
+          <div>
+            <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">
+              Contraseña temporal {{ modalMode() === 'edit' ? '(dejar vacío = sin cambios)' : '(opcional)' }}
+            </label>
+            <input type="password" placeholder="••••••••"
+                   [ngModel]="form().password"
+                   (ngModelChange)="form.update(f => ({...f, password: $event}))"
                    class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
                           rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
           </div>
         </div>
 
-        <!-- Username -->
-        <div>
-          <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Usuario *</label>
-          <input type="text" placeholder="john.doe"
-                 [ngModel]="form().username"
-                 (ngModelChange)="form.update(f => ({...f, username: $event}))"
-                 class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
-                        rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
-        </div>
-
-        <!-- Email -->
-        <div>
-          <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Correo *</label>
-          <input type="email" placeholder="john@prometeo.edu.co"
-                 [ngModel]="form().email"
-                 (ngModelChange)="form.update(f => ({...f, email: $event}))"
-                 class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
-                        rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
-        </div>
-
-        <!-- Password -->
-        <div>
-          <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">
-            Contraseña {{ modalMode() === 'edit' ? '(dejar vacío para no cambiar)' : '*' }}
-          </label>
-          <input type="password" placeholder="••••••••"
-                 [ngModel]="form().password"
-                 (ngModelChange)="form.update(f => ({...f, password: $event}))"
-                 class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
-                        rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
-        </div>
-
-        <!-- Roles (multi-selección) -->
-        <div>
-          <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">
-            Roles
-            <span class="text-slate-600 normal-case tracking-normal font-normal ml-1">(selecciona uno o más)</span>
-          </label>
+        <!-- ── Roles ── -->
+        <div class="space-y-2 pt-3 border-t border-white/5">
+          <p class="text-[9px] font-mono uppercase tracking-widest text-tertiary flex items-center gap-1.5">
+            <span class="material-symbols-outlined" style="font-size: 0.85rem;">badge</span>
+            Roles asignados
+          </p>
           <div class="bg-surface-container-low border border-outline-variant/30 rounded-lg overflow-hidden divide-y divide-outline-variant/10">
             @for (role of roles(); track role.id) {
               <label class="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-surface-container transition-colors">
-                <input
-                  type="checkbox"
-                  [checked]="isRoleSelected(role.id)"
-                  (change)="toggleRole(role.id)"
-                  class="w-4 h-4 accent-primary cursor-pointer rounded"
-                />
+                <input type="checkbox"
+                       [checked]="isRoleSelected(role.id)"
+                       (change)="toggleRole(role.id)"
+                       class="w-4 h-4 accent-primary cursor-pointer rounded"/>
                 <span class="text-sm text-on-surface font-label">{{ role.name }}</span>
                 @if (isRoleSelected(role.id)) {
-                  <span class="ml-auto text-[9px] font-label uppercase tracking-widest text-primary">activo</span>
+                  <span class="ml-auto text-[9px] font-label uppercase tracking-widest text-primary">✓</span>
                 }
               </label>
+            }
+            @if (roles().length === 0) {
+              <p class="text-[11px] text-slate-600 px-3 py-3">Sin roles disponibles</p>
             }
           </div>
         </div>

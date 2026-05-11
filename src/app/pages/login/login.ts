@@ -27,7 +27,6 @@ export class Login {
     this.auth.login({ username: this.email(), password: this.password() })
       .subscribe({
         next: () => {
-          // Si no hay roles configurados, ir directo; si los hay, mostrar modal
           if (this.auth.availableRoles().length === 0) {
             this.router.navigate(['/control-panel']);
           } else {
