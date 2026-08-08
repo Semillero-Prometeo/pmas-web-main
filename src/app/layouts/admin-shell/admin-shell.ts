@@ -15,21 +15,24 @@ import {
 import { filter } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Footer } from '../../components/footer/footer';
+import { LanShareModal } from '../../components/lan-share-modal/lan-share-modal';
 import { Navbar } from '../../components/navbar/navbar';
 import { RoboticsBottomNav } from '../../components/robotics-bottom-nav/robotics-bottom-nav';
 import { Sidebar } from '../../components/sidebar/sidebar';
 import type { SidebarItem } from '../../components/sidebar/sidebar';
 import { AdminChromeService } from '../../core/services/admin-chrome.service';
+import { LanShareService } from '../../core/services/lan-share.service';
 
 @Component({
   selector: 'app-admin-shell',
-  imports: [RouterOutlet, Navbar, Sidebar, Footer, RoboticsBottomNav],
+  imports: [RouterOutlet, Navbar, Sidebar, Footer, RoboticsBottomNav, LanShareModal],
   templateUrl: './admin-shell.html',
 })
 export class AdminShell implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   readonly chrome = inject(AdminChromeService);
+  private readonly lanShare = inject(LanShareService);
 
   readonly compact = signal(environment.compactMode);
   readonly drawerOpen = signal(false);
@@ -56,6 +59,7 @@ export class AdminShell implements OnInit {
       .subscribe(() => this.syncSidebarFromRoute());
 
     this.syncSidebarFromRoute();
+    this.lanShare.maybeShowOnFirstAdminVisit();
   }
 
   private syncSidebarFromRoute(): void {

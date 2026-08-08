@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, inject, signal } from '@angular
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/services/auth.service';
+import { LanShareService } from '../../core/services/lan-share.service';
 
 @Component({
   selector: 'app-navbar',
@@ -23,6 +24,7 @@ export class Navbar {
   @Output() openAdminMenu = new EventEmitter<void>();
 
   auth = inject(AuthService);
+  readonly lanShare = inject(LanShareService);
   mobileMenuOpen = signal(false);
   profileDropdownOpen = signal(false);
 
@@ -32,5 +34,10 @@ export class Navbar {
 
   closeProfileDropdown() {
     this.profileDropdownOpen.set(false);
+  }
+
+  openLanQr(): void {
+    this.closeProfileDropdown();
+    this.lanShare.openModal();
   }
 }
