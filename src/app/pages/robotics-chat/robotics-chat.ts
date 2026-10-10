@@ -26,6 +26,7 @@ interface ChatMessage {
   timestamp: string;
   status: 'sending' | 'done' | 'error';
   fuente?: string;
+  movimientos?: { id: number; name: string }[];
 }
 
 interface SentenceEntry {
@@ -302,12 +303,23 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
     this.chatBusy.set(true);
     this.shouldScrollChat = true;
 
-    this.http.post<{ reply: string; fuente?: string }>(`${GATEWAY_URL}/chat/question`, { message: text }).subscribe({
+    this.http
+      .post<{ reply: string; fuente?: string; movimientos?: { id: number; name: string }[] }>(
+        `${GATEWAY_URL}/chat/question`,
+        { message: text },
+      )
+      .subscribe({
       next: (res) => {
         this.chatMessages.update((msgs) =>
           msgs.map((m, i) =>
             i === msgs.length - 1
-              ? { ...m, text: res.reply ?? 'Sin respuesta', fuente: res.fuente || undefined, status: 'done' }
+              ? {
+                  ...m,
+                  text: res.reply ?? 'Sin respuesta',
+                  fuente: res.fuente || undefined,
+                  movimientos: res.movimientos ?? [],
+                  status: 'done',
+                }
               : m,
           ),
         );

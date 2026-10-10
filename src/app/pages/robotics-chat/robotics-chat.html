@@ -128,12 +128,28 @@
                     </p>
                   }
                 </div>
-                <span class="text-[10px] font-mono text-outline ml-1 mt-1 block">
-                  {{ msg.timestamp }}
-                  @if (msg.fuente) {
-                    <span class="ml-2 uppercase tracking-wide text-secondary">Fuente: {{ msg.fuente }}</span>
+                <div class="ml-1 mt-1 space-y-1">
+                  <span class="text-[10px] font-mono text-outline block">
+                    {{ msg.timestamp }}
+                    @if (msg.fuente) {
+                      <span class="ml-2 uppercase tracking-wide text-secondary">Fuente: {{ msg.fuente }}</span>
+                    }
+                  </span>
+                  @if (msg.status === 'done' && msg.movimientos) {
+                    <div class="flex flex-wrap gap-1">
+                      @if (msg.movimientos.length) {
+                        @for (mov of msg.movimientos; track mov.id + mov.name) {
+                          <span class="inline-flex items-center gap-1 rounded-full bg-secondary/15 px-2 py-0.5 text-[10px] font-medium text-secondary">
+                            <span class="material-symbols-outlined" style="font-size: 0.75rem;">directions_run</span>
+                            {{ mov.name }} · {{ mov.id }}
+                          </span>
+                        }
+                      } @else {
+                        <span class="text-[10px] text-outline">Sin movimiento</span>
+                      }
+                    </div>
                   }
-                </span>
+                </div>
               </div>
             </div>
           }
