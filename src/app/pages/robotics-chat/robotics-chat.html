@@ -128,7 +128,12 @@
                     </p>
                   }
                 </div>
-                <span class="text-[10px] font-mono text-outline ml-1 mt-1 block">{{ msg.timestamp }}</span>
+                <span class="text-[10px] font-mono text-outline ml-1 mt-1 block">
+                  {{ msg.timestamp }}
+                  @if (msg.fuente) {
+                    <span class="ml-2 uppercase tracking-wide text-secondary">Fuente: {{ msg.fuente }}</span>
+                  }
+                </span>
               </div>
             </div>
           }
