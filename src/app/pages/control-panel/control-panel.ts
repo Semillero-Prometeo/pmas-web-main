@@ -5,6 +5,14 @@ import { HealthStatusDropdown } from '../../components/health-status-dropdown/he
 import { GATEWAY_URL } from '../../core/constants/gateway';
 import { HealthService } from '../../core/services/health.service';
 import { catchError, forkJoin, map, of } from 'rxjs';
+import {
+  CATEGORY_LABELS,
+  CATEGORY_ORDER,
+  groupByCategory,
+  isPlayableSequence,
+  PlayableSequence,
+  SequenceCategory,
+} from './sequence-groups';
 
 interface MotionBlock {
   arduino_id: number;
@@ -22,18 +30,17 @@ interface SequenceFile {
   file_name: string;
   id?: number | null;
   description?: string;
+  category?: string | null;
 }
 
 interface SequenceDetail {
   version: number;
+  id?: number | null;
   name: string;
+  description?: string;
+  category?: string | null;
   blocks: MotionBlock[];
-}
-
-interface SequenceGroup {
-  key: string;
-  label: string;
-  sequenceNames: string[];
+  blocks_neutro?: MotionBlock[];
 }
 
 interface SequenceLog {
@@ -45,7 +52,22 @@ interface SequenceLog {
   message?: string;
 }
 
+interface RuntimeStep {
+  id: number | null;
+  name: string;
+  mode: 'normal' | 'neutro' | 'espera';
+  source: 'turno' | 'panel' | 'estudio';
+}
+
+interface RuntimeSnapshot {
+  busy: boolean;
+  source: 'turno' | 'panel' | 'estudio' | null;
+  current: RuntimeStep | null;
+  queue: RuntimeStep[];
+}
+
 const EXECUTION_LOG_STORAGE_KEY = 'prometeo_execution_logs_v1';
+const IDLE_RUNTIME: RuntimeSnapshot = { busy: false, source: null, current: null, queue: [] };
 
 @Component({
   selector: 'app-control-panel',
@@ -53,46 +75,38 @@ const EXECUTION_LOG_STORAGE_KEY = 'prometeo_execution_logs_v1';
   templateUrl: './control-panel.html',
 })
 export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
-  @ViewChild('logScroll')  logScroll!:  ElementRef<HTMLDivElement>;
+  @ViewChild('logScroll') logScroll!: ElementRef<HTMLDivElement>;
 
   private http = inject(HttpClient);
   health = inject(HealthService);
-  private chainStatusTimer: ReturnType<typeof setInterval> | null = null;
+  private runtimeTimer: ReturnType<typeof setTimeout> | null = null;
   private logCounter = 0;
 
-  // ── Telemetry ──────────────────────────────────────────────────────────────
-  uptime      = signal('14:02:55');
-  cpuLoad     = signal(64);
-  memAlloc    = signal(30);
+  uptime = signal('14:02:55');
+  cpuLoad = signal(64);
+  memAlloc = signal(30);
   temperature = signal(42);
-  velocity    = signal(0.85);
+  velocity = signal(0.85);
 
-  // ── Sequences ──────────────────────────────────────────────────────────────
-  sequenceGroups = signal<SequenceGroup[]>([]);
+  sequenceGroups = signal(groupByCategory([]));
   sequenceLoading = signal(true);
   sequenceError = signal<string | null>(null);
   movementSearch = signal('');
   selectedGroupFilter = signal('ALL');
-  selectedChain = signal<string[]>([]);
-  sequenceCache = new Map<string, SequenceDetail>();
-  sequenceDescriptions = signal<Map<string, string>>(new Map());
-  executingSequenceName = signal<string | null>(null);
 
-  chainRunning = signal(false);
-  chainCurrentSequence = signal<string | null>(null);
-  chainCompletedItems = signal(0);
-  chainTotalItems = signal(0);
+  runtime = signal<RuntimeSnapshot>(IDLE_RUNTIME);
+  runtimeUnreachable = signal(false);
+  playLocked = computed(() => this.runtimeUnreachable() || this.runtime().busy);
 
   commandLogs = signal<SequenceLog[]>([]);
   ackCount = computed(() => this.commandLogs().filter((item) => item.status === 'ack').length);
   groupFilterOptions = computed(() => [
-    { value: 'ALL', label: 'Todos los grupos' },
-    ...this.sequenceGroups().map((group) => ({ value: group.key, label: group.label })),
+    { value: 'ALL', label: 'Todas' },
+    ...CATEGORY_ORDER.map((key) => ({ value: key, label: CATEGORY_LABELS[key] })),
   ]);
   filteredSequenceGroups = computed(() => {
     const selectedGroup = this.selectedGroupFilter();
     const query = this.movementSearch().trim().toLowerCase();
-
     const byGroup =
       selectedGroup === 'ALL'
         ? this.sequenceGroups()
@@ -103,31 +117,26 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
     return byGroup
       .map((group) => ({
         ...group,
-        sequenceNames: group.sequenceNames.filter((name) => {
-          const display = this.displaySequenceName(name).toLowerCase();
-          const description = (this.sequenceDescriptions().get(name) ?? '').toLowerCase();
-          return (
-            display.includes(query) ||
-            name.toLowerCase().includes(query) ||
-            description.includes(query)
-          );
+        sequences: group.sequences.filter((sequence) => {
+          const display = this.displaySequenceName(sequence.name).toLowerCase();
+          const description = (sequence.description ?? '').toLowerCase();
+          return display.includes(query) || sequence.name.toLowerCase().includes(query) || description.includes(query);
         }),
       }))
-      .filter((group) => group.sequenceNames.length > 0);
+      .filter((group) => group.sequences.length > 0);
   });
 
   ngOnInit() {
     this.restoreLogsFromStorage();
     this.health.checkAll();
     this.loadSequences();
-    this.refreshChainStatus();
-    this.chainStatusTimer = setInterval(() => this.refreshChainStatus(), 60000);
+    this.pollRuntime();
   }
 
   ngOnDestroy() {
-    if (this.chainStatusTimer) {
-      clearInterval(this.chainStatusTimer);
-      this.chainStatusTimer = null;
+    if (this.runtimeTimer) {
+      clearTimeout(this.runtimeTimer);
+      this.runtimeTimer = null;
     }
   }
 
@@ -138,48 +147,35 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
     this.http.get<{ total: number; data: SequenceFile[] }>(`${GATEWAY_URL}/sequence/files`).subscribe({
       next: (res) => {
         if (!res.data.length) {
-          this.sequenceGroups.set([]);
-          this.sequenceDescriptions.set(new Map());
+          this.sequenceGroups.set(groupByCategory([]));
           this.sequenceLoading.set(false);
           return;
         }
-
-        const descriptions = new Map<string, string>();
-        for (const file of res.data) {
-          descriptions.set(file.name, file.description ?? '');
-        }
-        this.sequenceDescriptions.set(descriptions);
 
         const requests = res.data.map((file) =>
           this.http
             .get<SequenceDetail>(`${GATEWAY_URL}/sequence/file`, { params: { name: file.name } })
             .pipe(
-              map((sequence) => ({ name: file.name, sequence })),
-              catchError(() => of({ name: file.name, sequence: null })),
+              map((sequence) => ({ name: file.name, sequence, file })),
+              catchError(() => of({ name: file.name, sequence: null, file })),
             ),
         );
 
         forkJoin(requests).subscribe({
           next: (entries) => {
-            const grouping = new Map<string, string[]>();
-            this.sequenceCache.clear();
+            const playable: PlayableSequence[] = [];
             for (const entry of entries) {
               if (!entry.sequence) continue;
-              this.sequenceCache.set(entry.name, entry.sequence);
-              const key = this.extractSequenceFolderKey(entry.name);
-              const list = grouping.get(key) ?? [];
-              list.push(entry.name);
-              grouping.set(key, list);
+              const item: PlayableSequence = {
+                name: entry.name,
+                description: entry.sequence.description ?? entry.file.description ?? '',
+                category: (entry.sequence.category ?? entry.file.category) as SequenceCategory | null,
+                blocks: entry.sequence.blocks ?? [],
+                blocks_neutro: entry.sequence.blocks_neutro ?? [],
+              };
+              if (isPlayableSequence(item)) playable.push(item);
             }
-
-            const groups: SequenceGroup[] = Array.from(grouping.entries())
-              .sort(([a], [b]) => a.localeCompare(b))
-              .map(([key, sequenceNames]) => ({
-                key,
-                label: key === 'ROOT' ? 'Sin carpeta' : key,
-                sequenceNames: sequenceNames.sort((a, b) => a.localeCompare(b)),
-              }));
-            this.sequenceGroups.set(groups);
+            this.sequenceGroups.set(groupByCategory(playable));
             this.sequenceLoading.set(false);
           },
           error: () => {
@@ -195,123 +191,83 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
     });
   }
 
-  executeSequence(sequenceName: string) {
-    const sequence = this.sequenceCache.get(sequenceName);
-    if (!sequence || !sequence.blocks.length) return;
-    this.executingSequenceName.set(sequenceName);
+  executePhase(name: string, mode: 'normal' | 'neutro') {
+    if (this.playLocked()) return;
     this.appendLog({
-      group: this.groupLabelForSequence(sequenceName),
-      sequenceName,
+      group: this.groupLabelForSequence(name),
+      sequenceName: `${name} ${mode}`,
       status: 'sent',
-      message: 'Ejecución individual solicitada',
+      message: 'Ejecución solicitada',
     });
-
-    this.http.post<{ status: string; message: string }>(`${GATEWAY_URL}/sequence/play`, { blocks: sequence.blocks }).subscribe({
-      next: () => {
-        this.appendLog({
-          group: this.groupLabelForSequence(sequenceName),
-          sequenceName,
-          status: 'ack',
-          message: 'Secuencia en ejecución',
-        });
-        this.executingSequenceName.set(null);
-      },
-      error: () => {
-        this.appendLog({
-          group: this.groupLabelForSequence(sequenceName),
-          sequenceName,
-          status: 'error',
-          message: 'Error al iniciar secuencia',
-        });
-        this.executingSequenceName.set(null);
-      },
-    });
-  }
-
-  addToChain(sequenceName: string) {
-    this.selectedChain.update((items) => [...items, sequenceName]);
-  }
-
-  removeFromChain(index: number) {
-    this.selectedChain.update((items) => items.filter((_, idx) => idx !== index));
-  }
-
-  clearChain() {
-    this.selectedChain.set([]);
-  }
-
-  startChain() {
-    const items = this.selectedChain().map((name) => ({ name, repeat: 1, delay_ms: 0 }));
-    if (!items.length) return;
-
-    this.http.post<{ status: string; message: string }>(`${GATEWAY_URL}/sequence/chain/start`, { items }).subscribe({
-      next: () => {
-        this.appendLog({
-          group: 'CHAIN',
-          sequenceName: items.map((item) => item.name).join(' -> '),
-          status: 'ack',
-          message: 'Cadena iniciada',
-        });
-        this.refreshChainStatus();
-      },
-      error: () => {
-        this.appendLog({
-          group: 'CHAIN',
-          sequenceName: items.map((item) => item.name).join(' -> '),
-          status: 'error',
-          message: 'No se pudo iniciar cadena',
-        });
-      },
-    });
-  }
-
-  stopChain() {
-    this.http.post<{ status: string; message: string }>(`${GATEWAY_URL}/sequence/chain/stop`, {}).subscribe({
-      next: () => {
-        this.appendLog({
-          group: 'CHAIN',
-          sequenceName: this.chainCurrentSequence() ?? 'N/A',
-          status: 'ack',
-          message: 'Cadena detenida',
-        });
-        this.refreshChainStatus();
-      },
-      error: () => {
-        this.appendLog({
-          group: 'CHAIN',
-          sequenceName: this.chainCurrentSequence() ?? 'N/A',
-          status: 'error',
-          message: 'No se pudo detener cadena',
-        });
-      },
-    });
-  }
-
-  refreshChainStatus() {
     this.http
-      .get<{
-        status: string;
-        running: boolean;
-        current_sequence: string | null;
-        completed_items: number;
-        total_items: number;
-      }>(`${GATEWAY_URL}/sequence/chain/status`)
+      .post<{ status: string; message: string }>(`${GATEWAY_URL}/sequence/play`, {
+        name,
+        mode,
+        source: 'panel',
+      })
       .subscribe({
-        next: (res) => {
-          this.chainRunning.set(res.running);
-          this.chainCurrentSequence.set(res.current_sequence);
-          this.chainCompletedItems.set(res.completed_items);
-          this.chainTotalItems.set(res.total_items);
+        next: () => {
+          this.appendLog({
+            group: this.groupLabelForSequence(name),
+            sequenceName: `${name} ${mode}`,
+            status: 'ack',
+            message: 'Solicitado',
+          });
+          this.pollRuntime();
         },
-        error: () => {
-          this.chainRunning.set(false);
+        error: (err: { error?: { message?: string } }) => {
+          this.appendLog({
+            group: this.groupLabelForSequence(name),
+            sequenceName: name,
+            status: 'error',
+            message: err?.error?.message || 'No se pudo ejecutar',
+          });
         },
       });
   }
 
+  stopHardware() {
+    this.http.post(`${GATEWAY_URL}/sequence/stop`, {}).subscribe({
+      next: () => {
+        this.appendLog({
+          group: 'HARDWARE',
+          sequenceName: 'stop',
+          status: 'ack',
+          message: 'Detenido',
+        });
+        this.pollRuntime();
+      },
+      error: () =>
+        this.appendLog({
+          group: 'HARDWARE',
+          sequenceName: 'stop',
+          status: 'error',
+          message: 'No se pudo detener',
+        }),
+    });
+  }
+
+  private pollRuntime() {
+    if (this.runtimeTimer) {
+      clearTimeout(this.runtimeTimer);
+      this.runtimeTimer = null;
+    }
+    this.http.get<RuntimeSnapshot>(`${GATEWAY_URL}/sequence/runtime`).subscribe({
+      next: (res) => {
+        this.runtimeUnreachable.set(false);
+        this.runtime.set(res);
+        this.runtimeTimer = setTimeout(() => this.pollRuntime(), res.busy ? 500 : 3000);
+      },
+      error: () => {
+        this.runtimeUnreachable.set(true);
+        this.runtimeTimer = setTimeout(() => this.pollRuntime(), 500);
+      },
+    });
+  }
+
   private groupLabelForSequence(sequenceName: string): string {
     for (const group of this.sequenceGroups()) {
-      if (group.sequenceNames.includes(sequenceName)) {
+      if (group.sequences.some((item) => item.name === sequenceName)) {
         return group.label;
       }
     }
@@ -337,19 +293,27 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
 
   logStatusColor(status: SequenceLog['status']): string {
     switch (status) {
-      case 'sent':    return 'text-tertiary';
-      case 'ack':     return 'text-secondary';
-      case 'error':   return 'text-error';
-      default:        return 'text-outline';
+      case 'sent':
+        return 'text-tertiary';
+      case 'ack':
+        return 'text-secondary';
+      case 'error':
+        return 'text-error';
+      default:
+        return 'text-outline';
     }
   }
 
   logStatusIcon(status: SequenceLog['status']): string {
     switch (status) {
-      case 'sent':    return 'send';
-      case 'ack':     return 'done_all';
-      case 'error':   return 'error';
-      default:        return 'schedule';
+      case 'sent':
+        return 'send';
+      case 'ack':
+        return 'done_all';
+      case 'error':
+        return 'error';
+      default:
+        return 'schedule';
     }
   }
   private shouldScrollLog = false;
@@ -365,7 +329,9 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
     return new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   }
 
-  trackLog(_: number, log: SequenceLog) { return log.id; }
+  trackLog(_: number, log: SequenceLog) {
+    return log.id;
+  }
 
   private persistLogsToStorage() {
     try {
@@ -381,28 +347,13 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
       if (!raw) return;
       const parsed = JSON.parse(raw);
       if (!Array.isArray(parsed)) return;
-      const logs = parsed
-        .filter((item) => item && typeof item === 'object')
-        .slice(0, 300) as SequenceLog[];
+      const logs = parsed.filter((item) => item && typeof item === 'object').slice(0, 300) as SequenceLog[];
       this.commandLogs.set(logs);
       this.logCounter = logs.reduce((max, item) => Math.max(max, item.id ?? 0), 0);
     } catch {
       this.commandLogs.set([]);
       this.logCounter = 0;
     }
-  }
-
-  private extractSequenceFolderKey(sequenceName: string): string {
-    const normalized = sequenceName.replace(/\\/g, '/');
-    const separatorIndex = normalized.lastIndexOf('/');
-    if (separatorIndex <= 0) {
-      return 'ROOT';
-    }
-    return normalized.slice(0, separatorIndex);
-  }
-
-  sequenceDescription(sequenceName: string): string {
-    return this.sequenceDescriptions().get(sequenceName) ?? '';
   }
 
   displaySequenceName(sequenceName: string): string {

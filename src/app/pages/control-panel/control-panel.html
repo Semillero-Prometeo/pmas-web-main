@@ -84,7 +84,6 @@
         } @else {
           @for (group of filteredSequenceGroups(); track group.key) {
             <div class="bg-surface-container rounded-xl border border-white/5 shadow-xl overflow-hidden">
-              <!-- Cabecera del grupo -->
               <div class="flex items-center justify-between px-4 py-2.5 sm:px-5 sm:py-3 bg-surface-container-high border-b border-white/5">
                 <div class="flex items-center gap-3">
                   <div class="px-2 py-0.5 rounded bg-primary/15 border border-primary/25">
@@ -92,39 +91,42 @@
                   </div>
                   <h3 class="font-headline text-sm font-bold tracking-tight text-on-surface">{{ group.label }}</h3>
                 </div>
-                <span class="text-[10px] font-label text-outline">{{ group.sequenceNames.length }} secuencias</span>
+                <span class="text-[10px] font-label text-outline">{{ group.sequences.length }} secuencias</span>
               </div>
 
               <div class="p-3 sm:p-4">
-                <div [class]="group.sequenceNames.length >= 2 ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-1 gap-2'">
-                @for (name of group.sequenceNames; track name) {
-                  <div class="rounded-lg border border-white/5 bg-surface-container-low p-2.5 sm:p-3 space-y-2">
-                    <button
-                      (click)="executeSequence(name)"
-                      [disabled]="executingSequenceName() === name"
-                      class="w-full rounded-lg border border-primary/20 bg-primary/10 hover:bg-primary/20 transition-colors p-3 cursor-pointer disabled:opacity-50 flex items-center justify-center min-h-[4.25rem]">
-                      <div class="text-center space-y-1">
+                @if (group.sequences.length === 0) {
+                  <p class="text-[10px] font-mono text-slate-600">Sin secuencias en esta categoría</p>
+                } @else {
+                  <div [class]="group.sequences.length >= 2 ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-1 gap-2'">
+                  @for (sequence of group.sequences; track sequence.name) {
+                    <div class="rounded-lg border border-white/5 bg-surface-container-low p-2.5 sm:p-3 space-y-2">
+                      <div class="text-center space-y-1 min-h-[3rem]">
                         <p class="text-[11px] sm:text-xs font-mono text-on-surface leading-snug break-words">
-                          {{ displaySequenceName(name) }}
+                          {{ displaySequenceName(sequence.name) }}
                         </p>
-                        @if (sequenceDescription(name)) {
-                          <p class="text-[10px] text-outline leading-snug break-words">{{ sequenceDescription(name) }}</p>
+                        @if (sequence.description) {
+                          <p class="text-[10px] text-outline leading-snug break-words">{{ sequence.description }}</p>
                         }
                       </div>
-                    </button>
-                    <!-- <div class="flex items-center justify-between gap-2">
-                      <div class="text-[10px] text-primary font-label uppercase tracking-wide">
-                        {{ executingSequenceName() === name ? 'Ejecutando...' : 'Ejecutar' }}
+                      <div class="grid grid-cols-2 gap-2">
+                        <button
+                          (click)="executePhase(sequence.name, 'normal')"
+                          [disabled]="playLocked()"
+                          class="rounded-lg border border-primary/20 bg-primary/10 hover:bg-primary/20 transition-colors py-2 cursor-pointer disabled:opacity-50 text-[10px] font-label uppercase tracking-wide text-on-surface">
+                          Normal
+                        </button>
+                        <button
+                          (click)="executePhase(sequence.name, 'neutro')"
+                          [disabled]="playLocked()"
+                          class="rounded-lg border border-white/10 bg-surface-container-high hover:bg-surface-container-highest transition-colors py-2 cursor-pointer disabled:opacity-50 text-[10px] font-label uppercase tracking-wide text-on-surface">
+                          Neutro
+                        </button>
                       </div>
-                      <button
-                        (click)="addToChain(name)"
-                        class="px-2.5 py-1.5 rounded text-[10px] bg-surface-container-high text-slate-300 hover:text-on-surface cursor-pointer">
-                        Añadir a cadena
-                      </button>
-                    </div> -->
+                    </div>
+                  }
                   </div>
                 }
-                </div>
               </div>
             </div>
           }
@@ -135,34 +137,27 @@
       <div class="xl:col-span-1">
         <div class="space-y-4 xl:sticky xl:top-24">
           <div class="bg-surface-container rounded-xl border border-white/5 shadow-xl overflow-hidden">
-            <div class="px-5 py-3 bg-surface-container-high border-b border-white/5">
-              <h3 class="font-headline text-sm font-bold tracking-tight text-on-surface">Cadena de secuencias</h3>
+            <div class="px-5 py-3 bg-surface-container-high border-b border-white/5 flex items-center justify-between">
+              <h3 class="font-headline text-sm font-bold tracking-tight text-on-surface">En hardware</h3>
+              <button (click)="stopHardware()" class="py-2 px-3 rounded bg-red-600 text-white text-[10px] font-semibold cursor-pointer">
+                Detener
+              </button>
             </div>
-            <div class="p-4 space-y-3">
-              <div class="text-[10px] font-mono text-slate-400">
-                Estado: {{ chainRunning() ? 'RUNNING' : 'IDLE' }}
-              </div>
-              <div class="text-[10px] font-mono text-slate-400">
-                Actual: {{ chainCurrentSequence() || '—' }}
-              </div>
-              <div class="text-[10px] font-mono text-slate-400">
-                Progreso: {{ chainCompletedItems() }}/{{ chainTotalItems() }}
-              </div>
-
-              <div class="space-y-1 max-h-[180px] overflow-auto">
-                @for (name of selectedChain(); track $index; let i = $index) {
-                  <div class="rounded border border-white/10 px-2 py-1 flex items-center justify-between text-[10px]">
-                    <span class="truncate">{{ i + 1 }}. {{ name }}</span>
-                    <button (click)="removeFromChain(i)" class="text-red-400 cursor-pointer">X</button>
-                  </div>
+            <div class="p-4 space-y-2 text-[10px] font-mono text-slate-400">
+              @if (runtimeUnreachable()) {
+                <p class="text-error">sin estado</p>
+              } @else {
+                <p>Origen: {{ runtime().source || '—' }}</p>
+                <p>Fase: {{ runtime().current ? (runtime().current!.name + ' · ' + runtime().current!.mode) : 'idle' }}</p>
+                <p>Cola:</p>
+                @if (runtime().queue.length === 0) {
+                  <p>—</p>
+                } @else {
+                  @for (step of runtime().queue; track $index) {
+                    <p>{{ step.name }} · {{ step.mode }}</p>
+                  }
                 }
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <button (click)="startChain()" class="py-2 rounded bg-primary text-on-primary text-[10px] font-semibold cursor-pointer">Ejecutar</button>
-                <button (click)="stopChain()" class="py-2 rounded bg-red-600 text-white text-[10px] font-semibold cursor-pointer">Detener</button>
-                <button (click)="clearChain()" class="py-2 rounded bg-surface-container-high text-[10px] font-semibold cursor-pointer">Limpiar</button>
-              </div>
+              }
             </div>
           </div>
 
