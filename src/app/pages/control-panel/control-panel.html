@@ -103,9 +103,14 @@
                       (click)="executeSequence(name)"
                       [disabled]="executingSequenceName() === name"
                       class="w-full rounded-lg border border-primary/20 bg-primary/10 hover:bg-primary/20 transition-colors p-3 cursor-pointer disabled:opacity-50 flex items-center justify-center min-h-[4.25rem]">
-                      <p class="text-[11px] sm:text-xs font-mono text-on-surface leading-snug break-words text-center">
-                        {{ displaySequenceName(name) }}
-                      </p>
+                      <div class="text-center space-y-1">
+                        <p class="text-[11px] sm:text-xs font-mono text-on-surface leading-snug break-words">
+                          {{ displaySequenceName(name) }}
+                        </p>
+                        @if (sequenceDescription(name)) {
+                          <p class="text-[10px] text-outline leading-snug break-words">{{ sequenceDescription(name) }}</p>
+                        }
+                      </div>
                     </button>
                     <!-- <div class="flex items-center justify-between gap-2">
                       <div class="text-[10px] text-primary font-label uppercase tracking-wide">

@@ -20,6 +20,8 @@ interface MotionBlock {
 interface SequenceFile {
   name: string;
   file_name: string;
+  id?: number | null;
+  description?: string;
 }
 
 interface SequenceDetail {
@@ -73,6 +75,7 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
   selectedGroupFilter = signal('ALL');
   selectedChain = signal<string[]>([]);
   sequenceCache = new Map<string, SequenceDetail>();
+  sequenceDescriptions = signal<Map<string, string>>(new Map());
   executingSequenceName = signal<string | null>(null);
 
   chainRunning = signal(false);
@@ -102,7 +105,12 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
         ...group,
         sequenceNames: group.sequenceNames.filter((name) => {
           const display = this.displaySequenceName(name).toLowerCase();
-          return display.includes(query) || name.toLowerCase().includes(query);
+          const description = (this.sequenceDescriptions().get(name) ?? '').toLowerCase();
+          return (
+            display.includes(query) ||
+            name.toLowerCase().includes(query) ||
+            description.includes(query)
+          );
         }),
       }))
       .filter((group) => group.sequenceNames.length > 0);
@@ -131,9 +139,16 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
       next: (res) => {
         if (!res.data.length) {
           this.sequenceGroups.set([]);
+          this.sequenceDescriptions.set(new Map());
           this.sequenceLoading.set(false);
           return;
         }
+
+        const descriptions = new Map<string, string>();
+        for (const file of res.data) {
+          descriptions.set(file.name, file.description ?? '');
+        }
+        this.sequenceDescriptions.set(descriptions);
 
         const requests = res.data.map((file) =>
           this.http
@@ -384,6 +399,10 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
       return 'ROOT';
     }
     return normalized.slice(0, separatorIndex);
+  }
+
+  sequenceDescription(sequenceName: string): string {
+    return this.sequenceDescriptions().get(sequenceName) ?? '';
   }
 
   displaySequenceName(sequenceName: string): string {
