@@ -18,8 +18,10 @@ interface OriginImportItem {
   sourceRelativePath: string;
   targetName: string;
   description: string;
+  category: string | null;
   arduino_id: number | null;
   tupleBlocks: OriginTuple[];
+  tupleBlocksNeutro: OriginTuple[];
   error: string | null;
 }
 
@@ -140,8 +142,10 @@ export class Sequences {
       sequence: {
         name: item.targetName.trim(),
         description: item.description,
+        category: item.category,
         arduino_id: item.arduino_id,
         blocks: item.tupleBlocks,
+        blocks_neutro: item.tupleBlocksNeutro,
       },
       overwrite: true,
     };
@@ -165,8 +169,10 @@ export class Sequences {
           sourceRelativePath: relativePath,
           targetName: parsed.name,
           description: parsed.description,
+          category: parsed.category,
           arduino_id: defaultArduinoId,
           tupleBlocks: parsed.blocks,
+          tupleBlocksNeutro: parsed.blocksNeutro,
           error: parsed.error,
         });
       };
@@ -177,8 +183,10 @@ export class Sequences {
           sourceRelativePath: relativePath,
           targetName: relativePath.replace(/\.json$/i, ''),
           description: '',
+          category: null,
           arduino_id: defaultArduinoId,
           tupleBlocks: [],
+          tupleBlocksNeutro: [],
           error: 'No se pudo leer el archivo',
         });
       };
