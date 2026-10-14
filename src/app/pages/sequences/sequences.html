@@ -1,88 +1,81 @@
-<div class="min-h-[calc(100vh-6rem)] industrial-grid">
-  <header class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-    <div>
-      <h1 class="font-headline text-3xl font-bold tracking-tight text-on-surface">Creación de Secuencias</h1>
-      <p class="text-sm text-on-surface-variant mt-2">
-        El estudio de movimiento es el editor. Esta pantalla lo incrusta y permite importar JSON de origen.
-      </p>
-    </div>
+<div class="flex flex-col -mx-3 sm:-mx-4 md:-mx-6 md:-mb-4 h-[calc(100dvh-4rem-4.5rem)] md:h-[calc(100dvh-4rem)]">
+  <header class="flex items-center gap-2 px-3 sm:px-4 md:px-6 py-1.5 shrink-0 border-b border-white/10 bg-surface">
+    <h1 class="font-headline text-sm font-semibold tracking-tight text-on-surface">Secuencias</h1>
+    <p class="text-[11px] text-outline truncate">{{ statusMessage() }}</p>
+    @if (studioError()) {
+      <p class="text-[11px] text-red-400">El estudio no está disponible.</p>
+    }
     <button
       (click)="openLegacyImport()"
-      class="px-4 py-2 rounded-lg bg-surface-container-high text-sm font-semibold cursor-pointer">
+      class="ml-auto px-3 py-1 rounded-md bg-surface-container-high text-xs font-semibold cursor-pointer">
       Importar JSON
     </button>
   </header>
 
-  <p class="text-xs text-slate-400 mb-3">Estado: {{ statusMessage() }}</p>
-
-  @if (studioError()) {
-    <p class="mb-4 text-sm text-red-400">El estudio de movimiento no está disponible.</p>
-  }
-
   <iframe
     #studioFrame
-    class="w-full min-h-[70vh] rounded-2xl border border-white/10 bg-surface-container"
+    class="flex-1 min-h-0 w-full border-0 bg-[#000f1d]"
     [src]="studioSrc"
     (load)="onStudioLoad()"
     (error)="onStudioError()"
     title="Estudio de movimiento">
   </iframe>
+</div>
 
-  @if (legacyImportOpen()) {
-    <div class="fixed inset-0 z-40 bg-black/50" (click)="closeLegacyImport()"></div>
-    <div class="fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-white/10 p-6 max-h-[60vh] overflow-auto">
-      <div class="max-w-6xl mx-auto">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="font-headline text-lg font-bold text-on-surface">Importar JSON</h3>
-          <button (click)="closeLegacyImport()" class="text-slate-400 hover:text-on-surface cursor-pointer">Cerrar</button>
-        </div>
-        <p class="text-xs text-slate-400 mb-4">
-          Sube archivos de origen (`name`, `description`, 7-tuplas) o listas legacy. Elige Arduino por fila.
-        </p>
+@if (legacyImportOpen()) {
+  <div class="fixed inset-0 z-40 bg-black/50" (click)="closeLegacyImport()"></div>
+  <div class="fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-white/10 p-6 max-h-[60vh] overflow-auto">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-headline text-lg font-bold text-on-surface">Importar JSON</h3>
+        <button (click)="closeLegacyImport()" class="text-slate-400 hover:text-on-surface cursor-pointer">Cerrar</button>
+      </div>
+      <p class="text-xs text-slate-400 mb-4">
+        Sube archivos de origen (`name`, `description`, 7-tuplas) o listas legacy. Elige Arduino por fila.
+      </p>
 
-        <div class="flex items-center gap-3 mb-4">
-          <input type="file" multiple accept=".json" webkitdirectory directory (change)="onLegacyFilesSelected($event)" />
-          <button (click)="importLegacyItems()" class="px-4 py-2 rounded-lg bg-primary text-on-primary text-sm font-semibold cursor-pointer">
-            Importar seleccionados
-          </button>
-        </div>
+      <div class="flex items-center gap-3 mb-4">
+        <input type="file" multiple accept=".json" webkitdirectory directory (change)="onLegacyFilesSelected($event)" />
+        <button (click)="importLegacyItems()" class="px-4 py-2 rounded-lg bg-primary text-on-primary text-sm font-semibold cursor-pointer">
+          Importar seleccionados
+        </button>
+      </div>
 
-        <div class="space-y-3">
-          @for (item of legacyItems(); track item.sourceFileName; let i = $index) {
-            <div class="border border-white/10 rounded-lg p-3">
-              <div class="text-xs text-slate-500 mb-2">{{ item.sourceRelativePath }}</div>
-              @if (item.error) {
-                <div class="text-xs text-red-400">{{ item.error }}</div>
-              } @else {
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <label class="text-[11px] text-slate-400">
-                    Nombre
-                    <input
-                      [ngModel]="item.targetName"
-                      (ngModelChange)="updateLegacyItemName(i, $event)"
-                      class="w-full mt-1 rounded bg-surface-container-high border border-white/10 px-2 py-1 text-sm"/>
-                  </label>
-                  <label class="text-[11px] text-slate-400">
-                    Arduino
-                    <select
-                      [ngModel]="item.arduino_id"
-                      (ngModelChange)="updateLegacyItemArduino(i, +$event)"
-                      class="w-full mt-1 rounded bg-surface-container-high border border-white/10 px-2 py-1 text-sm">
-                      @for (arduino of arduinos(); track arduino.arduino_id) {
-                        <option [ngValue]="arduino.arduino_id">#{{ arduino.arduino_id }} · {{ arduino.port }}</option>
-                      }
-                    </select>
-                  </label>
-                  <div class="text-[11px] text-slate-400">
-                    Movimientos detectados
-                    <div class="mt-1 text-sm text-on-surface">{{ item.tupleBlocks.length }}</div>
-                  </div>
+      <div class="space-y-3">
+        @for (item of legacyItems(); track item.sourceFileName; let i = $index) {
+          <div class="border border-white/10 rounded-lg p-3">
+            <div class="text-xs text-slate-500 mb-2">{{ item.sourceRelativePath }}</div>
+            @if (item.error) {
+              <div class="text-xs text-red-400">{{ item.error }}</div>
+            } @else {
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <label class="text-[11px] text-slate-400">
+                  Nombre
+                  <input
+                    [ngModel]="item.targetName"
+                    (ngModelChange)="updateLegacyItemName(i, $event)"
+                    class="w-full mt-1 rounded bg-surface-container-high border border-white/10 px-2 py-1 text-sm"/>
+                </label>
+                <label class="text-[11px] text-slate-400">
+                  Arduino
+                  <select
+                    [ngModel]="item.arduino_id"
+                    (ngModelChange)="updateLegacyItemArduino(i, +$event)"
+                    class="w-full mt-1 rounded bg-surface-container-high border border-white/10 px-2 py-1 text-sm">
+                    @for (arduino of arduinos(); track arduino.arduino_id) {
+                      <option [ngValue]="arduino.arduino_id">#{{ arduino.arduino_id }} · {{ arduino.port }}</option>
+                    }
+                  </select>
+                </label>
+                <div class="text-[11px] text-slate-400">
+                  Movimientos detectados
+                  <div class="mt-1 text-sm text-on-surface">{{ item.tupleBlocks.length }}</div>
                 </div>
-              }
-            </div>
-          }
-        </div>
+              </div>
+            }
+          </div>
+        }
       </div>
     </div>
-  }
-</div>
+  </div>
+}

@@ -34,7 +34,7 @@ export class Sequences {
   private auth = inject(AuthService);
   private studioFrame = viewChild<ElementRef<HTMLIFrameElement>>('studioFrame');
 
-  studioSrc: SafeResourceUrl = this.sanitizer.bypassSecurityTrustResourceUrl(MOTION_STUDIO_URL);
+  studioSrc: SafeResourceUrl = this.sanitizer.bypassSecurityTrustResourceUrl(`${MOTION_STUDIO_URL}/?embed=1`);
   studioError = signal(false);
   arduinos = signal<ArduinoDevice[]>([]);
   selectedArduinoId = signal<number | null>(null);
