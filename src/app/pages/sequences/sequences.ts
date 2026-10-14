@@ -70,9 +70,10 @@ export class Sequences {
   private sendAuthToStudio() {
     const frame = this.studioFrame()?.nativeElement;
     const token = this.auth.token();
-    if (!frame?.contentWindow || !token) return;
+    const activeRole = this.auth.activeRole();
+    if (!frame?.contentWindow || !token || !activeRole) return;
     frame.contentWindow.postMessage(
-      { type: 'prometeo-auth', token, gatewayUrl: GATEWAY_URL },
+      { type: 'prometeo-auth', token, gatewayUrl: GATEWAY_URL, activeRole },
       MOTION_STUDIO_URL,
     );
   }
