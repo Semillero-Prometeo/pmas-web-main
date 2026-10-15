@@ -42,7 +42,7 @@ export class VisionWebSocketService {
     ws.onopen = () => {
       this.connectionState.set('connected');
       // Request lighter JPEG sizes to improve effective update cadence on constrained links.
-      this.sendClientMessage({ type: 'setQuality', thumbMaxWidth: 320, previewMaxWidth: 960 });
+      this.sendClientMessage({ type: 'setQuality', thumbMaxWidth: 480, previewMaxWidth: 480 });
     };
 
     ws.onmessage = (event: MessageEvent<string>) => {
@@ -91,10 +91,6 @@ export class VisionWebSocketService {
     const ws = this.socket;
     if (!ws || ws.readyState !== WebSocket.OPEN) return;
     ws.send(JSON.stringify(message));
-  }
-
-  selectCamera(cameraId: string | null): void {
-    this.sendClientMessage({ type: 'setSelection', selectedCameraId: cameraId });
   }
 
   disconnect(): void {
