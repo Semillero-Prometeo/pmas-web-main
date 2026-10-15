@@ -10,13 +10,11 @@ export type SidebarItem =
   | 'logs'
   | 'control'
   | 'users'
-  | 'roles'
-  | 'management'
   | 'chat'
   | 'vision'
   | 'iframe';
 
-type GroupHealthKey = 'robotics' | 'authMs' | 'management';
+type GroupHealthKey = 'robotics' | 'authMs';
 
 interface SidebarGroup {
   id: string;
@@ -53,9 +51,9 @@ export class Sidebar implements OnInit {
     return this.variant === 'drawer' || !this.chrome.sidebarCollapsed();
   }
 
-  openGroups = signal<string[]>(['robotica', 'autenticacion', 'gestion']);
+  openGroups = signal<string[]>(['robotica', 'autenticacion']);
 
-  /** Robótica primero, luego Autenticación y Gestión. */
+  /** Robótica primero, luego Autenticación. */
   readonly groups: SidebarGroup[] = [
     {
       id: 'robotica',
@@ -77,21 +75,13 @@ export class Sidebar implements OnInit {
       healthKey: 'authMs',
       items: [
         { id: 'users', label: 'Usuarios', icon: 'group', route: '/admin/users' },
-        { id: 'roles', label: 'Roles', icon: 'badge', route: '/admin/roles' },
       ],
-    },
-    {
-      id: 'gestion',
-      label: 'Gestión',
-      icon: 'admin_panel_settings',
-      healthKey: 'management',
-      items: [{ id: 'management', label: 'Panel', icon: 'dashboard', route: '/admin/management' }],
     },
   ];
 
   visibleGroups(): SidebarGroup[] {
     if (this.auth.activeRoleName() === 'ADMIN') return this.groups;
-    return this.groups.filter((g) => g.id !== 'autenticacion' && g.id !== 'gestion');
+    return this.groups.filter((g) => g.id !== 'autenticacion');
   }
 
   ngOnInit() {
@@ -112,8 +102,6 @@ export class Sidebar implements OnInit {
         return this.health.robotics();
       case 'authMs':
         return this.health.authMs();
-      case 'management':
-        return this.health.management();
     }
   }
 

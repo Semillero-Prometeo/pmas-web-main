@@ -68,17 +68,6 @@ export const routes: Routes = [
         data: { sidebarActive: 'users' },
       },
       {
-        path: 'admin/roles',
-        canActivate: [roleGuard],
-        loadComponent: () => import('./pages/admin/roles/roles').then((m) => m.Roles),
-        data: { sidebarActive: 'roles' },
-      },
-      {
-        path: 'admin/management',
-        redirectTo: 'admin/users',
-        pathMatch: 'full',
-      },
-      {
         path: 'sequences',
         loadComponent: () => import('./pages/sequences/sequences').then((m) => m.Sequences),
         data: { sidebarActive: 'telemetry' },
