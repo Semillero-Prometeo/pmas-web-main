@@ -13,6 +13,7 @@ import {
   PlayableSequence,
   SequenceCategory,
 } from './sequence-groups';
+import { catalogSequenceCount, panelKpis } from './panel-kpis';
 
 interface MotionBlock {
   arduino_id: number;
@@ -82,12 +83,6 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
   private runtimeTimer: ReturnType<typeof setTimeout> | null = null;
   private logCounter = 0;
 
-  uptime = signal('14:02:55');
-  cpuLoad = signal(64);
-  memAlloc = signal(30);
-  temperature = signal(42);
-  velocity = signal(0.85);
-
   sequenceGroups = signal(groupByCategory([]));
   sequenceLoading = signal(true);
   sequenceError = signal<string | null>(null);
@@ -99,6 +94,18 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
   playLocked = computed(() => this.runtimeUnreachable() || this.runtime().busy);
 
   commandLogs = signal<SequenceLog[]>([]);
+  sequenceCount = computed(() => catalogSequenceCount(this.sequenceGroups()));
+  kpis = computed(() =>
+    panelKpis({
+      runtimeUnreachable: this.runtimeUnreachable(),
+      busy: this.runtime().busy,
+      source: this.runtime().source,
+      sequenceLoading: this.sequenceLoading(),
+      sequenceError: this.sequenceError(),
+      sequenceCount: this.sequenceCount(),
+      lastLog: this.commandLogs()[0] ?? null,
+    }),
+  );
   ackCount = computed(() => this.commandLogs().filter((item) => item.status === 'ack').length);
   groupFilterOptions = computed(() => [
     { value: 'ALL', label: 'Todas' },
