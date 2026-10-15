@@ -82,6 +82,6 @@ export class AdminShell implements OnInit {
   }
 
   showSearchForRoute(): boolean {
-    return this.router.url.startsWith('/control-panel');
+    return false;
   }
 }

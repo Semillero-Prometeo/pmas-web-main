@@ -1,5 +1,5 @@
 <aside
-  class="flex-col border-r border-slate-800/50 bg-slate-950 py-4 z-40 overflow-y-auto transition-[width] duration-200 ease-out"
+  class="flex-col border-r border-outline bg-surface py-4 z-40 overflow-y-auto transition-[width] duration-200 ease-out"
   [class.hidden]="variant === 'docked'"
   [class.md:flex]="variant === 'docked'"
   [class.flex]="variant === 'drawer'"
@@ -19,7 +19,7 @@
       <button
         type="button"
         (click)="chrome.toggleSidebarCollapsed()"
-        class="p-2 rounded-lg text-slate-500 hover:text-secondary hover:bg-slate-900/80 transition-colors cursor-pointer"
+        class="p-2 rounded-lg text-on-surface-variant hover:text-secondary hover:bg-surface-container-high transition-colors cursor-pointer"
         [attr.aria-label]="chrome.sidebarCollapsed() ? 'Expandir menú' : 'Contraer menú'">
         <span class="material-symbols-outlined" style="font-size: 1.1rem;">
           {{ chrome.sidebarCollapsed() ? 'chevron_right' : 'chevron_left' }}
@@ -31,21 +31,21 @@
   <div class="px-4 mb-4" [class.px-2]="variant === 'docked' && !expandedUi()" [class.text-center]="variant === 'docked' && !expandedUi()">
     @if (expandedUi()) {
       <div class="flex items-center gap-3 mb-1">
-        <div class="w-2 h-2 rounded-full bg-secondary animate-pulse shrink-0"></div>
-        <h2 class="text-secondary font-black font-label text-xs uppercase tracking-[0.1em] leading-tight">
+        <div class="w-2 h-2 rounded-full bg-secondary shrink-0"></div>
+        <h2 class="text-on-surface font-black font-label text-xs uppercase tracking-[0.1em] leading-tight">
           Panel de Administración
         </h2>
       </div>
-      <p class="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Prometeo · Sistemas</p>
+      <p class="text-on-surface-variant text-[10px] uppercase font-bold tracking-widest">Prometeo · R-ONE</p>
     } @else {
       <div class="flex justify-center">
-        <div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
+        <div class="w-2 h-2 rounded-full bg-secondary"></div>
       </div>
     }
   </div>
 
   <div class="px-3 mb-4" [class.px-2]="variant === 'docked' && !expandedUi()">
-    <app-health-status-dropdown title="Health checks"></app-health-status-dropdown>
+    <app-health-status-dropdown title="Estado de servicios"></app-health-status-dropdown>
   </div>
 
   <nav class="flex-1 space-y-1 px-2 min-h-0">
@@ -54,7 +54,7 @@
         type="button"
         (click)="toggleGroup(group.id)"
         [class.px-2]="variant === 'docked' && !expandedUi()"
-        class="w-full flex items-center justify-between px-2 py-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-900/60 transition-all duration-200 cursor-pointer">
+        class="w-full flex items-center justify-between px-2 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200 cursor-pointer">
         <div class="flex items-center gap-2 min-w-0" [class.justify-center]="variant === 'docked' && !expandedUi()" [class.w-full]="variant === 'docked' && !expandedUi()">
           <span class="material-symbols-outlined shrink-0" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">
             {{ group.icon }}
@@ -65,7 +65,7 @@
           }
         </div>
         @if (expandedUi()) {
-          <span class="material-symbols-outlined text-slate-600 transition-transform duration-200 shrink-0"
+          <span class="material-symbols-outlined text-outline transition-transform duration-200 shrink-0"
                 style="font-size: 0.9rem;"
                 [class.rotate-180]="isGroupOpen(group.id)">
             expand_more
@@ -74,13 +74,13 @@
       </button>
 
       @if (isGroupOpen(group.id) && expandedUi()) {
-        <div class="ml-2 border-l border-slate-800 pl-2 space-y-0.5 pb-1">
+        <div class="ml-2 border-l border-outline pl-2 space-y-0.5 pb-1">
           @for (item of group.items; track item.id) {
             <a [routerLink]="item.route"
                [queryParams]="item.queryParams ?? {}"
                [class]="activeItem === item.id
-                 ? 'bg-blue-900/30 text-secondary border-l-2 border-secondary -ml-px'
-                 : 'text-slate-500 hover:text-slate-200 hover:bg-slate-900/40'"
+                 ? 'bg-primary/10 text-on-surface border-l-2 border-primary -ml-px'
+                 : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'"
                class="px-3 py-2.5 flex items-center gap-3 rounded-r-lg transition-colors no-underline">
               <span class="material-symbols-outlined" style="font-size: 0.95rem;">{{ item.icon }}</span>
               <span class="font-label text-[10px] font-bold uppercase tracking-[0.1em]">{{ item.label }}</span>
@@ -95,7 +95,7 @@
             <a [routerLink]="item.route"
                [queryParams]="item.queryParams ?? {}"
                [title]="item.label"
-               [class]="activeItem === item.id ? 'text-secondary bg-blue-900/30' : 'text-slate-500 hover:text-slate-200'"
+               [class]="activeItem === item.id ? 'text-on-surface bg-primary/10' : 'text-on-surface-variant hover:text-on-surface'"
                class="p-2.5 rounded-lg transition-colors no-underline">
               <span class="material-symbols-outlined" style="font-size: 1rem;">{{ item.icon }}</span>
             </a>
@@ -110,7 +110,7 @@
       type="button"
       (click)="health.checkAll()"
       [class.px-2]="variant === 'docked' && !expandedUi()"
-      class="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-900/60 transition-colors text-[10px] font-label uppercase tracking-wider cursor-pointer border border-slate-800">
+      class="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors text-[10px] font-label uppercase tracking-wider cursor-pointer border border-outline">
       <span class="material-symbols-outlined" style="font-size: 0.85rem;">refresh</span>
       @if (expandedUi()) {
         <span>Actualizar estado</span>

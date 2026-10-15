@@ -1,4 +1,4 @@
-<nav class="fixed top-0 w-full z-50 bg-surface/60 backdrop-blur-xl flex justify-between items-center px-3 sm:px-4 md:px-8 h-16">
+<nav class="fixed top-0 w-full z-50 bg-surface border-b border-outline flex justify-between items-center px-3 sm:px-4 md:px-8 h-16">
   <div class="flex items-center gap-6">
     @if (auth.isAuthenticated() && adminCompactLayout) {
       <button
@@ -18,7 +18,7 @@
         <span class="material-symbols-outlined" style="font-size: 1.35rem;">menu</span>
       </button>
     }
-    <a routerLink="/" class="text-xl font-bold tracking-tighter text-blue-400 uppercase font-headline no-underline">
+    <a routerLink="/" class="text-xl font-bold tracking-tighter text-on-surface uppercase font-headline no-underline">
       Prometeo
     </a>
 
@@ -45,7 +45,7 @@
       <div class="hidden md:flex gap-6 items-center">
         <a routerLink="/control-panel" routerLinkActive="text-primary border-b-2 border-primary pb-1"
            class="text-on-surface-variant hover:text-primary font-headline tracking-tight text-sm transition-all duration-300 no-underline">
-          Control Panel
+          Panel
         </a>
       </div>
     } @else {
@@ -68,16 +68,6 @@
   </div>
 
   <div class="flex items-center gap-3">
-    @if (showSearch && auth.isAuthenticated()) {
-      <div class="hidden lg:block">
-        <input
-          class="bg-surface-container-high rounded-full px-4 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary w-64 text-on-surface"
-          placeholder="Search parameters..."
-          type="text"
-        />
-      </div>
-    }
-
     @if (auth.isAuthenticated()) {
       <!-- Perfil del usuario (desktop) — dropdown -->
       <div class="hidden md:block relative">
@@ -97,7 +87,7 @@
               person
             </span>
           </div>
-          <span class="material-symbols-outlined text-slate-500 text-sm transition-transform duration-200"
+          <span class="material-symbols-outlined text-on-surface-variant text-sm transition-transform duration-200"
                 [class.rotate-180]="profileDropdownOpen()">
             expand_more
           </span>
@@ -110,7 +100,7 @@
 
           <!-- Menu -->
           <div class="absolute right-0 top-full mt-2 w-52 bg-surface-container-high border border-outline-variant/20
-                      rounded-xl shadow-2xl z-50 overflow-hidden">
+                      rounded-xl shadow-sm z-50 overflow-hidden">
             <!-- User info header -->
             <div class="px-4 py-3 border-b border-outline-variant/20">
               <div class="text-xs font-headline font-bold text-on-surface truncate">
@@ -125,7 +115,7 @@
                (click)="closeProfileDropdown()"
                class="flex items-center gap-3 px-4 py-3 text-sm text-on-surface-variant hover:bg-surface-container-highest
                       hover:text-on-surface transition-colors no-underline">
-              <span class="material-symbols-outlined text-slate-500" style="font-size: 1.1rem;">manage_accounts</span>
+              <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 1.1rem;">manage_accounts</span>
               Ver perfil
             </a>
             <button
@@ -133,7 +123,7 @@
               (click)="openLanQr()"
               class="w-full flex items-center gap-3 px-4 py-3 text-sm text-on-surface-variant hover:bg-surface-container-highest
                      hover:text-on-surface transition-colors cursor-pointer border-0 bg-transparent text-left">
-              <span class="material-symbols-outlined text-slate-500" style="font-size: 1.1rem;">qr_code_2</span>
+              <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 1.1rem;">qr_code_2</span>
               Código QR de red
             </button>
             <button
@@ -191,7 +181,7 @@
 
 <!-- Mobile dropdown menu -->
 @if (mobileMenuOpen()) {
-  <div class="fixed top-16 left-0 right-0 z-40 md:hidden bg-surface/95 backdrop-blur-xl border-b border-outline-variant/20 px-4 py-4 space-y-1 max-h-[calc(100dvh-4rem)] overflow-y-auto">
+  <div class="fixed top-16 left-0 right-0 z-40 md:hidden bg-surface border-b border-outline-variant/20 px-4 py-4 space-y-1 max-h-[calc(100dvh-4rem)] overflow-y-auto">
     @if (auth.isAuthenticated() && fullSiteMode) {
       <a routerLink="/info" (click)="mobileMenuOpen.set(false)"
          routerLinkActive="text-primary"
@@ -238,7 +228,7 @@
          routerLinkActive="text-primary"
          class="flex items-center gap-3 py-3 text-on-surface-variant hover:text-primary font-headline text-sm tracking-tight transition-colors no-underline border-b border-outline-variant/10">
         <span class="material-symbols-outlined text-base">settings_remote</span>
-        Control Panel
+        Panel
       </a>
       <a routerLink="/profile" (click)="mobileMenuOpen.set(false)"
          routerLinkActive="text-primary"
