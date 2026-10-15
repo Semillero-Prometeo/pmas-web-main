@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   {
@@ -62,11 +63,13 @@ export const routes: Routes = [
       },
       {
         path: 'admin/users',
+        canActivate: [roleGuard],
         loadComponent: () => import('./pages/admin/users/users').then((m) => m.Users),
         data: { sidebarActive: 'users' },
       },
       {
         path: 'admin/roles',
+        canActivate: [roleGuard],
         loadComponent: () => import('./pages/admin/roles/roles').then((m) => m.Roles),
         data: { sidebarActive: 'roles' },
       },

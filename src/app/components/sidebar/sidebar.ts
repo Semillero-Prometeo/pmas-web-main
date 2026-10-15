@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { HealthStatusDropdown } from '../health-status-dropdown/health-status-dropdown';
 import { AdminChromeService } from '../../core/services/admin-chrome.service';
 import { HealthService, ServiceStatus } from '../../core/services/health.service';
+import { AuthService } from '../../core/services/auth.service';
 
 export type SidebarItem =
   | 'telemetry'
@@ -45,6 +46,7 @@ export class Sidebar implements OnInit {
 
   health = inject(HealthService);
   chrome = inject(AdminChromeService);
+  private readonly auth = inject(AuthService);
 
   /** Texto y ancho completo (drawer o barra expandida). */
   expandedUi(): boolean {
@@ -86,6 +88,11 @@ export class Sidebar implements OnInit {
       items: [{ id: 'management', label: 'Panel', icon: 'dashboard', route: '/admin/management' }],
     },
   ];
+
+  visibleGroups(): SidebarGroup[] {
+    if (this.auth.activeRoleName() === 'ADMIN') return this.groups;
+    return this.groups.filter((g) => g.id !== 'autenticacion' && g.id !== 'gestion');
+  }
 
   ngOnInit() {
     this.health.checkAll();

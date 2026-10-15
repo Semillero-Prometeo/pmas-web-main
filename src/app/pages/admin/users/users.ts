@@ -4,20 +4,21 @@ import { FormsModule } from '@angular/forms';
 import { GATEWAY_URL } from '../../../core/constants/gateway';
 
 export interface User {
-  id: number;
+  id: string;
   username: string;
-  email: string;
   person?: { first_name: string; last_name: string };
-  user_role?: { role: { id: number; name: string } }[];
+  user_role?: { role: { id: string; name: string } }[];
   is_active?: boolean;
 }
 
 export interface Role {
-  id: number;
+  id: string;
   name: string;
 }
 
 type ModalMode = 'create' | 'edit';
+
+const PASSWORD_OK = /^(?=.*[a-z])(?=.*[A-Z])(?=.*(?:\d|[^\w\s]))(?!.*[.\n]).*$/;
 
 @Component({
   selector: 'app-users',
@@ -33,23 +34,18 @@ export class Users implements OnInit {
   error = signal<string | null>(null);
   search = signal('');
 
-  // Modal
   modalOpen = signal(false);
   modalMode = signal<ModalMode>('create');
   saving = signal(false);
   modalError = signal<string | null>(null);
 
   form = signal({
-    id: 0,
+    id: '',
     username: '',
-    email: '',
     password: '',
-    first_name: '',
-    last_name: '',
-    role_ids: [] as number[],
+    role_ids: [] as string[],
   });
 
-  // Delete confirm
   deleteTarget = signal<User | null>(null);
   deleting = signal(false);
 
@@ -80,16 +76,21 @@ export class Users implements OnInit {
   filteredUsers() {
     const q = this.search().toLowerCase();
     if (!q) return this.users();
-    return this.users().filter(u =>
-      u.username.toLowerCase().includes(q) ||
-      u.email?.toLowerCase().includes(q) ||
-      u.person?.first_name?.toLowerCase().includes(q) ||
-      u.person?.last_name?.toLowerCase().includes(q)
+    return this.users().filter(
+      (u) =>
+        u.username.toLowerCase().includes(q) ||
+        u.person?.first_name?.toLowerCase().includes(q) ||
+        u.person?.last_name?.toLowerCase().includes(q),
     );
   }
 
   openCreate() {
-    this.form.set({ id: 0, username: '', email: '', password: '', first_name: '', last_name: '', role_ids: this.roles()[0] ? [this.roles()[0].id] : [] });
+    this.form.set({
+      id: '',
+      username: '',
+      password: '',
+      role_ids: this.roles()[0] ? [this.roles()[0].id] : [],
+    });
     this.modalMode.set('create');
     this.modalError.set(null);
     this.modalOpen.set(true);
@@ -99,25 +100,22 @@ export class Users implements OnInit {
     this.form.set({
       id: user.id,
       username: user.username,
-      email: user.email ?? '',
       password: '',
-      first_name: user.person?.first_name ?? '',
-      last_name: user.person?.last_name ?? '',
-      role_ids: user.user_role?.map(ur => ur.role.id) ?? [],
+      role_ids: user.user_role?.map((ur) => ur.role.id) ?? [],
     });
     this.modalMode.set('edit');
     this.modalError.set(null);
     this.modalOpen.set(true);
   }
 
-  isRoleSelected(roleId: number): boolean {
+  isRoleSelected(roleId: string): boolean {
     return this.form().role_ids.includes(roleId);
   }
 
-  toggleRole(roleId: number) {
-    this.form.update(f => {
+  toggleRole(roleId: string) {
+    this.form.update((f) => {
       const ids = f.role_ids.includes(roleId)
-        ? f.role_ids.filter((id: number) => id !== roleId)
+        ? f.role_ids.filter((id) => id !== roleId)
         : [...f.role_ids, roleId];
       return { ...f, role_ids: ids };
     });
@@ -129,33 +127,45 @@ export class Users implements OnInit {
 
   save() {
     const f = this.form();
-    if (!f.username || !f.email) {
-      this.modalError.set('Usuario y correo son obligatorios.');
+    if (!f.username) {
+      this.modalError.set('El correo es obligatorio.');
+      return;
+    }
+    if (!f.role_ids.length) {
+      this.modalError.set('Elige al menos un rol.');
+      return;
+    }
+    if (this.modalMode() === 'create') {
+      if (!f.password || f.password.length < 8 || !PASSWORD_OK.test(f.password)) {
+        this.modalError.set(
+          'La contraseña debe tener al menos 8 caracteres, mayúscula, minúscula y un número o carácter especial.',
+        );
+        return;
+      }
+    } else if (f.password && (f.password.length < 8 || !PASSWORD_OK.test(f.password))) {
+      this.modalError.set(
+        'La contraseña debe tener al menos 8 caracteres, mayúscula, minúscula y un número o carácter especial.',
+      );
       return;
     }
     this.saving.set(true);
     this.modalError.set(null);
-
-    const payload: any = {
+    const payload: { username: string; password?: string; role_ids: string[] } = {
       username: f.username,
-      email: f.email,
-      first_name: f.first_name,
-      last_name: f.last_name,
       role_ids: f.role_ids,
     };
     if (f.password) payload.password = f.password;
-
-    const req = this.modalMode() === 'create'
-      ? this.http.post<User>(`${GATEWAY_URL}/auth/users`, payload)
-      : this.http.patch<User>(`${GATEWAY_URL}/auth/users/${f.id}`, payload);
-
+    const req =
+      this.modalMode() === 'create'
+        ? this.http.post(`${GATEWAY_URL}/users`, payload)
+        : this.http.put(`${GATEWAY_URL}/users/${f.id}`, payload);
     req.subscribe({
       next: () => {
         this.saving.set(false);
         this.modalOpen.set(false);
         this.loadAll();
       },
-      error: err => {
+      error: (err) => {
         this.saving.set(false);
         const msg = err.error?.message;
         this.modalError.set(Array.isArray(msg) ? msg[0] : (msg ?? 'Error al guardar.'));
@@ -175,21 +185,26 @@ export class Users implements OnInit {
     const u = this.deleteTarget();
     if (!u) return;
     this.deleting.set(true);
-    this.http.delete(`${GATEWAY_URL}/auth/users/${u.id}`).subscribe({
-      next: () => {
-        this.deleting.set(false);
-        this.deleteTarget.set(null);
-        this.loadAll();
-      },
-      error: () => {
-        this.deleting.set(false);
-        this.deleteTarget.set(null);
-      },
-    });
+    this.http
+      .patch(`${GATEWAY_URL}/users/inactive`, {
+        user_id: u.id,
+        reason: 'Baja desde mesa de control',
+      })
+      .subscribe({
+        next: () => {
+          this.deleting.set(false);
+          this.deleteTarget.set(null);
+          this.loadAll();
+        },
+        error: () => {
+          this.deleting.set(false);
+          this.deleteTarget.set(null);
+        },
+      });
   }
 
   userRoles(user: User): string {
-    return user.user_role?.map(ur => ur.role.name).join(', ') ?? '—';
+    return user.user_role?.map((ur) => ur.role.name).join(', ') ?? '—';
   }
 
   displayName(user: User): string {

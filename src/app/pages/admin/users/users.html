@@ -87,7 +87,7 @@
 
             <!-- Email -->
             <div class="col-span-3">
-              <span class="text-sm font-mono text-slate-400 truncate block">{{ user.email ?? '—' }}</span>
+              <span class="text-sm font-mono text-slate-400 truncate block">{{ user.username }}</span>
             </div>
 
             <!-- Roles -->
@@ -161,42 +161,11 @@
           </div>
         }
 
-        <!-- Nombres -->
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Nombre</label>
-            <input type="text" placeholder="John"
-                   [ngModel]="form().first_name"
-                   (ngModelChange)="form.update(f => ({...f, first_name: $event}))"
-                   class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
-                          rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
-          </div>
-          <div>
-            <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Apellido</label>
-            <input type="text" placeholder="Doe"
-                   [ngModel]="form().last_name"
-                   (ngModelChange)="form.update(f => ({...f, last_name: $event}))"
-                   class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
-                          rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
-          </div>
-        </div>
-
-        <!-- Username -->
-        <div>
-          <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Usuario *</label>
-          <input type="text" placeholder="john.doe"
-                 [ngModel]="form().username"
-                 (ngModelChange)="form.update(f => ({...f, username: $event}))"
-                 class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
-                        rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
-        </div>
-
-        <!-- Email -->
         <div>
           <label class="text-[9px] font-label uppercase tracking-widest text-outline block mb-1.5">Correo *</label>
-          <input type="email" placeholder="john@prometeo.edu.co"
-                 [ngModel]="form().email"
-                 (ngModelChange)="form.update(f => ({...f, email: $event}))"
+          <input type="email" placeholder="prometeo@unilibre.edu.co"
+                 [ngModel]="form().username"
+                 (ngModelChange)="form.update(f => ({...f, username: $event}))"
                  class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-primary
                         rounded-lg px-3 py-2.5 text-sm text-on-surface outline-none transition-colors placeholder:text-slate-600"/>
         </div>

@@ -49,7 +49,7 @@
   </div>
 
   <nav class="flex-1 space-y-1 px-2 min-h-0" aria-label="Administración">
-    @for (group of groups; track group.id) {
+    @for (group of visibleGroups(); track group.id) {
       <button
         type="button"
         (click)="toggleGroup(group.id)"
