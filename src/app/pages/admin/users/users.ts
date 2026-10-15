@@ -3,12 +3,20 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { GATEWAY_URL } from '../../../core/constants/gateway';
 
+export interface Person {
+  first_name: string;
+  last_name: string;
+  document_number?: string;
+  phone?: string;
+  document_type_id?: string;
+  document_type?: { id: string; name: string };
+}
+
 export interface User {
   id: string;
   username: string;
-  person?: { first_name: string; last_name: string };
+  person?: Person;
   user_role?: { role: { id: string; name: string } }[];
-  is_active?: boolean;
 }
 
 export interface Role {
@@ -16,9 +24,30 @@ export interface Role {
   name: string;
 }
 
+export interface DocumentType {
+  id: string;
+  name: string;
+}
+
 type ModalMode = 'create' | 'edit';
 
 const PASSWORD_OK = /^(?=.*[a-z])(?=.*[A-Z])(?=.*(?:\d|[^\w\s]))(?!.*[.\n]).*$/;
+
+const emptyForm = () => ({
+  id: '',
+  username: '',
+  password: '',
+  role_ids: [] as string[],
+  first_name: '',
+  last_name: '',
+  document_type_id: '',
+  document_number: '',
+  phone: '',
+});
+
+function unwrapList<T>(res: { data: T[] } | T[]): T[] {
+  return Array.isArray(res) ? res : (res?.data ?? []);
+}
 
 @Component({
   selector: 'app-users',
@@ -30,6 +59,7 @@ export class Users implements OnInit {
 
   users = signal<User[]>([]);
   roles = signal<Role[]>([]);
+  documentTypes = signal<DocumentType[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
   search = signal('');
@@ -39,15 +69,11 @@ export class Users implements OnInit {
   saving = signal(false);
   modalError = signal<string | null>(null);
 
-  form = signal({
-    id: '',
-    username: '',
-    password: '',
-    role_ids: [] as string[],
-  });
+  form = signal(emptyForm());
 
   deleteTarget = signal<User | null>(null);
   deleting = signal(false);
+  deleteError = signal<string | null>(null);
 
   ngOnInit() {
     this.loadAll();
@@ -58,8 +84,8 @@ export class Users implements OnInit {
     this.error.set(null);
 
     this.http.get<{ data: User[] } | User[]>(`${GATEWAY_URL}/users?skip=0&take=50`).subscribe({
-      next: (res: { data: User[] } | User[]) => {
-        this.users.set((res as { data: User[] }).data ?? (res as User[]) ?? []);
+      next: (res) => {
+        this.users.set(unwrapList(res));
         this.loading.set(false);
       },
       error: () => {
@@ -68,8 +94,12 @@ export class Users implements OnInit {
       },
     });
 
-    this.http.get<{ data: Role[] } | Role[]>(`${GATEWAY_URL}/roles?skip=0&take=10`).subscribe({
-      next: (res: { data: Role[] } | Role[]) => this.roles.set((res as { data: Role[] }).data ?? (res as Role[]) ?? []),
+    this.http.get<{ data: Role[] } | Role[]>(`${GATEWAY_URL}/roles?skip=0&take=50`).subscribe({
+      next: (res) => this.roles.set(unwrapList(res)),
+    });
+
+    this.http.get<{ data: DocumentType[] } | DocumentType[]>(`${GATEWAY_URL}/document-types`).subscribe({
+      next: (res) => this.documentTypes.set(unwrapList(res)),
     });
   }
 
@@ -80,16 +110,16 @@ export class Users implements OnInit {
       (u) =>
         u.username.toLowerCase().includes(q) ||
         u.person?.first_name?.toLowerCase().includes(q) ||
-        u.person?.last_name?.toLowerCase().includes(q),
+        u.person?.last_name?.toLowerCase().includes(q) ||
+        u.person?.document_number?.toLowerCase().includes(q),
     );
   }
 
   openCreate() {
     this.form.set({
-      id: '',
-      username: '',
-      password: '',
+      ...emptyForm(),
       role_ids: this.roles()[0] ? [this.roles()[0].id] : [],
+      document_type_id: this.documentTypes()[0]?.id ?? '',
     });
     this.modalMode.set('create');
     this.modalError.set(null);
@@ -97,11 +127,17 @@ export class Users implements OnInit {
   }
 
   openEdit(user: User) {
+    const p = user.person;
     this.form.set({
       id: user.id,
       username: user.username,
       password: '',
       role_ids: user.user_role?.map((ur) => ur.role.id) ?? [],
+      first_name: p?.first_name ?? '',
+      last_name: p?.last_name ?? '',
+      document_type_id: p?.document_type_id ?? p?.document_type?.id ?? '',
+      document_number: p?.document_number ?? '',
+      phone: p?.phone ?? '',
     });
     this.modalMode.set('edit');
     this.modalError.set(null);
@@ -131,6 +167,14 @@ export class Users implements OnInit {
       this.modalError.set('El correo es obligatorio.');
       return;
     }
+    if (!f.first_name || !f.last_name) {
+      this.modalError.set('Nombres y apellidos son obligatorios.');
+      return;
+    }
+    if (!f.document_type_id || !f.document_number) {
+      this.modalError.set('Tipo y número de documento son obligatorios.');
+      return;
+    }
     if (!f.role_ids.length) {
       this.modalError.set('Elige al menos un rol.');
       return;
@@ -150,9 +194,27 @@ export class Users implements OnInit {
     }
     this.saving.set(true);
     this.modalError.set(null);
-    const payload: { username: string; password?: string; role_ids: string[] } = {
+    const payload: {
+      username: string;
+      password?: string;
+      role_ids: string[];
+      person: {
+        first_name: string;
+        last_name: string;
+        document_type_id: string;
+        document_number: string;
+        phone?: string;
+      };
+    } = {
       username: f.username,
       role_ids: f.role_ids,
+      person: {
+        first_name: f.first_name,
+        last_name: f.last_name,
+        document_type_id: f.document_type_id,
+        document_number: f.document_number,
+        ...(f.phone ? { phone: f.phone } : {}),
+      },
     };
     if (f.password) payload.password = f.password;
     const req =
@@ -174,17 +236,20 @@ export class Users implements OnInit {
   }
 
   confirmDelete(user: User) {
+    this.deleteError.set(null);
     this.deleteTarget.set(user);
   }
 
   cancelDelete() {
     this.deleteTarget.set(null);
+    this.deleteError.set(null);
   }
 
   doDelete() {
     const u = this.deleteTarget();
     if (!u) return;
     this.deleting.set(true);
+    this.deleteError.set(null);
     this.http
       .patch(`${GATEWAY_URL}/users/inactive`, {
         user_id: u.id,
@@ -196,9 +261,10 @@ export class Users implements OnInit {
           this.deleteTarget.set(null);
           this.loadAll();
         },
-        error: () => {
+        error: (err) => {
           this.deleting.set(false);
-          this.deleteTarget.set(null);
+          const msg = err.error?.message;
+          this.deleteError.set(Array.isArray(msg) ? msg[0] : (msg ?? 'No se pudo dar de baja.'));
         },
       });
   }
@@ -211,5 +277,9 @@ export class Users implements OnInit {
     const p = user.person;
     if (p?.first_name) return `${p.first_name} ${p.last_name}`;
     return user.username;
+  }
+
+  displayDocument(user: User): string {
+    return user.person?.document_number ?? '—';
   }
 }
