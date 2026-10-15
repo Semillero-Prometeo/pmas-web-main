@@ -386,7 +386,7 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
   estadoCardClass(): string {
     switch (this.kpis().estado) {
       case 'libre':
-        return 'border-transparent bg-rail text-on-rail';
+        return 'border-transparent bg-secondary-container text-on-secondary-container';
       case 'ocupado':
         return 'border-warning/40 bg-warning-container text-on-warning';
       default:

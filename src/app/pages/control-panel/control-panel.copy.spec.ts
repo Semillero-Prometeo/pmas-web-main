@@ -29,6 +29,13 @@ describe('control panel dashboard copy', () => {
     expect(html).not.toMatch(/stopHardware\(\)"[\s\S]*disabled/);
   });
 
+  it('paints Libre with emerald container, not the navy rail', () => {
+    expect(ts).toMatch(
+      /case 'libre':\s*return 'border-transparent bg-secondary-container text-on-secondary-container'/,
+    );
+    expect(ts).not.toMatch(/case 'libre':\s*return '[^']*bg-rail/);
+  });
+
   it('drops invented telemetry and night cards', () => {
     expect(ts).not.toContain('uptime = signal');
     expect(ts).not.toContain('cpuLoad');
