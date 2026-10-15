@@ -1,72 +1,92 @@
-<div class="industrial-grid min-h-[calc(100vh-6rem)]">
+<div class="min-h-[calc(100vh-6rem)]">
 
-  <header class="mb-6">
-    <h1 class="font-headline text-xl md:text-3xl font-bold tracking-tight text-on-surface">
-      Panel de control
-    </h1>
+  <header class="mb-8 flex items-start gap-4">
+    <div class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-rail text-on-rail">
+      <span class="material-symbols-outlined" style="font-size: 1.5rem; font-variation-settings: 'FILL' 1;">precision_manufacturing</span>
+    </div>
+    <div>
+      <h1 class="font-headline text-2xl font-bold tracking-tight text-on-surface">
+        Panel de control
+      </h1>
+      <p class="mt-1 max-w-xl text-sm text-on-surface-variant">
+        Mira si el robot está libre, lanza un gesto por categoría o detén lo que va al hardware.
+      </p>
+    </div>
   </header>
 
-  <section class="mb-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-    <article class="rounded-xl border border-outline bg-surface p-4">
-      <div class="flex items-center gap-2 mb-1">
-        <span class="material-symbols-outlined text-primary" style="font-size: 1.1rem;">sensors</span>
-        <p class="text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Estado</p>
+  <section class="mb-8 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3" aria-label="Estado del robot">
+    <article class="rounded-xl border p-4" [class]="estadoCardClass()">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="material-symbols-outlined" style="font-size: 1.25rem;">sensors</span>
+        <p class="text-xs font-semibold opacity-80">Estado</p>
       </div>
-      <p class="font-headline text-lg font-bold text-on-surface">{{ kpis().estado }}</p>
+      <p class="font-headline text-xl font-bold capitalize">{{ kpis().estado }}</p>
+      <p class="mt-1 text-xs opacity-80">{{ kpis().estadoHint }}</p>
     </article>
     <article class="rounded-xl border border-outline bg-surface p-4">
-      <div class="flex items-center gap-2 mb-1">
-        <span class="material-symbols-outlined text-primary" style="font-size: 1.1rem;">alt_route</span>
-        <p class="text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Origen</p>
+      <div class="flex items-center gap-2 mb-2">
+        <span class="material-symbols-outlined text-secondary" style="font-size: 1.25rem;">alt_route</span>
+        <p class="text-xs font-label font-semibold text-on-surface-variant">Origen</p>
       </div>
-      <p class="font-headline text-lg font-bold text-on-surface">{{ kpis().origen }}</p>
+      <p class="font-headline text-xl font-bold text-on-surface">{{ kpis().origen }}</p>
+      <p class="mt-1 text-xs text-on-surface-variant">{{ kpis().origenHint }}</p>
     </article>
     <article class="rounded-xl border border-outline bg-surface p-4">
-      <div class="flex items-center gap-2 mb-1">
-        <span class="material-symbols-outlined text-primary" style="font-size: 1.1rem;">animation</span>
-        <p class="text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Secuencias</p>
+      <div class="flex items-center gap-2 mb-2">
+        <span class="material-symbols-outlined text-secondary" style="font-size: 1.25rem;">animation</span>
+        <p class="text-xs font-label font-semibold text-on-surface-variant">Secuencias</p>
       </div>
-      <p class="font-headline text-lg font-bold text-on-surface">{{ kpis().secuencias }}</p>
+      <p class="font-headline text-xl font-bold text-on-surface">{{ kpis().secuencias }}</p>
+      <p class="mt-1 text-xs text-on-surface-variant">Gestos listos en el catálogo</p>
     </article>
     <article class="rounded-xl border border-outline bg-surface p-4">
-      <div class="flex items-center gap-2 mb-1">
-        <span class="material-symbols-outlined text-primary" style="font-size: 1.1rem;">event</span>
-        <p class="text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Último evento</p>
+      <div class="flex items-center gap-2 mb-2">
+        <span class="material-symbols-outlined text-secondary" style="font-size: 1.25rem;">event</span>
+        <p class="text-xs font-label font-semibold text-on-surface-variant">Último evento</p>
       </div>
       <p class="font-headline text-sm font-bold text-on-surface break-words">{{ kpis().ultimoEvento }}</p>
+      <p class="mt-1 text-xs text-on-surface-variant">Lo último pedido desde este panel</p>
     </article>
   </section>
 
-  <section class="mb-8">
-    <app-health-status-dropdown title="Estado de servicios"></app-health-status-dropdown>
-  </section>
-
-  <section class="mt-2">
-    <div class="flex items-center justify-between mb-4">
-      <div class="min-w-0">
-        <span class="font-label text-[10px] uppercase tracking-[0.3em] text-secondary mb-1 block">Secuencias</span>
-        <h2 class="font-headline text-lg sm:text-xl font-bold tracking-tight text-on-surface">Ejecución</h2>
+  <section>
+    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h2 class="font-headline text-lg font-bold tracking-tight text-on-surface">Ejecución</h2>
+        <p class="mt-1 text-sm text-on-surface-variant">Normal mueve el gesto. Neutro lo devuelve al reposo.</p>
       </div>
-      <div class="hidden sm:flex items-center gap-2 text-[10px] text-outline">
-        <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-        {{ commandLogs().length }} eventos
-      </div>
+      <p class="flex items-center gap-2 text-xs text-on-surface-variant">
+        <span class="size-2 rounded-full bg-secondary"></span>
+        {{ commandLogs().length }} eventos en el registro
+      </p>
     </div>
 
-    <div class="mb-4 grid grid-cols-1 sm:grid-cols-[1fr_220px] gap-2">
-      <input
-        [ngModel]="movementSearch()"
-        (ngModelChange)="updateMovementSearch($event)"
-        placeholder="Buscar movimiento o secuencia..."
-        class="w-full rounded-lg bg-surface border border-outline px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant" />
-      <select
-        [ngModel]="selectedGroupFilter()"
-        (ngModelChange)="updateGroupFilter($event)"
-        class="w-full rounded-lg bg-surface border border-outline px-3 py-2 text-sm text-on-surface">
-        @for (opt of groupFilterOptions(); track opt.value) {
-          <option [ngValue]="opt.value">{{ opt.label }}</option>
-        }
-      </select>
+    <div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_14rem]">
+      <label class="block">
+        <span class="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-on-surface">
+          <span class="material-symbols-outlined" style="font-size: 1rem;">search</span>
+          Buscar gesto
+        </span>
+        <input
+          [ngModel]="movementSearch()"
+          (ngModelChange)="updateMovementSearch($event)"
+          placeholder="Nombre o descripción"
+          class="w-full min-h-10 rounded-lg bg-surface-container-low border border-outline px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant" />
+      </label>
+      <label class="block">
+        <span class="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-on-surface">
+          <span class="material-symbols-outlined" style="font-size: 1rem;">category</span>
+          Parte del cuerpo
+        </span>
+        <select
+          [ngModel]="selectedGroupFilter()"
+          (ngModelChange)="updateGroupFilter($event)"
+          class="w-full min-h-10 rounded-lg bg-surface-container-low border border-outline px-3 py-2 text-sm text-on-surface">
+          @for (opt of groupFilterOptions(); track opt.value) {
+            <option [ngValue]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </label>
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -74,146 +94,180 @@
       <div class="xl:col-span-2 space-y-4">
 
         @if (sequenceLoading()) {
-          <div class="flex flex-col items-center justify-center py-16 gap-3 text-on-surface-variant">
+          <div class="flex flex-col items-center justify-center rounded-xl border border-outline bg-surface py-16 gap-3 text-on-surface-variant">
             <span class="material-symbols-outlined animate-spin" style="font-size: 2rem;">progress_activity</span>
-            <p class="text-[10px] font-label uppercase tracking-wider">Cargando secuencias…</p>
+            <p class="text-sm">Cargando secuencias…</p>
           </div>
         } @else if (sequenceError()) {
-          <div class="flex flex-col items-center justify-center py-16 gap-3 text-on-surface-variant">
+          <div class="flex flex-col items-center justify-center rounded-xl border border-error/30 bg-error-container py-16 gap-3">
             <span class="material-symbols-outlined text-error" style="font-size: 2rem;">error_outline</span>
-            <p class="text-[10px] font-label uppercase tracking-wider text-error">{{ sequenceError() }}</p>
+            <p class="text-sm text-on-error-container">{{ sequenceError() }}</p>
             <button
               (click)="loadSequences()"
-              class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-high border border-outline
-                     text-[10px] font-label uppercase tracking-wider text-on-surface
-                     hover:bg-surface-container-highest transition-colors cursor-pointer">
-              <span class="material-symbols-outlined" style="font-size: 0.9rem;">refresh</span>
+              class="flex min-h-10 items-center gap-2 px-4 py-2 rounded-lg bg-surface border border-outline
+                     text-sm font-semibold text-on-surface hover:bg-surface-container-high transition-colors cursor-pointer">
+              <span class="material-symbols-outlined" style="font-size: 1.1rem;">refresh</span>
               Reintentar
             </button>
           </div>
         } @else if (filteredSequenceGroups().length === 0) {
-          <div class="flex flex-col items-center justify-center py-16 gap-3 text-on-surface-variant">
-            <span class="material-symbols-outlined" style="font-size: 2rem;">robot_2</span>
-            <p class="text-[10px] font-label uppercase tracking-wider">Sin resultados para el filtro actual</p>
+          <div class="flex flex-col items-center justify-center rounded-xl border border-outline bg-surface py-16 gap-3 text-on-surface-variant">
+            <span class="material-symbols-outlined text-secondary" style="font-size: 2.5rem;">robot_2</span>
+            <p class="text-sm font-semibold text-on-surface">No hay gestos para mostrar</p>
+            <p class="max-w-sm text-center text-sm">Prueba otra búsqueda, o abre Seq. y crea un par gesto–neutro con categoría.</p>
           </div>
         } @else {
           @for (group of filteredSequenceGroups(); track group.key) {
-            <div class="bg-surface rounded-xl border border-outline overflow-hidden">
-              <div class="flex items-center justify-between px-4 py-2.5 sm:px-5 sm:py-3 bg-surface-container-high border-b border-outline">
-                <div class="flex items-center gap-3">
-                  <div class="px-2 py-0.5 rounded bg-primary/15 border border-primary/25">
-                    <span class="text-[9px] font-bold tracking-widest text-on-surface">{{ group.key }}</span>
+            <section class="bg-surface rounded-xl border border-outline overflow-hidden">
+              <header class="flex items-center justify-between gap-3 px-4 py-3 sm:px-5 bg-surface-container-high border-b border-outline">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-rail text-on-rail">
+                    <span class="material-symbols-outlined" style="font-size: 1.2rem; font-variation-settings: 'FILL' 1;">
+                      {{ categoryIcons[group.key] }}
+                    </span>
                   </div>
-                  <h3 class="font-headline text-sm font-bold tracking-tight text-on-surface">{{ group.label }}</h3>
+                  <h3 class="font-headline text-base font-bold tracking-tight text-on-surface">{{ group.label }}</h3>
                 </div>
-                <span class="text-[10px] font-label text-outline">{{ group.sequences.length }} secuencias</span>
-              </div>
+                <span class="text-xs text-on-surface-variant shrink-0">{{ group.sequences.length }} {{ group.sequences.length === 1 ? 'gesto' : 'gestos' }}</span>
+              </header>
 
               <div class="p-3 sm:p-4">
                 @if (group.sequences.length === 0) {
-                  <p class="text-[10px] text-on-surface-variant">Sin secuencias en esta categoría</p>
+                  <p class="text-sm text-on-surface-variant">Aún no hay gestos en {{ group.label.toLowerCase() }}.</p>
                 } @else {
-                  <div [class]="group.sequences.length >= 2 ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-1 gap-2'">
+                  <ul class="space-y-2">
                   @for (sequence of group.sequences; track sequence.name) {
-                    <div class="rounded-lg border border-outline bg-surface-container-low p-2.5 sm:p-3 space-y-2">
-                      <div class="text-center space-y-1 min-h-[3rem]">
-                        <p class="text-[11px] sm:text-xs text-on-surface leading-snug break-words">
-                          {{ displaySequenceName(sequence.name) }}
-                        </p>
-                        @if (sequence.description) {
-                          <p class="text-[10px] text-outline leading-snug break-words">{{ sequence.description }}</p>
-                        }
+                    <li class="rounded-lg border border-outline bg-surface-container-low p-3 sm:p-4">
+                      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="min-w-0">
+                          <p class="text-sm font-semibold text-on-surface leading-snug break-words">
+                            {{ displaySequenceName(sequence.name) }}
+                          </p>
+                          @if (sequence.description) {
+                            <p class="mt-1 text-xs text-on-surface-variant leading-snug break-words">{{ sequence.description }}</p>
+                          }
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 sm:w-64 shrink-0">
+                          <button
+                            type="button"
+                            (click)="executePhase(sequence.name, 'normal')"
+                            [disabled]="playLocked()"
+                            [attr.aria-label]="'Ejecutar gesto ' + displaySequenceName(sequence.name)"
+                            class="flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-primary/30 bg-primary/15 hover:bg-primary/25 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold text-on-primary-container">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">play_arrow</span>
+                            Normal
+                          </button>
+                          <button
+                            type="button"
+                            (click)="executePhase(sequence.name, 'neutro')"
+                            [disabled]="playLocked()"
+                            [attr.aria-label]="'Ejecutar neutro de ' + displaySequenceName(sequence.name)"
+                            class="flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-secondary/30 bg-secondary/15 hover:bg-secondary/25 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold text-on-secondary-container">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">restart_alt</span>
+                            Neutro
+                          </button>
+                        </div>
                       </div>
-                      <div class="grid grid-cols-2 gap-2">
-                        <button
-                          (click)="executePhase(sequence.name, 'normal')"
-                          [disabled]="playLocked()"
-                          class="rounded-lg border border-primary/20 bg-primary/10 hover:bg-primary/20 transition-colors py-2 cursor-pointer disabled:opacity-50 text-[10px] font-label uppercase tracking-wide text-on-surface">
-                          Normal
-                        </button>
-                        <button
-                          (click)="executePhase(sequence.name, 'neutro')"
-                          [disabled]="playLocked()"
-                          class="rounded-lg border border-outline bg-surface-container-high hover:bg-surface-container-highest transition-colors py-2 cursor-pointer disabled:opacity-50 text-[10px] font-label uppercase tracking-wide text-on-surface">
-                          Neutro
-                        </button>
-                      </div>
-                    </div>
+                    </li>
                   }
-                  </div>
+                  </ul>
                 }
               </div>
-            </div>
+            </section>
           }
         }
       </div>
 
       <div class="xl:col-span-1">
         <div class="space-y-4 xl:sticky xl:top-24">
-          <div class="bg-surface rounded-xl border border-outline overflow-hidden">
-            <div class="px-5 py-3 bg-surface-container-high border-b border-outline flex items-center justify-between">
-              <h3 class="font-headline text-sm font-bold tracking-tight text-on-surface">En hardware</h3>
-              <button (click)="stopHardware()" class="py-2 px-3 rounded bg-error text-on-error text-[10px] font-semibold cursor-pointer">
-                Detener
-              </button>
-            </div>
-            <div class="p-4 space-y-2 text-[10px] text-on-surface-variant">
-              @if (runtimeUnreachable()) {
-                <p class="text-error">sin estado</p>
-              } @else {
-                <p>Origen: {{ runtime().source || '—' }}</p>
-                <p>Fase: {{ runtime().current ? (runtime().current!.name + ' · ' + runtime().current!.mode) : 'idle' }}</p>
-                <p>Cola:</p>
-                @if (runtime().queue.length === 0) {
-                  <p>—</p>
-                } @else {
-                  @for (step of runtime().queue; track $index) {
-                    <p>{{ step.name }} · {{ step.mode }}</p>
-                  }
-                }
-              }
-            </div>
-          </div>
-
-          <div class="bg-surface rounded-xl border border-outline overflow-hidden">
-            <div class="flex items-center justify-between px-5 py-3 bg-surface-container-high border-b border-outline">
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-secondary" style="font-size: 1rem;">receipt_long</span>
-                <h3 class="font-headline text-sm font-bold tracking-tight text-on-surface">Registro</h3>
+          <section class="bg-surface rounded-xl border border-outline overflow-hidden">
+            <header class="px-4 py-3 bg-surface-container-high border-b border-outline flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="material-symbols-outlined text-secondary" style="font-size: 1.25rem;">memory</span>
+                <h3 class="font-headline text-base font-bold tracking-tight text-on-surface">En hardware</h3>
               </div>
               <button
+                type="button"
+                (click)="stopHardware()"
+                class="flex min-h-10 items-center gap-1.5 py-2 px-3 rounded-lg bg-error text-on-error text-sm font-semibold cursor-pointer">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">stop</span>
+                Detener
+              </button>
+            </header>
+            <div class="p-4 space-y-3 text-sm text-on-surface">
+              @if (runtimeUnreachable()) {
+                <p class="rounded-lg bg-error-container px-3 py-2 text-on-error-container">No hay estado del robot. Detener sigue disponible.</p>
+              } @else {
+                <p class="flex items-start gap-2">
+                  <span class="material-symbols-outlined text-secondary shrink-0" style="font-size: 1.1rem;">alt_route</span>
+                  <span><span class="font-semibold">Quién manda:</span> {{ sourceHint(runtime().source) }}</span>
+                </p>
+                <p class="flex items-start gap-2">
+                  <span class="material-symbols-outlined text-secondary shrink-0" style="font-size: 1.1rem;">play_circle</span>
+                  <span>
+                    <span class="font-semibold">Qué hace:</span>
+                    {{ runtime().current ? (runtime().current!.name + ' · ' + phaseLabel(runtime().current!.mode)) : phaseLabel(null) }}
+                  </span>
+                </p>
+                <div>
+                  <p class="mb-1 flex items-center gap-2 font-semibold">
+                    <span class="material-symbols-outlined text-secondary" style="font-size: 1.1rem;">queue</span>
+                    Siguiente en cola
+                  </p>
+                  @if (runtime().queue.length === 0) {
+                    <p class="pl-7 text-on-surface-variant">Nada pendiente.</p>
+                  } @else {
+                    <ol class="pl-7 space-y-1 text-on-surface-variant">
+                      @for (step of runtime().queue; track $index) {
+                        <li>{{ step.name }} · {{ phaseLabel(step.mode) }}</li>
+                      }
+                    </ol>
+                  }
+                </div>
+              }
+            </div>
+          </section>
+
+          <section class="bg-surface rounded-xl border border-outline overflow-hidden">
+            <header class="flex items-center justify-between px-4 py-3 bg-surface-container-high border-b border-outline">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary" style="font-size: 1.25rem;">receipt_long</span>
+                <h3 class="font-headline text-base font-bold tracking-tight text-on-surface">Registro</h3>
+              </div>
+              <button
+                type="button"
                 (click)="clearLogs()"
-                class="text-[9px] font-label uppercase tracking-wider text-on-surface-variant hover:text-on-surface
-                       transition-colors cursor-pointer px-2 py-1 rounded hover:bg-surface-container-highest flex items-center gap-1">
-                <span class="material-symbols-outlined" style="font-size: 0.8rem;">delete_sweep</span>
+                class="flex min-h-10 items-center gap-1.5 text-xs font-semibold text-on-surface-variant hover:text-on-surface
+                       transition-colors cursor-pointer px-2 py-1 rounded-lg hover:bg-surface-container-highest">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">delete_sweep</span>
                 Limpiar
               </button>
-            </div>
+            </header>
 
             <div
               #logScroll
-              class="h-[260px] md:h-[350px] overflow-y-auto px-3 py-2 space-y-1 font-mono text-[10px]"
-              style="scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent;">
+              class="h-[260px] md:h-[350px] overflow-y-auto px-3 py-2 space-y-1 text-xs"
+              style="scrollbar-width: thin; scrollbar-color: #9cc9b3 transparent;">
 
               @if (commandLogs().length === 0) {
-                <div class="flex flex-col items-center justify-center h-full gap-3 text-on-surface-variant">
-                  <span class="material-symbols-outlined" style="font-size: 2rem;">terminal</span>
-                  <p class="text-[10px] font-label uppercase tracking-wider">Sin ejecuciones</p>
+                <div class="flex flex-col items-center justify-center h-full gap-2 text-on-surface-variant">
+                  <span class="material-symbols-outlined text-secondary" style="font-size: 2rem;">inbox</span>
+                  <p class="text-sm">Aún no hay ejecuciones en esta sesión.</p>
                 </div>
               }
 
               @for (log of commandLogs(); track trackLog($index, log)) {
-                <div class="py-1.5 px-2 rounded hover:bg-surface-container-highest transition-colors">
+                <div class="py-1.5 px-2 rounded-lg hover:bg-surface-container-highest transition-colors">
                   <div class="flex items-start gap-2">
-                    <span class="material-symbols-outlined flex-shrink-0 mt-0.5" [class]="logStatusColor(log.status)" style="font-size: 0.8rem;">
+                    <span class="material-symbols-outlined flex-shrink-0 mt-0.5" [class]="logStatusColor(log.status)" style="font-size: 1rem;">
                       {{ logStatusIcon(log.status) }}
                     </span>
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center gap-1.5 flex-wrap">
-                        <span class="text-on-surface-variant">{{ log.timestamp }}</span>
-                        <span class="px-1 py-0.5 rounded bg-primary/10 text-on-surface text-[8px]">{{ log.group }}</span>
+                        <time class="font-mono text-on-surface-variant">{{ log.timestamp }}</time>
+                        <span class="px-1.5 py-0.5 rounded bg-secondary/15 text-on-secondary-container text-xs">{{ log.group }}</span>
                       </div>
-                      <div class="text-on-surface-variant mt-0.5 truncate">{{ log.sequenceName }}</div>
+                      <div class="text-on-surface mt-0.5 truncate">{{ log.sequenceName }}</div>
                       @if (log.message) {
                         <div class="text-on-surface-variant mt-0.5 truncate">{{ log.message }}</div>
                       }
@@ -224,12 +278,12 @@
             </div>
 
             <div class="px-4 py-2 border-t border-outline bg-surface-container-high">
-              <div class="flex justify-between text-[9px] text-on-surface-variant">
+              <div class="flex justify-between text-xs text-on-surface-variant">
                 <span>Total: {{ commandLogs().length }}</span>
-                <span>ACK: {{ ackCount() }}</span>
+                <span>Confirmados: {{ ackCount() }}</span>
               </div>
             </div>
-          </div>
+          </section>
         </div>
       </div>
     </div>

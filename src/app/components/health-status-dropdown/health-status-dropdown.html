@@ -1,29 +1,29 @@
-<details class="rounded-xl border border-outline bg-surface-container overflow-hidden">
-  <summary class="list-none cursor-pointer px-3 py-2.5 bg-surface-container-high border-b border-outline">
+<details class="rounded-xl border border-outline bg-surface overflow-hidden">
+  <summary class="list-none cursor-pointer px-4 py-3 bg-surface-container-high border-b border-outline">
     <div class="flex items-center justify-between gap-2">
       <div class="flex items-center gap-2 min-w-0">
-        <span class="material-symbols-outlined text-secondary" style="font-size: 1rem;">monitor_heart</span>
-        <span class="font-label uppercase tracking-wider text-[10px] text-on-surface-variant truncate">{{ title }}</span>
+        <span class="material-symbols-outlined text-secondary" style="font-size: 1.25rem;">monitor_heart</span>
+        <span class="text-sm font-semibold text-on-surface truncate">{{ title }}</span>
       </div>
-      <span class="text-[10px] text-on-surface-variant">{{ onlineCount() }}/{{ entries().length }} en línea</span>
+      <span class="text-xs text-on-surface-variant">{{ onlineCount() }}/{{ entries().length }} en línea</span>
     </div>
   </summary>
 
-  <div class="p-2.5 space-y-1.5">
+  <div class="p-3 space-y-1.5">
     @for (item of entries(); track item.label) {
-      <div class="rounded-lg border border-outline bg-surface-container-low px-2.5 py-2 flex items-center justify-between gap-2">
+      <div class="rounded-lg border border-outline bg-surface-container-low px-3 py-2 flex items-center justify-between gap-2">
         <div class="flex items-center gap-2 min-w-0">
-          <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" [class]="statusDot(item.status)"></span>
-          <span class="text-[10px] font-label uppercase tracking-wide text-on-surface truncate">{{ item.label }}</span>
+          <span class="w-2 h-2 rounded-full flex-shrink-0" [class]="statusDot(item.status)"></span>
+          <span class="text-sm text-on-surface truncate">{{ item.label }}</span>
         </div>
-        <span class="text-[9px] text-on-surface-variant">{{ statusText(item.status) }}</span>
+        <span class="text-xs text-on-surface-variant">{{ statusText(item.status) }}</span>
       </div>
     }
     <button
       type="button"
       (click)="health.checkAll()"
-      class="w-full mt-1 px-3 py-2 rounded-lg text-[10px] font-label uppercase tracking-wider
-             bg-surface-container-high text-on-surface hover:bg-surface-container-highest
+      class="w-full mt-1 min-h-10 px-3 py-2 rounded-lg text-sm font-semibold
+             bg-secondary-container text-on-secondary-container hover:bg-surface-container-highest
              transition-colors cursor-pointer">
       Actualizar estado
     </button>

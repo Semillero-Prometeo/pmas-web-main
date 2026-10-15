@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CATEGORY_LABELS, CATEGORY_ORDER, groupByCategory, isPlayableSequence } from './sequence-groups';
+import { CATEGORY_ICONS, CATEGORY_LABELS, CATEGORY_ORDER, groupByCategory, isPlayableSequence } from './sequence-groups';
 
 const saludo = {
   name: 'saludo',
@@ -20,6 +20,8 @@ describe('sequence groups', () => {
       'cadera',
     ]);
     expect(CATEGORY_LABELS.brazo_derecho).toBe('Brazo derecho');
+    expect(CATEGORY_ICONS.cara).toBe('sentiment_satisfied');
+    expect(Object.keys(CATEGORY_ICONS)).toEqual([...CATEGORY_ORDER]);
   });
 
   it('hides legacy files without a pair', () => {

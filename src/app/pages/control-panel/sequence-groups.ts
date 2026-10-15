@@ -18,6 +18,15 @@ export const CATEGORY_LABELS: Record<SequenceCategory, string> = {
   cadera: 'Cadera',
 };
 
+export const CATEGORY_ICONS: Record<SequenceCategory, string> = {
+  cara: 'sentiment_satisfied',
+  cuello: 'accessibility_new',
+  brazo_derecho: 'back_hand',
+  brazo_izquierdo: 'front_hand',
+  torso: 'accessibility',
+  cadera: 'directions_walk',
+};
+
 export interface PlayableSequence {
   name: string;
   description: string;

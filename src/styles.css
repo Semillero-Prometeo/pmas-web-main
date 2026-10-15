@@ -1,16 +1,16 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-background: #f4f7fb;
-  --color-surface: #ffffff;
-  --color-surface-dim: #eef2f6;
-  --color-surface-bright: #ffffff;
-  --color-surface-container-lowest: #f4f7fb;
-  --color-surface-container-low: #f8fafc;
-  --color-surface-container: #ffffff;
-  --color-surface-container-high: #eef2f6;
-  --color-surface-container-highest: #e2e8f0;
-  --color-surface-variant: #e2e8f0;
+  --color-background: #c5e6d4;
+  --color-surface: #f3faf5;
+  --color-surface-dim: #b7dcc8;
+  --color-surface-bright: #f3faf5;
+  --color-surface-container-lowest: #c5e6d4;
+  --color-surface-container-low: #e6f2eb;
+  --color-surface-container: #f3faf5;
+  --color-surface-container-high: #d9efe3;
+  --color-surface-container-highest: #b7dcc8;
+  --color-surface-variant: #d9efe3;
   --color-surface-tint: #38bdf8;
 
   --color-primary: #38bdf8;
@@ -23,36 +23,44 @@
   --color-on-primary-container: #0c4a6e;
   --color-inverse-primary: #38bdf8;
 
-  --color-secondary: #10b981;
+  --color-secondary: #059669;
   --color-secondary-fixed: #d1fae5;
   --color-secondary-fixed-dim: #10b981;
-  --color-secondary-container: #d1fae5;
-  --color-on-secondary: #064e3b;
+  --color-secondary-container: #d9efe3;
+  --color-on-secondary: #ffffff;
   --color-on-secondary-fixed: #064e3b;
   --color-on-secondary-fixed-variant: #047857;
-  --color-on-secondary-container: #064e3b;
+  --color-on-secondary-container: #065f46;
 
-  --color-tertiary: #059669;
+  --color-rail: #065f46;
+  --color-on-rail: #ecf8f1;
+  --color-rail-hover: #0a7a5c;
+
+  --color-tertiary: #047857;
   --color-tertiary-fixed: #d1fae5;
   --color-tertiary-fixed-dim: #34d399;
   --color-tertiary-container: #d1fae5;
-  --color-on-tertiary: #064e3b;
+  --color-on-tertiary: #ecfdf5;
   --color-on-tertiary-fixed: #064e3b;
   --color-on-tertiary-fixed-variant: #047857;
-  --color-on-tertiary-container: #064e3b;
+  --color-on-tertiary-container: #065f46;
 
   --color-error: #dc2626;
   --color-error-container: #fee2e2;
   --color-on-error: #ffffff;
   --color-on-error-container: #7f1d1d;
 
-  --color-outline: #cbd5e1;
-  --color-outline-variant: #e2e8f0;
-  --color-on-surface: #0f172a;
-  --color-on-surface-variant: #475569;
-  --color-on-background: #0f172a;
-  --color-inverse-surface: #0f172a;
-  --color-inverse-on-surface: #f8fafc;
+  --color-warning: #b45309;
+  --color-warning-container: #ffedd5;
+  --color-on-warning: #7c2d12;
+
+  --color-outline: #7fb59a;
+  --color-outline-variant: #b7dcc8;
+  --color-on-surface: #10241c;
+  --color-on-surface-variant: #2a5644;
+  --color-on-background: #10241c;
+  --color-inverse-surface: #10241c;
+  --color-inverse-on-surface: #ecf8f1;
 
   --font-headline: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', sans-serif;
@@ -75,6 +83,21 @@
 }
 
 .industrial-grid {
-  background-image: radial-gradient(circle, #cbd5e1 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-image: radial-gradient(circle, #7fb59a 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: #bbf7d0;
+  color: #065f46;
+}
+
+body {
+  font-size: 0.875rem;
+  line-height: 1.5;
 }

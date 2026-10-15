@@ -1,11 +1,11 @@
 import { Component, signal, computed, inject, OnInit, ViewChild, ElementRef, AfterViewChecked, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { HealthStatusDropdown } from '../../components/health-status-dropdown/health-status-dropdown';
 import { GATEWAY_URL } from '../../core/constants/gateway';
 import { HealthService } from '../../core/services/health.service';
 import { catchError, forkJoin, map, of } from 'rxjs';
 import {
+  CATEGORY_ICONS,
   CATEGORY_LABELS,
   CATEGORY_ORDER,
   groupByCategory,
@@ -13,7 +13,7 @@ import {
   PlayableSequence,
   SequenceCategory,
 } from './sequence-groups';
-import { catalogSequenceCount, panelKpis } from './panel-kpis';
+import { catalogSequenceCount, panelKpis, phaseLabel, sourceHint } from './panel-kpis';
 
 interface MotionBlock {
   arduino_id: number;
@@ -72,7 +72,7 @@ const IDLE_RUNTIME: RuntimeSnapshot = { busy: false, source: null, current: null
 
 @Component({
   selector: 'app-control-panel',
-  imports: [FormsModule, HealthStatusDropdown],
+  imports: [FormsModule],
   templateUrl: './control-panel.html',
 })
 export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
@@ -91,6 +91,7 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
 
   runtime = signal<RuntimeSnapshot>(IDLE_RUNTIME);
   runtimeUnreachable = signal(false);
+  readonly categoryIcons = CATEGORY_ICONS;
   playLocked = computed(() => this.runtimeUnreachable() || this.runtime().busy);
 
   commandLogs = signal<SequenceLog[]>([]);
@@ -119,7 +120,9 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
         ? this.sequenceGroups()
         : this.sequenceGroups().filter((group) => group.key === selectedGroup);
 
-    if (!query) return byGroup;
+    if (!query) {
+      return selectedGroup === 'ALL' ? byGroup.filter((group) => group.sequences.length > 0) : byGroup;
+    }
 
     return byGroup
       .map((group) => ({
@@ -375,5 +378,19 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
 
   updateGroupFilter(value: string) {
     this.selectedGroupFilter.set(value);
+  }
+
+  phaseLabel = phaseLabel;
+  sourceHint = sourceHint;
+
+  estadoCardClass(): string {
+    switch (this.kpis().estado) {
+      case 'libre':
+        return 'border-transparent bg-rail text-on-rail';
+      case 'ocupado':
+        return 'border-warning/40 bg-warning-container text-on-warning';
+      default:
+        return 'border-error/40 bg-error-container text-on-error-container';
+    }
   }
 }

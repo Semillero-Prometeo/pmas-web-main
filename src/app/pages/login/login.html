@@ -2,195 +2,162 @@
 
 <div class="min-h-screen bg-background flex">
 
-  <!-- Panel izquierdo: branding -->
-  <div class="hidden lg:flex lg:w-1/2 relative bg-surface-container-lowest flex-col justify-between p-16 overflow-hidden">
-
-    <!-- Grid de fondo -->
-    <div class="absolute inset-0 industrial-grid opacity-30"></div>
-
-    <!-- Glow decorativo -->
-    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute bottom-1/4 right-1/4 w-64 h-64 bg-secondary/5 rounded-full blur-3xl pointer-events-none"></div>
-
-    <!-- Logo / Brand -->
+  <div class="hidden lg:flex lg:w-1/2 relative bg-rail text-on-rail flex-col justify-between p-16 overflow-hidden">
     <div class="relative z-10">
-      <img  href="logopequeno-removebg-preview.png"
-            src="logopequeno-removebg-preview.png"
-            alt="Prometeo logo"
-            class="w-12 h-12 mb-4">
-      <span class="text-xl font-headline font-bold tracking-tighter text-blue-400 uppercase">
-        Prometeo
-      </span>
+      <img
+        src="logopequeno-removebg-preview.png"
+        alt="Logo de Prometeo"
+        class="w-12 h-12 mb-4">
+      <p class="text-xl font-headline font-bold text-on-rail">Prometeo</p>
+      <p class="mt-1 text-sm text-on-rail/80">Universidad Libre · Semillero</p>
     </div>
 
-    <!-- Contenido central -->
     <div class="relative z-10">
-      <span class="font-label text-[10px] uppercase tracking-[0.3em] text-secondary mb-6 block">
-      </span>
-      <h1 class="font-headline text-5xl font-bold tracking-tighter leading-tight text-on-surface mb-6">
-        Inicia sesión para continuar en el semillero de investigación <span class="text-primary italic">Prometeo.</span>
+      <p class="mb-3 flex items-center gap-2 text-xs font-semibold text-on-rail/80">
+        <span class="material-symbols-outlined" style="font-size: 1rem;">login</span>
+        Acceso al laboratorio
+      </p>
+      <h1 class="font-headline text-4xl font-bold leading-tight text-on-rail mb-4">
+        Mesa de control de R-ONE
       </h1>
+      <p class="text-sm text-on-rail/85 max-w-md leading-relaxed">
+        Entra con tu correo del semillero para ver el robot, lanzar un gesto y hablar por el mismo turno que el micrófono.
+      </p>
 
-      <!-- Stats -->
-      <div class="mt-12 flex gap-10">
-        <div>
-          <div class="text-3xl font-headline font-bold text-primary">256</div>
-          <div class="text-[10px] font-label uppercase tracking-widest text-outline mt-1">Bit Encryption</div>
-        </div>
-        <div>
-          <div class="text-3xl font-headline font-bold text-secondary">2FA</div>
-          <div class="text-[10px] font-label uppercase tracking-widest text-outline mt-1">Protected</div>
-        </div>
-        <div>
-          <div class="text-3xl font-headline font-bold text-tertiary">99.9%</div>
-          <div class="text-[10px] font-label uppercase tracking-widest text-outline mt-1">Uptime SLA</div>
-        </div>
-      </div>
+      <ul class="mt-10 space-y-4 text-sm">
+        <li class="flex items-start gap-3">
+          <span class="material-symbols-outlined mt-0.5" style="font-size: 1.25rem;">play_arrow</span>
+          <span>Normal mueve el gesto. Neutro lo vuelve al reposo.</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="material-symbols-outlined mt-0.5" style="font-size: 1.25rem;">videocam</span>
+          <span>Visión y chat comparten el turno; no hay dos conversaciones.</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="material-symbols-outlined mt-0.5" style="font-size: 1.25rem;">animation</span>
+          <span>El estudio guarda pares gesto–neutro con categoría.</span>
+        </li>
+      </ul>
 
-      <!-- Volver al home -->
-      <div class="mt-8">
+      <div class="mt-10">
         <a routerLink="/info"
-           class="inline-flex items-center gap-2 text-[11px] font-label uppercase tracking-wider
-                  text-on-surface-variant hover:text-primary transition-colors duration-200 no-underline group">
-          <span class="material-symbols-outlined text-base group-hover:-translate-x-1 transition-transform duration-200">
-            arrow_back
-          </span>
+           class="inline-flex items-center gap-2 text-sm font-semibold
+                  text-on-rail/80 hover:text-on-rail transition-colors no-underline">
+          <span class="material-symbols-outlined text-base">arrow_back</span>
           Volver al inicio
         </a>
       </div>
     </div>
 
-    <!-- Status badge -->
     <div class="relative z-10 flex items-center gap-3">
-      <div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
-      <span class="text-[10px] font-label uppercase tracking-widest text-slate-500">
-        Portal de autenticación activo
-      </span>
+      <span class="size-2 rounded-full bg-on-rail"></span>
+      <span class="text-xs text-on-rail/80">Portal del semillero listo para operar</span>
     </div>
   </div>
 
-  <!-- Panel derecho: formulario / selector de rol -->
-  <div class="w-full lg:w-1/2 flex items-center justify-center px-8 py-16 relative">
+  <div class="w-full lg:w-1/2 flex items-center justify-center px-8 py-16">
+    <div class="w-full max-w-md">
 
-    <!-- Glow top right -->
-    <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
-
-    <div class="w-full max-w-md relative z-10">
-
-      <!-- Mobile logo -->
       <div class="lg:hidden mb-10">
-        <span class="text-lg font-headline font-bold tracking-tighter text-blue-400 uppercase">
-          Prometeo
-        </span>
+        <p class="text-lg font-headline font-bold text-on-surface">Prometeo</p>
+        <p class="text-sm text-on-surface-variant">Mesa de control de R-ONE</p>
       </div>
 
-      <!-- ── FORMULARIO DE LOGIN ── -->
       <div>
         <div class="mb-10">
-          <span class="font-label text-[10px] uppercase tracking-[0.3em] text-secondary mb-3 block">
+          <p class="mb-2 flex items-center gap-2 text-xs font-semibold text-secondary">
+            <span class="material-symbols-outlined" style="font-size: 1rem;">verified_user</span>
             Autenticación
-          </span>
-          <h2 class="font-headline text-4xl font-bold tracking-tighter text-on-surface mb-2">
-            Iniciar Sesión
+          </p>
+          <h2 class="font-headline text-3xl font-bold text-on-surface mb-2">
+            Iniciar sesión
           </h2>
           <p class="text-on-surface-variant text-sm">
-            Ingresa tus credenciales para acceder a los sistemas de control.
+            Usa el correo del semillero. Después eliges el rol con el que vas a trabajar.
           </p>
         </div>
 
         <form (ngSubmit)="handleSubmit()" #loginForm="ngForm" class="space-y-6">
 
-          <!-- Email -->
           <div class="space-y-2">
-            <label class="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant block">
-              Dirección de correo electrónico
+            <label for="login-email" class="flex items-center gap-1.5 text-xs font-semibold text-on-surface">
+              <span class="material-symbols-outlined" style="font-size: 1rem;">alternate_email</span>
+              Correo electrónico
             </label>
-            <div class="relative">
-              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-600"
-                    style="font-size: 1.1rem;">
-                alternate_email
-              </span>
-              <input
-                type="email"
-                name="email"
-                required
-                autocomplete="email"
-                [ngModel]="email()"
-                (ngModelChange)="email.set($event)"
-                placeholder="prometeo@unilibre.edu.co"
-                class="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary outline-none
-                       pl-12 pr-4 py-3.5 text-on-surface text-sm font-body rounded-t-lg transition-colors duration-200
-                       placeholder:text-slate-600"
-              />
-            </div>
+            <input
+              id="login-email"
+              type="email"
+              name="email"
+              required
+              autocomplete="email"
+              [ngModel]="email()"
+              (ngModelChange)="email.set($event)"
+              placeholder="prometeo@unilibre.edu.co"
+              class="w-full min-h-11 bg-surface border border-outline focus:border-secondary outline-none
+                     px-4 py-3 text-on-surface text-sm font-body rounded-lg
+                     placeholder:text-on-surface-variant" />
           </div>
 
-          <!-- Password -->
           <div class="space-y-2">
-            <label class="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant block">
+            <label for="login-password" class="flex items-center gap-1.5 text-xs font-semibold text-on-surface">
+              <span class="material-symbols-outlined" style="font-size: 1rem;">lock</span>
               Contraseña
             </label>
             <div class="relative">
-              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-600"
-                    style="font-size: 1.1rem;">
-                lock
-              </span>
               <input
+                id="login-password"
                 [type]="showPassword() ? 'text' : 'password'"
                 name="password"
                 required
                 autocomplete="current-password"
                 [ngModel]="password()"
                 (ngModelChange)="password.set($event)"
-                placeholder="••••••••••••"
-                class="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary outline-none
-                       pl-12 pr-12 py-3.5 text-on-surface text-sm font-body rounded-t-lg transition-colors duration-200
-                       placeholder:text-slate-600"
-              />
+                placeholder="Tu contraseña"
+                class="w-full min-h-11 bg-surface border border-outline focus:border-secondary outline-none
+                       px-4 py-3 pr-12 text-on-surface text-sm font-body rounded-lg
+                       placeholder:text-on-surface-variant" />
               <button
                 type="button"
                 (click)="showPassword.set(!showPassword())"
-                class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-on-surface transition-colors cursor-pointer">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">
+                class="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-on-surface-variant hover:text-on-surface cursor-pointer"
+                [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                <span class="material-symbols-outlined" style="font-size: 1.2rem;">
                   {{ showPassword() ? 'visibility_off' : 'visibility' }}
                 </span>
               </button>
             </div>
           </div>
 
-          <!-- Error del servidor -->
           @if (serverError()) {
-            <div class="flex items-start gap-3 p-4 bg-error-container/20 rounded-lg border-l-2 border-error">
-              <span class="material-symbols-outlined text-error mt-0.5" style="font-size: 1rem;">error</span>
-              <p class="text-[11px] font-label text-error leading-relaxed uppercase tracking-wide">
+            <div class="flex items-start gap-3 p-4 bg-error-container rounded-lg border border-error/30">
+              <span class="material-symbols-outlined text-error mt-0.5" style="font-size: 1.1rem;">error</span>
+              <p class="text-sm text-on-error-container leading-relaxed">
                 {{ serverError() }}
               </p>
             </div>
           }
 
-          <!-- Submit -->
           <button
             type="submit"
             [disabled]="isLoading()"
-            class="w-full bg-primary text-on-primary py-4 rounded-lg font-headline font-bold tracking-tight
-                   hover:opacity-90 active:scale-95 transition-all duration-200 flex items-center justify-center gap-3
-                   disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-2">
+            class="w-full min-h-12 bg-rail text-on-rail py-3 rounded-lg font-semibold text-sm
+                   hover:bg-rail-hover transition-colors flex items-center justify-center gap-3
+                   disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
             @if (isLoading()) {
               <span class="material-symbols-outlined animate-spin" style="font-size: 1.1rem;">progress_activity</span>
-              Autenticando...
+              Comprobando acceso…
             } @else {
               <span class="material-symbols-outlined" style="font-size: 1.1rem;">login</span>
-              Iniciar Sesión
+              Entrar
             }
           </button>
 
         </form>
 
-        <!-- Security notice -->
-        <div class="mt-10 flex items-start gap-3 p-4 bg-surface-container-low rounded-lg border-l-2 border-outline-variant">
-          <span class="material-symbols-outlined text-outline mt-0.5" style="font-size: 1rem;">shield</span>
-          <p class="text-[10px] font-label text-outline leading-relaxed uppercase tracking-wide">
-            Este sistema está monitoreado. Los intentos de acceso no autorizados se registran y se informan a la seguridad del laboratorio.
+        <div class="mt-8 flex items-start gap-3 p-4 bg-surface rounded-lg border border-outline">
+          <span class="material-symbols-outlined text-secondary mt-0.5" style="font-size: 1.1rem;">shield</span>
+          <p class="text-xs text-on-surface-variant leading-relaxed">
+            Los intentos de acceso se registran. Usa solo la cuenta que te asignó el semillero.
           </p>
         </div>
       </div>
@@ -200,65 +167,55 @@
 
 </div>
 
-<!-- ── MODAL SELECTOR DE ROL ── -->
 @if (loginDone()) {
-  <!-- Backdrop -->
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
-       style="background: rgba(2,6,23,0.85); backdrop-filter: blur(6px);">
-
-    <!-- Card -->
-    <div class="w-full max-w-sm bg-surface-container rounded-2xl border border-white/8 shadow-2xl shadow-black/60 overflow-hidden">
-
-      <!-- Header -->
-      <div class="px-6 pt-6 pb-4 border-b border-white/5">
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-rail/80">
+    <div class="w-full max-w-sm bg-surface rounded-2xl border border-outline overflow-hidden" role="dialog" aria-labelledby="role-picker-title">
+      <div class="px-6 pt-6 pb-4 border-b border-outline">
         <div class="flex items-center gap-3 mb-3">
-          <div class="w-9 h-9 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center">
-            <span class="material-symbols-outlined text-primary" style="font-size: 1.1rem; font-variation-settings: 'FILL' 1;">
+          <div class="size-10 rounded-xl bg-rail text-on-rail flex items-center justify-center">
+            <span class="material-symbols-outlined" style="font-size: 1.2rem; font-variation-settings: 'FILL' 1;">
               manage_accounts
             </span>
           </div>
           <div>
-            <p class="font-label text-[9px] uppercase tracking-[0.25em] text-secondary">Prometeo · Auth</p>
-            <h3 class="font-headline text-base font-bold tracking-tight text-on-surface leading-tight">
-              Selecciona tu rol
+            <p class="text-xs font-semibold text-secondary">Prometeo</p>
+            <h3 id="role-picker-title" class="font-headline text-lg font-bold text-on-surface leading-tight">
+              Elige tu rol
             </h3>
           </div>
         </div>
-        <p class="text-[11px] text-on-surface-variant leading-relaxed">
-          Tu cuenta tiene acceso a múltiples módulos. ¿Con qué rol deseas continuar?
+        <p class="text-sm text-on-surface-variant leading-relaxed">
+          Tu cuenta abre más de un módulo. Elige con cuál quieres trabajar ahora.
         </p>
       </div>
 
-      <!-- Lista de roles -->
       <div class="px-4 py-4 space-y-2">
         @for (role of auth.availableRoles(); track role; let i = $index) {
           <button
+            type="button"
             (click)="confirmRole(i)"
-            class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-outline-variant/20
-                   bg-surface-container-low hover:bg-surface-container-high hover:border-primary/35
-                   transition-all duration-150 text-left group cursor-pointer active:scale-[0.98]">
-            <div class="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0
-                        group-hover:bg-primary/20 transition-colors">
-              <span class="material-symbols-outlined text-primary" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">
+            class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-outline
+                   bg-surface-container-low hover:bg-secondary-container hover:border-secondary
+                   transition-colors text-left cursor-pointer">
+            <div class="size-9 rounded-lg bg-rail text-on-rail flex items-center justify-center flex-shrink-0">
+              <span class="material-symbols-outlined" style="font-size: 1.1rem; font-variation-settings: 'FILL' 1;">
                 badge
               </span>
             </div>
             <div class="flex-1 min-w-0">
-              <div class="font-headline font-bold text-on-surface text-sm tracking-tight">{{ role }}</div>
-              <div class="text-[9px] font-label uppercase tracking-widest text-outline mt-0.5">Acceso al módulo</div>
+              <div class="font-headline font-bold text-on-surface text-sm">{{ role }}</div>
+              <div class="text-xs text-on-surface-variant mt-0.5">Continuar a este módulo</div>
             </div>
-            <span class="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors"
-                  style="font-size: 1rem;">
+            <span class="material-symbols-outlined text-secondary" style="font-size: 1.2rem;">
               chevron_right
             </span>
           </button>
         }
       </div>
 
-      <!-- Footer -->
       <div class="px-6 pb-5 pt-1">
-        <p class="text-[9px] font-label text-slate-600 uppercase tracking-wide text-center">
-          Puedes cambiar de rol desde tu perfil en cualquier momento
+        <p class="text-xs text-on-surface-variant text-center">
+          Puedes cambiar de rol desde tu perfil cuando quieras.
         </p>
       </div>
     </div>

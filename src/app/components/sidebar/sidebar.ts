@@ -113,11 +113,11 @@ export class Sidebar implements OnInit {
   statusColor(status: ServiceStatus): string {
     switch (status) {
       case 'online':
-        return 'bg-secondary';
+        return 'bg-on-rail';
       case 'offline':
         return 'bg-error';
       case 'checking':
-        return 'bg-outline animate-pulse';
+        return 'bg-on-rail/40 animate-pulse';
     }
   }
 }

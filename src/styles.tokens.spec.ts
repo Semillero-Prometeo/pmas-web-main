@@ -12,28 +12,32 @@ function token(name: string): string {
 }
 
 describe('light dashboard tokens', () => {
-  it('uses the approved light surfaces and ink', () => {
-    expect(token('--color-background')).toBe('#f4f7fb');
-    expect(token('--color-surface')).toBe('#ffffff');
-    expect(token('--color-surface-container')).toBe('#ffffff');
-    expect(token('--color-surface-container-high')).toBe('#eef2f6');
-    expect(token('--color-on-surface')).toBe('#0f172a');
-    expect(token('--color-on-surface-variant')).toBe('#475569');
-    expect(token('--color-outline')).toBe('#cbd5e1');
+  it('uses mint work surfaces and forest ink, never pure white', () => {
+    expect(token('--color-background')).toBe('#c5e6d4');
+    expect(token('--color-surface')).toBe('#f3faf5');
+    expect(token('--color-surface-container')).toBe('#f3faf5');
+    expect(token('--color-surface-container-high')).toBe('#d9efe3');
+    expect(token('--color-on-surface')).toBe('#10241c');
+    expect(token('--color-on-surface-variant')).toBe('#2a5644');
+    expect(token('--color-outline')).toBe('#7fb59a');
+    expect(css).not.toMatch(/--color-background:\s*#ffffff/);
+    expect(css).not.toMatch(/--color-surface:\s*#ffffff/);
+    expect(css).not.toMatch(/--color-on-surface-variant:\s*#475569/);
   });
 
-  it('keeps Prometeo cyan and emerald and uses a light error', () => {
+  it('keeps Prometeo cyan action, emerald secondary, and a forest rail', () => {
     expect(token('--color-primary')).toBe('#38bdf8');
-    expect(token('--color-secondary')).toBe('#10b981');
+    expect(token('--color-secondary')).toBe('#059669');
+    expect(token('--color-rail')).toBe('#065f46');
+    expect(token('--color-on-rail')).toBe('#ecf8f1');
     expect(token('--color-error')).toBe('#dc2626');
-    expect(token('--color-error-container')).toBe('#fee2e2');
-    expect(token('--color-primary-container')).toBe('#e0f2fe');
+    expect(token('--color-warning')).toBe('#b45309');
     expect(css).not.toMatch(/--color-error-container:\s*#93000a/);
     expect(css).not.toMatch(/--color-background:\s*#000f1d/);
   });
 
-  it('restyles industrial-grid to faint light dots', () => {
-    expect(css).toMatch(/\.industrial-grid\s*\{[^}]*#cbd5e1/s);
+  it('restyles industrial-grid to faint mint dots', () => {
+    expect(css).toMatch(/\.industrial-grid\s*\{[^}]*#7fb59a/s);
     expect(css).not.toMatch(/\.industrial-grid\s*\{[^}]*#43474f/s);
   });
 

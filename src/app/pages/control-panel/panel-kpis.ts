@@ -15,10 +15,38 @@ export interface PanelKpis {
   origen: 'estudio' | 'panel' | 'turno' | '—';
   secuencias: string;
   ultimoEvento: string;
+  estadoHint: string;
+  origenHint: string;
 }
 
 export function catalogSequenceCount(groups: { sequences: unknown[] }[]): number {
   return groups.reduce((total, group) => total + group.sequences.length, 0);
+}
+
+export function phaseLabel(mode: string | null | undefined): string {
+  switch (mode) {
+    case 'normal':
+      return 'Gesto';
+    case 'neutro':
+      return 'Neutro';
+    case 'espera':
+      return 'Pausa de 1 s';
+    default:
+      return 'En reposo';
+  }
+}
+
+export function sourceHint(source: RuntimeSource): string {
+  switch (source) {
+    case 'turno':
+      return 'Voz o chat';
+    case 'panel':
+      return 'Este panel';
+    case 'estudio':
+      return 'Estudio de movimiento';
+    default:
+      return 'Nadie está enviando';
+  }
 }
 
 export function panelKpis(input: PanelKpiInput): PanelKpis {
@@ -35,5 +63,18 @@ export function panelKpis(input: PanelKpiInput): PanelKpis {
   const ultimoEvento = input.lastLog
     ? `${input.lastLog.timestamp} · ${input.lastLog.sequenceName}`
     : '—';
-  return { estado, origen, secuencias, ultimoEvento };
+  const estadoHint =
+    estado === 'libre'
+      ? 'Puedes lanzar un gesto'
+      : estado === 'ocupado'
+        ? 'Espera o pulsa Detener'
+        : 'Sin conexión con el robot';
+  return {
+    estado,
+    origen,
+    secuencias,
+    ultimoEvento,
+    estadoHint,
+    origenHint: sourceHint(input.runtimeUnreachable ? null : input.source),
+  };
 }

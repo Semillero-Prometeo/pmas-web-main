@@ -30,6 +30,9 @@ describe('admin chrome copy and light surfaces', () => {
       expect(file).not.toContain('#000f1d');
       expect(file).not.toContain('bg-black/60');
     }
+    expect(navbar).toContain('bg-rail');
+    expect(sidebar).toContain('bg-rail');
+    expect(bottom).toContain('bg-rail');
   });
 
   it('keeps health and footer in operator Spanish', () => {

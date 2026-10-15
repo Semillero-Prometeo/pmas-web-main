@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { catalogSequenceCount, panelKpis, PanelKpiInput } from './panel-kpis';
+import { catalogSequenceCount, panelKpis, phaseLabel, sourceHint, PanelKpiInput } from './panel-kpis';
 
 const base: PanelKpiInput = {
   runtimeUnreachable: false,
@@ -18,6 +18,8 @@ describe('panelKpis', () => {
       origen: '—',
       secuencias: '4',
       ultimoEvento: '—',
+      estadoHint: 'Puedes lanzar un gesto',
+      origenHint: 'Nadie está enviando',
     });
   });
 
@@ -29,6 +31,8 @@ describe('panelKpis', () => {
       origen: 'turno',
       secuencias: '4',
       ultimoEvento: '—',
+      estadoHint: 'Espera o pulsa Detener',
+      origenHint: 'Voz o chat',
     });
   });
 
@@ -40,6 +44,8 @@ describe('panelKpis', () => {
       origen: '—',
       secuencias: '4',
       ultimoEvento: '—',
+      estadoHint: 'Sin conexión con el robot',
+      origenHint: 'Nadie está enviando',
     });
   });
 
@@ -55,6 +61,22 @@ describe('panelKpis', () => {
         lastLog: { timestamp: '18:01:02', sequenceName: 'saludo normal' },
       }).ultimoEvento,
     ).toBe('18:01:02 · saludo normal');
+  });
+});
+
+describe('phaseLabel', () => {
+  it('speaks Spanish for each hardware phase', () => {
+    expect(phaseLabel('normal')).toBe('Gesto');
+    expect(phaseLabel('neutro')).toBe('Neutro');
+    expect(phaseLabel('espera')).toBe('Pausa de 1 s');
+    expect(phaseLabel(null)).toBe('En reposo');
+  });
+});
+
+describe('sourceHint', () => {
+  it('explains who is sending', () => {
+    expect(sourceHint('panel')).toBe('Este panel');
+    expect(sourceHint(null)).toBe('Nadie está enviando');
   });
 });
 
