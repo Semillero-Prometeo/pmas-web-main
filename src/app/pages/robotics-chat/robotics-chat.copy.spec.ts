@@ -32,4 +32,14 @@ describe('robotics chat tabs', () => {
     expect(html).not.toMatch(/sendChat\(\)[\s\S]{0,500}text-slate-600/);
     expect(html).toMatch(/sendChat\(\)[\s\S]{0,400}bg-primary/);
   });
+
+  it('drops dark-theme leftovers that vanish on the cool paper', () => {
+    expect(html).not.toMatch(/slate-\d|white\/\d|rose-\d|text-\[\d+px\]|text-outline\b|#41484d/);
+  });
+
+  it('keeps fuente, gesture name and id, and Sin movimiento in the robot bubble', () => {
+    expect(html).toContain('Fuente: {{ msg.fuente }}');
+    expect(html).toContain('{{ mov.name }} · {{ mov.id }}');
+    expect(html).toContain('Sin movimiento');
+  });
 });
