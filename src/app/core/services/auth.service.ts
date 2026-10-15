@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { catchError, switchMap, tap, throwError } from 'rxjs';
 import { GATEWAY_URL } from '../constants/gateway';
 import { LoginRequest, LoginResponse, UserProfile, UserRole } from '../models/auth.models';
+import { tokenIsUnexpired } from './jwt-exp';
 const TOKEN_KEY = 'prometeo_token';
 const ROLE_KEY = 'prometeo_active_role';
 
@@ -25,7 +26,10 @@ export class AuthService {
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
 
-  readonly isAuthenticated = computed(() => !!this._token());
+  readonly isAuthenticated = computed(() => {
+    const t = this._token();
+    return !!t && tokenIsUnexpired(t);
+  });
   readonly displayName = computed(() => {
     const p = this._profile()?.person;
     if (p) return `${p.first_name} ${p.last_name}`;
