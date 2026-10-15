@@ -73,9 +73,13 @@ export class VisionWebSocketService {
       this.connectionState.set('error');
     };
 
-    ws.onclose = () => {
+    ws.onclose = (ev: CloseEvent) => {
       if (this.socket === ws) {
         this.socket = null;
+      }
+      if (ev.code === 4001) {
+        this.auth.logout('expired');
+        return;
       }
       if (this.connectionState() === 'connected') {
         this.connectionState.set('idle');

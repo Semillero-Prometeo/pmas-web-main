@@ -21,6 +21,7 @@ import { RoboticsBottomNav } from '../../components/robotics-bottom-nav/robotics
 import { Sidebar } from '../../components/sidebar/sidebar';
 import type { SidebarItem } from '../../components/sidebar/sidebar';
 import { AdminChromeService } from '../../core/services/admin-chrome.service';
+import { AuthService } from '../../core/services/auth.service';
 import { LanShareService } from '../../core/services/lan-share.service';
 
 @Component({
@@ -32,6 +33,7 @@ export class AdminShell implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   readonly chrome = inject(AdminChromeService);
+  private readonly auth = inject(AuthService);
   private readonly lanShare = inject(LanShareService);
 
   readonly compact = signal(environment.compactMode);
@@ -54,6 +56,9 @@ export class AdminShell implements OnInit {
   });
 
   ngOnInit(): void {
+    if (this.auth.token() && !this.auth.profile()) {
+      this.auth.loadProfile().subscribe({ error: () => undefined });
+    }
     this.router.events
       .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
       .subscribe(() => this.syncSidebarFromRoute());
