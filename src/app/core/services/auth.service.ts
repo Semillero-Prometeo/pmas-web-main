@@ -7,6 +7,7 @@ import { LoginRequest, LoginResponse, UserProfile, UserRole } from '../models/au
 import { tokenIsUnexpired } from './jwt-exp';
 const TOKEN_KEY = 'prometeo_token';
 const ROLE_KEY = 'prometeo_active_role';
+export const LOGIN_FLASH_KEY = 'prometeo_login_flash';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -91,7 +92,7 @@ export class AuthService {
     return this.http.get<UserProfile>(`${GATEWAY_URL}/auth/me`).pipe(
       tap(profile => this._profile.set(profile)),
       catchError(() => {
-        this.logout();
+        this.logout('expired');
         return throwError(() => new Error('Session expired'));
       })
     );
@@ -104,7 +105,10 @@ export class AuthService {
     this._roleSelected.set(true);
   }
 
-  logout() {
+  logout(reason?: 'expired') {
+    if (reason === 'expired') {
+      sessionStorage.setItem(LOGIN_FLASH_KEY, 'expired');
+    }
     this._token.set(null);
     this._profile.set(null);
     this._roleSelected.set(false);

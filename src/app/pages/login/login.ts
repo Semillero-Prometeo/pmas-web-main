@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../../core/services/auth.service';
+import { AuthService, LOGIN_FLASH_KEY } from '../../core/services/auth.service';
 import { Navbar } from '../../components/navbar/navbar';
 
 @Component({
@@ -17,9 +17,18 @@ export class Login {
   password = signal('');
   showPassword = signal(false);
   loginDone = signal(false);
+  sessionExpired = signal(false);
 
   readonly isLoading = this.auth.loading;
   readonly serverError = this.auth.error;
+
+  constructor() {
+    if (this.auth.token() && !this.auth.isAuthenticated()) {
+      this.auth.logout('expired');
+    }
+    this.sessionExpired.set(sessionStorage.getItem(LOGIN_FLASH_KEY) === 'expired');
+    sessionStorage.removeItem(LOGIN_FLASH_KEY);
+  }
 
   handleSubmit() {
     if (!this.email() || !this.password()) return;

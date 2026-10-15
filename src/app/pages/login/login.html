@@ -77,6 +77,15 @@
           </p>
         </div>
 
+        @if (sessionExpired()) {
+          <div class="mb-6 flex items-start gap-3 p-4 bg-error-container rounded-lg border border-error/30" role="alert">
+            <span class="material-symbols-outlined text-error mt-0.5" style="font-size: 1.1rem;">schedule</span>
+            <p class="text-sm text-on-error-container leading-relaxed">
+              Tu sesión venció. Entra de nuevo.
+            </p>
+          </div>
+        }
+
         <form (ngSubmit)="handleSubmit()" #loginForm="ngForm" class="space-y-6">
 
           <div class="space-y-2">

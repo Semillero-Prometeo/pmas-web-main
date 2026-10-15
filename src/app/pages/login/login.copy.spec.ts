@@ -16,4 +16,10 @@ describe('login operator copy', () => {
     expect(html).not.toContain('text-slate-');
     expect(html).not.toContain('text-blue-400');
   });
+
+  it('tells the operator when the session expired', () => {
+    expect(html).toContain('Tu sesión venció. Entra de nuevo.');
+    expect(html).toContain('sessionExpired');
+    expect(html).toContain('schedule');
+  });
 });
