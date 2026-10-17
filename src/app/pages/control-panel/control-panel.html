@@ -12,6 +12,10 @@
         Mira si el robot está libre, lanza un gesto por categoría o detén lo que va al hardware.
       </p>
     </div>
+    <p class="ml-auto flex items-center gap-2 rounded-full border border-outline px-3 py-1 text-xs font-semibold">
+      <span class="size-2 rounded-full" [class]="arduinoStatus().connected ? 'bg-secondary' : 'bg-on-surface-variant'"></span>
+      {{ arduinoStatus().label }}
+    </p>
   </header>
 
   <section class="mb-8 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3" aria-label="Estado del robot">
@@ -147,7 +151,7 @@
                             <p class="mt-1 text-xs text-on-surface-variant leading-snug break-words">{{ sequence.description }}</p>
                           }
                         </div>
-                        <div class="grid grid-cols-2 gap-2 sm:w-64 shrink-0">
+                        <div class="grid gap-2 sm:w-64 shrink-0" [class]="hasNeutroTrack(sequence) ? 'grid-cols-2' : 'grid-cols-1'">
                           <button
                             type="button"
                             (click)="executePhase(sequence.name, 'normal')"
@@ -157,15 +161,17 @@
                             <span class="material-symbols-outlined" style="font-size: 1.1rem;">play_arrow</span>
                             Normal
                           </button>
-                          <button
-                            type="button"
-                            (click)="executePhase(sequence.name, 'neutro')"
-                            [disabled]="playLocked()"
-                            [attr.aria-label]="'Ejecutar neutro de ' + displaySequenceName(sequence.name)"
-                            class="flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-secondary/30 bg-secondary/15 hover:bg-secondary/25 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold text-on-secondary-container">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">restart_alt</span>
-                            Neutro
-                          </button>
+                          @if (hasNeutroTrack(sequence)) {
+                            <button
+                              type="button"
+                              (click)="executePhase(sequence.name, 'neutro')"
+                              [disabled]="playLocked()"
+                              [attr.aria-label]="'Ejecutar neutro de ' + displaySequenceName(sequence.name)"
+                              class="flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-secondary/30 bg-secondary/15 hover:bg-secondary/25 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold text-on-secondary-container">
+                              <span class="material-symbols-outlined" style="font-size: 1.1rem;">restart_alt</span>
+                              Neutro
+                            </button>
+                          }
                         </div>
                       </div>
                     </li>

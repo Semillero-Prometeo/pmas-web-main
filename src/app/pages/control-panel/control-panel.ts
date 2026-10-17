@@ -9,10 +9,12 @@ import {
   CATEGORY_LABELS,
   CATEGORY_ORDER,
   groupByCategory,
+  hasNeutroTrack,
   isPlayableSequence,
   PlayableSequence,
   SequenceCategory,
 } from './sequence-groups';
+import { formatArduinoStatus } from './arduino-status';
 import { catalogSequenceCount, panelKpis, phaseLabel, sourceHint } from './panel-kpis';
 
 interface MotionBlock {
@@ -81,7 +83,10 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
   private http = inject(HttpClient);
   health = inject(HealthService);
   private runtimeTimer: ReturnType<typeof setTimeout> | null = null;
+  private arduinoTimer: ReturnType<typeof setTimeout> | null = null;
   private logCounter = 0;
+  readonly hasNeutroTrack = hasNeutroTrack;
+  arduinoStatus = signal(formatArduinoStatus([]));
 
   sequenceGroups = signal(groupByCategory([]));
   sequenceLoading = signal(true);
@@ -141,6 +146,7 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
     this.health.checkAll();
     this.loadSequences();
     this.pollRuntime();
+    this.pollArduinos();
   }
 
   ngOnDestroy() {
@@ -148,6 +154,18 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
       clearTimeout(this.runtimeTimer);
       this.runtimeTimer = null;
     }
+    if (this.arduinoTimer) {
+      clearTimeout(this.arduinoTimer);
+      this.arduinoTimer = null;
+    }
+  }
+
+  private pollArduinos() {
+    this.http.get<{ arduino_id: number; port: string }[]>(`${GATEWAY_URL}/sequence/arduinos`).subscribe({
+      next: (list) => this.arduinoStatus.set(formatArduinoStatus(list ?? [])),
+      error: () => this.arduinoStatus.set(formatArduinoStatus([])),
+    });
+    this.arduinoTimer = setTimeout(() => this.pollArduinos(), 5000);
   }
 
   loadSequences() {

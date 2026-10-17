@@ -39,10 +39,12 @@ export function isPlayableSequence(sequence: PlayableSequence): boolean {
   return (
     CATEGORY_ORDER.includes(sequence.category as SequenceCategory) &&
     Array.isArray(sequence.blocks) &&
-    sequence.blocks.length > 0 &&
-    Array.isArray(sequence.blocks_neutro) &&
-    sequence.blocks_neutro.length > 0
+    sequence.blocks.length > 0
   );
+}
+
+export function hasNeutroTrack(sequence: { blocks_neutro?: unknown[] }): boolean {
+  return Array.isArray(sequence.blocks_neutro) && sequence.blocks_neutro.length > 0;
 }
 
 export function groupByCategory(sequences: PlayableSequence[]) {
