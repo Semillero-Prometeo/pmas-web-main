@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateNeutroFrom, parseOriginText, shouldSkipLegacyNeutroFile } from './origin-sequence';
+import { generateNeutroFrom, parseOriginText } from './origin-sequence';
 
 const ABRAZOIZQ: [number, number, number, number, number, number, string][] = [
   [1, 14, 0.0, 2, 650, 3, 'P0_S1'],
@@ -8,15 +8,14 @@ const ABRAZOIZQ: [number, number, number, number, number, number, string][] = [
 ];
 
 describe('parseOriginText', () => {
-  it('reads a Qt 7-tuple list and generates neutro', () => {
+  it('reads a Qt 7-tuple list without generating neutro', () => {
     const parsed = parseOriginText(JSON.stringify(ABRAZOIZQ), 'ABRAZOIZQ 7.1', 0);
     expect(parsed.error).toBeNull();
     expect(parsed.name).toBe('ABRAZOIZQ 7.1');
     expect(parsed.description).toBe('');
     expect(parsed.category).toBeNull();
     expect(parsed.blocks).toEqual(ABRAZOIZQ);
-    expect(parsed.blocksNeutro.length).toBeGreaterThan(0);
-    expect(parsed.blocksNeutro).not.toEqual(parsed.blocks);
+    expect(parsed.blocksNeutro).toEqual([]);
   });
 
   it('keeps an origin pair without regenerating neutro', () => {
@@ -36,7 +35,7 @@ describe('parseOriginText', () => {
     expect(parsed.blocksNeutro).toEqual([[0, 0, 0.0, 2, 500, 5, 'P0_S0']]);
   });
 
-  it('generates neutro when origin has blocks but no neutro track', () => {
+  it('leaves origin without neutro track empty', () => {
     const parsed = parseOriginText(
       JSON.stringify({
         name: 'saludo',
@@ -45,21 +44,12 @@ describe('parseOriginText', () => {
       'archivo',
       1,
     );
-    expect(parsed.error).toBeNull();
-    expect(parsed.blocksNeutro.length).toBeGreaterThan(0);
+    expect(parsed.blocksNeutro).toEqual([]);
   });
 
   it('rejects neither-list-nor-origin', () => {
     const parsed = parseOriginText('{"foo": 1}', 'x', 0);
     expect(parsed.error).toBeTruthy();
-  });
-});
-
-describe('shouldSkipLegacyNeutroFile', () => {
-  it('skips companion NEUTRO names', () => {
-    expect(shouldSkipLegacyNeutroFile('ABRAZOIZQ NEUTRO 7.1')).toBe(true);
-    expect(shouldSkipLegacyNeutroFile('brazoizq con guino neutro 7.0')).toBe(true);
-    expect(shouldSkipLegacyNeutroFile('ABRAZOIZQ 7.1')).toBe(false);
   });
 });
 

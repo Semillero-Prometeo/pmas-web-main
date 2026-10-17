@@ -78,10 +78,6 @@ export function generateNeutroFrom(tuples: OriginTuple[]): OriginTuple[] {
     .map(({ row }) => row);
 }
 
-export function shouldSkipLegacyNeutroFile(fileBaseName: string): boolean {
-  return /\bneutro\b/i.test(fileBaseName);
-}
-
 export function parseOriginText(
   raw: string,
   fileBaseName: string,
@@ -96,7 +92,7 @@ export function parseOriginText(
         description: '',
         category: null,
         blocks,
-        blocksNeutro: generateNeutroFrom(blocks),
+        blocksNeutro: [],
         error: null,
       };
     }
@@ -113,10 +109,7 @@ export function parseOriginText(
       const category = typeof body.category === 'string' ? body.category : null;
       const blocks = body.blocks.map((entry, index) => toTuple(entry, index));
       const neutroRaw = Array.isArray(body.blocks_neutro) ? body.blocks_neutro : [];
-      const blocksNeutro =
-        neutroRaw.length > 0
-          ? neutroRaw.map((entry, index) => toTuple(entry, index))
-          : generateNeutroFrom(blocks);
+      const blocksNeutro = neutroRaw.length > 0 ? neutroRaw.map((entry, index) => toTuple(entry, index)) : [];
       return {
         name,
         description,
