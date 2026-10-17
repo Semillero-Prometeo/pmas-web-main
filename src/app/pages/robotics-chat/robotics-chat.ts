@@ -19,6 +19,12 @@ const CHAT_MESSAGES_STORAGE_KEY = 'prometeo_robotics_chat_messages_v1';
 const MAX_STORED_CHAT_MESSAGES = 250;
 
 type Tab = 'chatbot' | 'decir';
+type ChatModel = 'basico' | 'complejo';
+
+interface ChatRouteState {
+  automationEnabled: boolean;
+  selectedModel: ChatModel;
+}
 
 interface ChatMessage {
   from: 'user' | 'robot';
@@ -77,6 +83,9 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
 
   activeTab = signal<Tab>('chatbot');
   compact = signal(environment.compactMode);
+  chatRoute = signal<ChatRouteState | null>(null);
+  routeBusy = signal(false);
+  readonly isAdmin = computed(() => this.auth.activeRoleName() === 'ADMIN');
 
   // ── Chatbot IA ──
   chatMessages = signal<ChatMessage[]>([]);
@@ -431,9 +440,41 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   ngOnInit() {
     this.restoreChatMessages();
     this.setupSpeechRecognition();
+    this.loadChatRoute();
 
     const params = this.route.snapshot.queryParamMap;
     if (params.get('tab') === 'decir') this.activeTab.set('decir');
+  }
+
+  loadChatRoute() {
+    this.http.get<ChatRouteState>(`${GATEWAY_URL}/chat/route`).subscribe({
+      next: (state) => this.chatRoute.set(state),
+      error: () => this.chatRoute.set({ automationEnabled: true, selectedModel: 'complejo' }),
+    });
+  }
+
+  setAutomation(enabled: boolean) {
+    if (!this.isAdmin() || this.routeBusy()) return;
+    this.routeBusy.set(true);
+    this.http.patch<ChatRouteState>(`${GATEWAY_URL}/chat/route/automation`, { enabled }).subscribe({
+      next: (state) => {
+        this.chatRoute.set(state);
+        this.routeBusy.set(false);
+      },
+      error: () => this.routeBusy.set(false),
+    });
+  }
+
+  setModel(model: ChatModel) {
+    if (this.routeBusy()) return;
+    this.routeBusy.set(true);
+    this.http.patch<ChatRouteState>(`${GATEWAY_URL}/chat/route/model`, { model }).subscribe({
+      next: (state) => {
+        this.chatRoute.set(state);
+        this.routeBusy.set(false);
+      },
+      error: () => this.routeBusy.set(false),
+    });
   }
 
   ngAfterViewChecked() {

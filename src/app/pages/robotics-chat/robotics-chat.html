@@ -32,6 +32,16 @@
         <span class="w-1.5 h-1.5 rounded-full bg-secondary shrink-0"></span>
         <span class="text-on-surface-variant">R-ONE en línea</span>
       </div>
+      @if (activeTab() === 'chatbot' && isAdmin()) {
+        <label class="flex items-center gap-2 text-xs font-semibold text-on-surface">
+          <input
+            type="checkbox"
+            [ngModel]="chatRoute()?.automationEnabled ?? true"
+            (ngModelChange)="setAutomation($event)"
+            [disabled]="routeBusy()" />
+          Turnos automáticos
+        </label>
+      }
       <div class="flex sm:flex-1 sm:justify-end">
         <button
           type="button"
@@ -182,6 +192,21 @@
 
         <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 sm:gap-3">
           <div class="flex-1 relative">
+            @if (chatRoute(); as currentRoute) {
+              <label class="mb-2 block text-xs font-semibold text-on-surface">
+                Modelo
+                <select
+                  class="mt-1 w-full min-h-10 rounded-lg border border-outline bg-surface-container-low px-3 py-2 text-sm"
+                  [ngModel]="currentRoute.selectedModel"
+                  (ngModelChange)="setModel($event)"
+                  [disabled]="routeBusy()">
+                  <option value="basico">Básico (OpenAI)</option>
+                  @if (currentRoute.automationEnabled) {
+                    <option value="complejo">Complejo (turno)</option>
+                  }
+                </select>
+              </label>
+            }
             <textarea
               [rows]="compact() ? 3 : 5"
               maxlength="500"
