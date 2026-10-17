@@ -5,7 +5,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { GATEWAY_URL } from '../../core/constants/gateway';
 import { MOTION_STUDIO_URL } from '../../core/constants/motion-studio';
 import { AuthService } from '../../core/services/auth.service';
-import { OriginTuple, parseOriginText } from './origin-sequence';
+import { CATEGORIES, OriginTuple, parseOriginText, shouldSkipLegacyNeutroFile } from './origin-sequence';
 
 interface ArduinoDevice {
   arduino_id: number;
@@ -22,6 +22,7 @@ interface OriginImportItem {
   arduino_id: number | null;
   tupleBlocks: OriginTuple[];
   tupleBlocksNeutro: OriginTuple[];
+  omitted: boolean;
   error: string | null;
 }
 
@@ -43,6 +44,7 @@ export class Sequences {
   statusMessage = signal('Listo');
   legacyImportOpen = signal(false);
   legacyItems = signal<OriginImportItem[]>([]);
+  readonly categories = CATEGORIES;
 
   constructor() {
     this.refreshArduinos();
@@ -121,10 +123,21 @@ export class Sequences {
     );
   }
 
+  updateLegacyItemCategory(index: number, category: string) {
+    this.legacyItems.update((items) =>
+      items.map((item, idx) => (idx === index ? { ...item, category } : item)),
+    );
+  }
+
   importLegacyItems() {
     const items = this.legacyItems();
     const validItems = items.filter(
-      (item) => item.error === null && item.arduino_id !== null && item.targetName.trim().length > 0,
+      (item) =>
+        item.error === null &&
+        item.omitted === false &&
+        item.category !== null &&
+        item.arduino_id !== null &&
+        item.targetName.trim().length > 0,
     );
     if (!validItems.length) {
       this.statusMessage.set('No hay archivos legacy válidos para importar');
@@ -163,6 +176,21 @@ export class Sequences {
       reader.onload = () => {
         const relativePath = this.getFileRelativePath(file);
         const fileBaseName = relativePath.replace(/\.json$/i, '');
+        if (shouldSkipLegacyNeutroFile(fileBaseName)) {
+          resolve({
+            sourceFileName: file.name,
+            sourceRelativePath: relativePath,
+            targetName: fileBaseName,
+            description: '',
+            category: null,
+            arduino_id: defaultArduinoId,
+            tupleBlocks: [],
+            tupleBlocksNeutro: [],
+            omitted: true,
+            error: null,
+          });
+          return;
+        }
         const parsed = parseOriginText(String(reader.result ?? ''), fileBaseName, defaultArduinoId);
         resolve({
           sourceFileName: file.name,
@@ -173,6 +201,7 @@ export class Sequences {
           arduino_id: defaultArduinoId,
           tupleBlocks: parsed.blocks,
           tupleBlocksNeutro: parsed.blocksNeutro,
+          omitted: false,
           error: parsed.error,
         });
       };
@@ -187,6 +216,7 @@ export class Sequences {
           arduino_id: defaultArduinoId,
           tupleBlocks: [],
           tupleBlocksNeutro: [],
+          omitted: false,
           error: 'No se pudo leer el archivo',
         });
       };
