@@ -5,7 +5,8 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { GATEWAY_URL } from '../../core/constants/gateway';
 import { MOTION_STUDIO_URL } from '../../core/constants/motion-studio';
 import { AuthService } from '../../core/services/auth.service';
-import { CATEGORIES, OriginTuple, parseOriginText, shouldSkipLegacyNeutroFile } from './origin-sequence';
+import { isNeutroFileName, suggestNeutroPath } from './origin-pair';
+import { CATEGORIES, OriginTuple, parseOriginText } from './origin-sequence';
 
 interface ArduinoDevice {
   arduino_id: number;
@@ -16,13 +17,15 @@ interface ArduinoDevice {
 interface OriginImportItem {
   sourceFileName: string;
   sourceRelativePath: string;
+  fileBaseName: string;
+  kind: 'gesture' | 'neutro' | 'error';
   targetName: string;
   description: string;
   category: string | null;
   arduino_id: number | null;
   tupleBlocks: OriginTuple[];
-  tupleBlocksNeutro: OriginTuple[];
-  omitted: boolean;
+  embeddedNeutro: OriginTuple[];
+  neutroSourcePath: string | null;
   error: string | null;
 }
 
@@ -108,7 +111,32 @@ export class Sequences {
     if (!files?.length) return;
     const selectedArduino = this.selectedArduinoId();
     const readers = Array.from(files).map((file) => this.parseOriginFile(file, selectedArduino));
-    Promise.all(readers).then((items) => this.legacyItems.set(items));
+    Promise.all(readers).then((incoming) => {
+      const existing = this.legacyItems();
+      const merged = this.mergeImportItems(existing, incoming);
+      this.legacyItems.set(this.applySuggestedPairs(merged));
+    });
+  }
+
+  gestureItems(): OriginImportItem[] {
+    return this.legacyItems().filter((item) => item.kind === 'gesture');
+  }
+
+  neutroItems(): OriginImportItem[] {
+    return this.legacyItems().filter((item) => item.kind === 'neutro');
+  }
+
+  availableNeutrosFor(index: number): OriginImportItem[] {
+    const items = this.legacyItems();
+    const current = items[index];
+    const used = new Set(
+      items
+        .filter((item, idx) => idx !== index && item.kind === 'gesture' && item.neutroSourcePath)
+        .map((item) => item.neutroSourcePath as string),
+    );
+    return this.neutroItems().filter(
+      (neutro) => !used.has(neutro.sourceRelativePath) || current?.neutroSourcePath === neutro.sourceRelativePath,
+    );
   }
 
   updateLegacyItemName(index: number, targetName: string) {
@@ -129,12 +157,24 @@ export class Sequences {
     );
   }
 
+  updateLegacyItemNeutro(index: number, path: string | null) {
+    this.legacyItems.update((items) => {
+      if (path && path !== '__embedded__') {
+        const taken = items.some(
+          (item, idx) => idx !== index && item.kind === 'gesture' && item.neutroSourcePath === path,
+        );
+        if (taken) return items;
+      }
+      return items.map((item, idx) => (idx === index ? { ...item, neutroSourcePath: path } : item));
+    });
+  }
+
   importLegacyItems() {
     const items = this.legacyItems();
     const validItems = items.filter(
       (item) =>
+        item.kind === 'gesture' &&
         item.error === null &&
-        item.omitted === false &&
         item.category !== null &&
         item.arduino_id !== null &&
         item.targetName.trim().length > 0,
@@ -144,13 +184,21 @@ export class Sequences {
       return;
     }
 
-    Promise.all(validItems.map((item) => this.importSingleOrigin(item))).then(() => {
+    Promise.all(validItems.map((item) => this.importSingleOrigin(item, items))).then(() => {
       this.statusMessage.set('Importación legacy finalizada');
-      this.closeLegacyImport();
     });
   }
 
-  private importSingleOrigin(item: OriginImportItem): Promise<void> {
+  private resolveNeutroBlocks(item: OriginImportItem, items: OriginImportItem[]): OriginTuple[] {
+    if (item.neutroSourcePath === '__embedded__') return item.embeddedNeutro;
+    if (!item.neutroSourcePath) return [];
+    const match = items.find(
+      (candidate) => candidate.kind === 'neutro' && candidate.sourceRelativePath === item.neutroSourcePath,
+    );
+    return match?.tupleBlocks ?? [];
+  }
+
+  private importSingleOrigin(item: OriginImportItem, items: OriginImportItem[]): Promise<void> {
     const payload = {
       sequence: {
         name: item.targetName.trim(),
@@ -158,7 +206,7 @@ export class Sequences {
         category: item.category,
         arduino_id: item.arduino_id,
         blocks: item.tupleBlocks,
-        blocks_neutro: item.tupleBlocksNeutro,
+        blocks_neutro: this.resolveNeutroBlocks(item, items),
       },
       overwrite: true,
     };
@@ -170,53 +218,113 @@ export class Sequences {
     });
   }
 
+  private mergeImportItems(existing: OriginImportItem[], incoming: OriginImportItem[]): OriginImportItem[] {
+    const byPath = new Map(existing.map((item) => [item.sourceRelativePath, item]));
+    for (const item of incoming) {
+      if (!byPath.has(item.sourceRelativePath)) {
+        byPath.set(item.sourceRelativePath, item);
+      }
+    }
+    return [...byPath.values()];
+  }
+
+  private applySuggestedPairs(items: OriginImportItem[]): OriginImportItem[] {
+    const neutros = items.filter((item) => item.kind === 'neutro');
+    const used = new Set(
+      items
+        .filter((item) => item.kind === 'gesture' && item.neutroSourcePath && item.neutroSourcePath !== '__embedded__')
+        .map((item) => {
+          const match = neutros.find((neutro) => neutro.sourceRelativePath === item.neutroSourcePath);
+          return match?.fileBaseName;
+        })
+        .filter((name): name is string => Boolean(name)),
+    );
+    return items.map((item) => {
+      if (item.kind !== 'gesture' || item.neutroSourcePath) return item;
+      const suggested = suggestNeutroPath(
+        item.fileBaseName,
+        neutros.map((neutro) => neutro.fileBaseName).filter((name) => !used.has(name)),
+      );
+      if (!suggested) {
+        return { ...item, neutroSourcePath: item.embeddedNeutro.length ? '__embedded__' : null };
+      }
+      used.add(suggested);
+      const match = neutros.find((neutro) => neutro.fileBaseName === suggested);
+      return { ...item, neutroSourcePath: match?.sourceRelativePath ?? null };
+    });
+  }
+
   private parseOriginFile(file: File, defaultArduinoId: number | null): Promise<OriginImportItem> {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = () => {
         const relativePath = this.getFileRelativePath(file);
         const fileBaseName = relativePath.replace(/\.json$/i, '');
-        if (shouldSkipLegacyNeutroFile(fileBaseName)) {
+        const parsed = parseOriginText(String(reader.result ?? ''), fileBaseName, defaultArduinoId);
+        if (parsed.error) {
           resolve({
             sourceFileName: file.name,
             sourceRelativePath: relativePath,
+            fileBaseName,
+            kind: 'error',
             targetName: fileBaseName,
             description: '',
             category: null,
             arduino_id: defaultArduinoId,
             tupleBlocks: [],
-            tupleBlocksNeutro: [],
-            omitted: true,
+            embeddedNeutro: [],
+            neutroSourcePath: null,
+            error: parsed.error,
+          });
+          return;
+        }
+        if (isNeutroFileName(fileBaseName)) {
+          resolve({
+            sourceFileName: file.name,
+            sourceRelativePath: relativePath,
+            fileBaseName,
+            kind: 'neutro',
+            targetName: fileBaseName,
+            description: '',
+            category: null,
+            arduino_id: defaultArduinoId,
+            tupleBlocks: parsed.blocks,
+            embeddedNeutro: [],
+            neutroSourcePath: null,
             error: null,
           });
           return;
         }
-        const parsed = parseOriginText(String(reader.result ?? ''), fileBaseName, defaultArduinoId);
         resolve({
           sourceFileName: file.name,
           sourceRelativePath: relativePath,
+          fileBaseName,
+          kind: 'gesture',
           targetName: parsed.name,
           description: parsed.description,
           category: parsed.category,
           arduino_id: defaultArduinoId,
           tupleBlocks: parsed.blocks,
-          tupleBlocksNeutro: parsed.blocksNeutro,
-          omitted: false,
-          error: parsed.error,
+          embeddedNeutro: parsed.blocksNeutro,
+          neutroSourcePath: null,
+          error: null,
         });
       };
       reader.onerror = () => {
         const relativePath = this.getFileRelativePath(file);
+        const fileBaseName = relativePath.replace(/\.json$/i, '');
         resolve({
           sourceFileName: file.name,
           sourceRelativePath: relativePath,
-          targetName: relativePath.replace(/\.json$/i, ''),
+          fileBaseName,
+          kind: 'error',
+          targetName: fileBaseName,
           description: '',
           category: null,
           arduino_id: defaultArduinoId,
           tupleBlocks: [],
-          tupleBlocksNeutro: [],
-          omitted: false,
+          embeddedNeutro: [],
+          neutroSourcePath: null,
           error: 'No se pudo leer el archivo',
         });
       };

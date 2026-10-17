@@ -24,14 +24,14 @@
 
 @if (legacyImportOpen()) {
   <div class="fixed inset-0 z-40 bg-black/50" (click)="closeLegacyImport()"></div>
-  <div class="fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-white/10 p-6 max-h-[60vh] overflow-auto">
+  <div class="fixed inset-2 md:inset-8 z-50 bg-surface border border-white/10 rounded-xl p-6 max-h-[92vh] overflow-auto">
     <div class="max-w-6xl mx-auto">
       <div class="flex items-center justify-between mb-4">
         <h3 class="font-headline text-lg font-bold text-on-surface">Importar JSON</h3>
         <button (click)="closeLegacyImport()" class="text-slate-400 hover:text-on-surface cursor-pointer">Cerrar</button>
       </div>
       <p class="text-xs text-slate-400 mb-4">
-        Listas del software original (7-tuplas) o origen nuevo. Elige categoría y Arduino por fila. Los archivos NEUTRO se omiten.
+        Listas del software original o origen nuevo. Los archivos NEUTRO se emparejan por nombre. Puedes cambiar el par o dejar el gesto sin neutro. Sigue eligiendo archivos sin cerrar.
       </p>
 
       <div class="flex items-center gap-3 mb-4">
@@ -41,49 +41,68 @@
         </button>
       </div>
 
+      @if (neutroItems().length) {
+        <p class="text-xs text-on-surface-variant mb-3">Neutros en el lote ({{ neutroItems().length }})</p>
+      }
+
       <div class="space-y-3">
-        @for (item of legacyItems(); track item.sourceFileName; let i = $index) {
-          <div class="border border-white/10 rounded-lg p-3">
-            <div class="text-xs text-slate-500 mb-2">{{ item.sourceRelativePath }}</div>
-            @if (item.omitted) {
-              <div class="text-xs text-outline">Archivo NEUTRO omitido</div>
-            } @else if (item.error) {
-              <div class="text-xs text-red-400">{{ item.error }}</div>
-            } @else {
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <label class="text-[11px] text-slate-400">
-                  Nombre
-                  <input
-                    [ngModel]="item.targetName"
-                    (ngModelChange)="updateLegacyItemName(i, $event)"
-                    class="w-full mt-1 rounded bg-surface-container-high border border-white/10 px-2 py-1 text-sm"/>
-                </label>
-                <label class="text-[11px] text-slate-400">
-                  Arduino
-                  <select
-                    [ngModel]="item.arduino_id"
-                    (ngModelChange)="updateLegacyItemArduino(i, +$event)"
-                    class="w-full mt-1 rounded bg-surface-container-high border border-white/10 px-2 py-1 text-sm">
-                    @for (arduino of arduinos(); track arduino.arduino_id) {
-                      <option [ngValue]="arduino.arduino_id">#{{ arduino.arduino_id }} · {{ arduino.port }}</option>
-                    }
-                  </select>
-                </label>
-                <label class="text-[11px] text-slate-400">
-                  Categoría
-                  <select
-                    [ngModel]="item.category"
-                    (ngModelChange)="updateLegacyItemCategory(i, $event)"
-                    class="w-full mt-1 rounded bg-surface-container-high border border-white/10 px-2 py-1 text-sm">
-                    <option [ngValue]="null">Elegir…</option>
-                    @for (category of categories; track category) {
-                      <option [ngValue]="category">{{ category }}</option>
-                    }
-                  </select>
-                </label>
-              </div>
-            }
-          </div>
+        @for (item of legacyItems(); track item.sourceRelativePath; let i = $index) {
+          @if (item.kind !== 'neutro') {
+            <div class="border border-white/10 rounded-lg p-3">
+              <div class="text-xs text-slate-500 mb-2">{{ item.sourceRelativePath }}</div>
+              @if (item.error) {
+                <div class="text-xs text-red-400">{{ item.error }}</div>
+              } @else {
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <label class="text-[11px] text-slate-400">
+                    Nombre
+                    <input
+                      [ngModel]="item.targetName"
+                      (ngModelChange)="updateLegacyItemName(i, $event)"
+                      class="w-full mt-1 rounded bg-surface-container-high border border-white/10 px-2 py-1 text-sm"/>
+                  </label>
+                  <label class="text-[11px] text-slate-400">
+                    Arduino
+                    <select
+                      [ngModel]="item.arduino_id"
+                      (ngModelChange)="updateLegacyItemArduino(i, +$event)"
+                      class="w-full mt-1 rounded bg-surface-container-high border border-white/10 px-2 py-1 text-sm">
+                      @for (arduino of arduinos(); track arduino.arduino_id) {
+                        <option [ngValue]="arduino.arduino_id">#{{ arduino.arduino_id }} · {{ arduino.port }}</option>
+                      }
+                    </select>
+                  </label>
+                  <label class="text-[11px] text-slate-400">
+                    Categoría
+                    <select
+                      [ngModel]="item.category"
+                      (ngModelChange)="updateLegacyItemCategory(i, $event)"
+                      class="w-full mt-1 rounded bg-surface-container-high border border-white/10 px-2 py-1 text-sm">
+                      <option [ngValue]="null">Elegir…</option>
+                      @for (category of categories; track category) {
+                        <option [ngValue]="category">{{ category }}</option>
+                      }
+                    </select>
+                  </label>
+                  <label class="text-[11px] text-slate-400">
+                    Neutro
+                    <select
+                      [ngModel]="item.neutroSourcePath"
+                      (ngModelChange)="updateLegacyItemNeutro(i, $event)"
+                      class="w-full mt-1 rounded bg-surface-container-high border border-white/10 px-2 py-1 text-sm">
+                      <option [ngValue]="null">Sin neutro</option>
+                      @if (item.embeddedNeutro.length) {
+                        <option [ngValue]="'__embedded__'">Neutro del archivo origen</option>
+                      }
+                      @for (neutro of availableNeutrosFor(i); track neutro.sourceRelativePath) {
+                        <option [ngValue]="neutro.sourceRelativePath">{{ neutro.sourceRelativePath }}</option>
+                      }
+                    </select>
+                  </label>
+                </div>
+              }
+            </div>
+          }
         }
       </div>
     </div>
