@@ -1,6 +1,6 @@
 export type OriginTuple = [number, number, number, number, number, number, string];
 
-const CATEGORIES = [
+export const CATEGORIES = [
   'cara',
   'cuello',
   'brazo_derecho',
@@ -44,6 +44,44 @@ function failed(fileBaseName: string, error: string): OriginParseResult {
   };
 }
 
+export function generateNeutroFrom(tuples: OriginTuple[]): OriginTuple[] {
+  if (!tuples.length) return [];
+  const ordered = tuples.map((item, index) => ({ item, index }));
+  ordered.sort((a, b) => {
+    const start = Number(a.item[2]) - Number(b.item[2]);
+    return start !== 0 ? start : a.index - b.index;
+  });
+  const prev = new Map<string, number>();
+  const undos: { index: number; row: OriginTuple }[] = [];
+  for (const { item, index } of ordered) {
+    const key = `${item[0]}:${item[1]}`;
+    const inicio = Number(item[2]);
+    const dur = Number(item[3]);
+    undos.push({
+      index,
+      row: [item[0], item[1], inicio, dur, prev.has(key) ? prev.get(key)! : 0, item[5], item[6]],
+    });
+    prev.set(key, item[4]);
+  }
+  const tEnd = Math.max(...tuples.map((item) => Number(item[2]) + Number(item[3])));
+  return undos
+    .map(({ index, row }) => {
+      const inicio = Number(row[2]);
+      const dur = Number(row[3]);
+      const next: OriginTuple = [row[0], row[1], tEnd - (inicio + dur), row[3], row[4], row[5], row[6]];
+      return { index, row: next };
+    })
+    .sort((a, b) => {
+      const start = Number(a.row[2]) - Number(b.row[2]);
+      return start !== 0 ? start : b.index - a.index;
+    })
+    .map(({ row }) => row);
+}
+
+export function shouldSkipLegacyNeutroFile(fileBaseName: string): boolean {
+  return /\bneutro\b/i.test(fileBaseName);
+}
+
 export function parseOriginText(
   raw: string,
   fileBaseName: string,
@@ -52,7 +90,15 @@ export function parseOriginText(
   try {
     const parsed: unknown = JSON.parse(raw);
     if (Array.isArray(parsed)) {
-      return failed(fileBaseName, 'Falta categoría o neutro');
+      const blocks = parsed.map((entry, index) => toTuple(entry, index));
+      return {
+        name: fileBaseName,
+        description: '',
+        category: null,
+        blocks,
+        blocksNeutro: generateNeutroFrom(blocks),
+        error: null,
+      };
     }
     if (parsed && typeof parsed === 'object' && Array.isArray((parsed as { blocks?: unknown }).blocks)) {
       const body = parsed as {
@@ -65,23 +111,18 @@ export function parseOriginText(
       const name = typeof body.name === 'string' && body.name.trim() ? body.name.trim() : fileBaseName;
       const description = typeof body.description === 'string' ? body.description : '';
       const category = typeof body.category === 'string' ? body.category : null;
+      const blocks = body.blocks.map((entry, index) => toTuple(entry, index));
       const neutroRaw = Array.isArray(body.blocks_neutro) ? body.blocks_neutro : [];
-      if (!category || !CATEGORIES.includes(category as (typeof CATEGORIES)[number]) || !neutroRaw.length) {
-        return {
-          name,
-          description,
-          category,
-          blocks: [],
-          blocksNeutro: [],
-          error: 'Falta categoría o neutro',
-        };
-      }
+      const blocksNeutro =
+        neutroRaw.length > 0
+          ? neutroRaw.map((entry, index) => toTuple(entry, index))
+          : generateNeutroFrom(blocks);
       return {
         name,
         description,
         category,
-        blocks: body.blocks.map((entry, index) => toTuple(entry, index)),
-        blocksNeutro: neutroRaw.map((entry, index) => toTuple(entry, index)),
+        blocks,
+        blocksNeutro,
         error: null,
       };
     }
