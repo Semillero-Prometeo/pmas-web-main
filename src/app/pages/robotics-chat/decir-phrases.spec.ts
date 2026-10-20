@@ -8,8 +8,8 @@ const items: Phrase[] = [
 ];
 
 describe('filterSpeakPhrases', () => {
-  it('hides inactive phrases', () => {
-    expect(filterSpeakPhrases(items, '').map((item) => item.id)).toEqual([1, 3]);
+  it('hides inactive phrases and lists newest first', () => {
+    expect(filterSpeakPhrases(items, '').map((item) => item.id)).toEqual([3, 1]);
   });
 
   it('matches title or text', () => {

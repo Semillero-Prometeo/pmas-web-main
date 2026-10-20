@@ -14,7 +14,12 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { GATEWAY_URL } from '../../core/constants/gateway';
 import { environment } from '../../../environments/environment';
-import { filterSpeakPhrases, type Phrase, type PhraseCatalog } from './decir-phrases';
+import {
+  filterSpeakPhrases,
+  sortPhrasesNewestFirst,
+  type Phrase,
+  type PhraseCatalog,
+} from './decir-phrases';
 
 const CHAT_MESSAGES_STORAGE_KEY = 'prometeo_robotics_chat_messages_v1';
 const MAX_STORED_CHAT_MESSAGES = 250;
@@ -129,10 +134,12 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   formTitle = signal('');
   formText = signal('');
   formIcon = signal('');
+  detailPhrase = signal<Phrase | null>(null);
 
   readonly filteredDecirQuickOptions = computed(() =>
     filterSpeakPhrases(this.phrases(), this.quickPhraseSearch()),
   );
+  readonly phrasesNewestFirst = computed(() => sortPhrasesNewestFirst(this.phrases()));
 
   private isStoredChatMessage(value: unknown): value is ChatMessage {
     if (!value || typeof value !== 'object') return false;
@@ -322,6 +329,14 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
 
   applyDecirQuick(phrase: Phrase) {
     this.speakDecir(phrase.text);
+  }
+
+  openPhraseDetail(phrase: Phrase) {
+    this.detailPhrase.set(phrase);
+  }
+
+  closePhraseDetail() {
+    this.detailPhrase.set(null);
   }
 
   private speakDecir(text: string) {
