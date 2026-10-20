@@ -1,7 +1,7 @@
-<div class="flex flex-col min-h-[calc(100dvh-8rem)] max-h-[calc(100dvh-8rem)] md:max-h-none md:min-h-[calc(100dvh-6rem)] bg-background industrial-grid">
+<div class="flex flex-col overflow-hidden h-[calc(100dvh-8.5rem)] max-h-[calc(100dvh-8.5rem)] md:h-[calc(100dvh-6rem)] md:max-h-[calc(100dvh-6rem)] bg-background industrial-grid">
 
   <!-- ══ BARRA DE TABS / HEADER ════════════════════════════════════════════ -->
-  <div class="flex flex-col gap-2 px-3 sm:px-4 py-3 border-b border-outline bg-surface flex-shrink-0">
+  <div class="flex flex-col gap-1.5 px-2.5 sm:px-4 py-2 sm:py-3 border-b border-outline bg-surface flex-shrink-0">
     <div class="grid grid-cols-2 gap-2 w-full">
       <button
         type="button"
@@ -9,7 +9,7 @@
         [class]="activeTab() === 'chatbot'
           ? 'bg-primary text-on-primary'
           : 'text-on-surface bg-surface hover:bg-surface-container-high'"
-        class="flex items-center justify-center gap-1.5 min-h-11 sm:min-h-12 px-2 py-2.5 rounded-xl border border-outline
+        class="flex items-center justify-center gap-1.5 min-h-11 px-2 py-2 rounded-xl border border-outline
                font-headline font-bold text-sm tracking-tight transition-colors cursor-pointer">
         <span class="material-symbols-outlined shrink-0" style="font-size: 1.1rem; font-variation-settings: 'FILL' 1;">smart_toy</span>
         <span class="truncate">Chatbot IA</span>
@@ -20,7 +20,7 @@
         [class]="activeTab() === 'decir'
           ? 'bg-primary text-on-primary'
           : 'text-on-surface bg-surface hover:bg-surface-container-high'"
-        class="flex items-center justify-center gap-1.5 min-h-11 sm:min-h-12 px-2 py-2.5 rounded-xl border border-outline
+        class="flex items-center justify-center gap-1.5 min-h-11 px-2 py-2 rounded-xl border border-outline
                font-headline font-bold text-sm tracking-tight transition-colors cursor-pointer">
         <span class="material-symbols-outlined shrink-0" style="font-size: 1.1rem; font-variation-settings: 'FILL' 1;">record_voice_over</span>
         <span class="truncate">Decir Oración</span>
@@ -42,12 +42,27 @@
           Turnos automáticos
         </label>
       }
-      <div class="flex sm:flex-1 sm:justify-end">
+      <div class="flex gap-1 sm:flex-1 sm:justify-end">
+        @if (activeTab() === 'decir') {
+          <button
+            type="button"
+            (click)="decirShowHistory() ? closeDecirHistory() : openDecirHistory()"
+            class="flex min-h-10 items-center gap-1.5 text-xs font-semibold px-2.5 py-2 rounded-lg cursor-pointer"
+            [class]="decirShowHistory()
+              ? 'bg-primary text-on-primary'
+              : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'">
+            <span class="material-symbols-outlined" style="font-size: 0.9rem;">history</span>
+            <span>Historial</span>
+            @if (decirHistory().length > 0) {
+              <span class="min-w-5 rounded-full bg-secondary-container px-1.5 py-0.5 text-center text-[0.65rem] font-bold text-on-secondary-container">{{ decirHistory().length }}</span>
+            }
+          </button>
+        }
         <button
           type="button"
           (click)="activeTab() === 'chatbot' ? clearChat() : clearDecir()"
           class="flex min-h-10 items-center gap-1.5 text-xs font-semibold text-on-surface-variant
-                 hover:text-on-surface transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-surface-container w-full sm:w-auto justify-center sm:justify-start">
+                 hover:text-on-surface transition-colors cursor-pointer px-2.5 py-2 rounded-lg hover:bg-surface-container w-auto justify-center sm:justify-start">
           <span class="material-symbols-outlined" style="font-size: 0.9rem;">delete_sweep</span>
           <span>Limpiar</span>
         </button>
@@ -62,8 +77,8 @@
       <!-- Messages -->
       <div
         #chatScroll
-        class="flex-1 overflow-y-auto py-4 space-y-4"
-        [class]="compact() ? 'px-3 sm:px-5 md:px-6' : 'px-8 py-6 space-y-5'"
+        class="flex-1 overflow-y-auto py-3 space-y-3 sm:py-4 sm:space-y-4"
+        [class]="compact() ? 'px-2.5 sm:px-5 md:px-6' : 'px-8 py-6 space-y-5'"
         style="scrollbar-width: thin; scrollbar-color: #c5d4e0 transparent;">
 
         @if (chatMessages().length === 0) {
@@ -89,8 +104,8 @@
 
           @if (msg.from === 'user') {
             <div class="flex justify-end gap-2">
-              <div [class]="compact() ? 'max-w-[85%] sm:max-w-[72%]' : 'max-w-[78%]'">
-                <div class="bg-primary/15 border border-primary/20 rounded-2xl rounded-tr-sm px-4 py-3">
+              <div [class]="compact() ? 'max-w-[92%] sm:max-w-[72%]' : 'max-w-[78%]'">
+                <div class="bg-primary/15 border border-primary/20 rounded-2xl rounded-tr-sm px-3.5 py-2.5 sm:px-4 sm:py-3">
                   <p class="text-on-surface leading-relaxed whitespace-pre-wrap"
                      [class]="compact() ? 'text-sm' : 'text-base'">{{ msg.text }}</p>
                 </div>
@@ -99,7 +114,7 @@
                   <span class="material-symbols-outlined text-secondary" style="font-size: 0.8rem;">done_all</span>
                 </div>
               </div>
-              <div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0 mt-1">
+              <div class="hidden sm:flex w-8 h-8 rounded-full bg-primary/20 border border-primary/30 items-center justify-center flex-shrink-0 mt-1">
                 <span class="material-symbols-outlined text-primary" style="font-size: 0.9rem;">person</span>
               </div>
             </div>
@@ -107,7 +122,7 @@
 
           @if (msg.from === 'robot') {
             <div class="flex gap-2">
-              <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1 transition-all"
+              <div class="hidden sm:flex w-8 h-8 rounded-full items-center justify-center flex-shrink-0 mt-1 transition-all"
                    [class]="msg.status === 'sending'
                      ? 'bg-secondary/30 border border-secondary/50'
                      : msg.status === 'error'
@@ -117,8 +132,8 @@
                       [class]="msg.status === 'sending' ? 'text-secondary' : msg.status === 'error' ? 'text-error' : 'text-on-surface-variant'"
                       style="font-size: 0.9rem; font-variation-settings: 'FILL' 1;">smart_toy</span>
               </div>
-              <div [class]="compact() ? 'max-w-[85%] sm:max-w-[72%]' : 'max-w-[78%]'">
-                <div class="rounded-2xl rounded-tl-sm px-4 py-3 transition-all"
+              <div [class]="compact() ? 'max-w-[92%] sm:max-w-[72%]' : 'max-w-[78%]'">
+                <div class="rounded-2xl rounded-tl-sm px-3.5 py-2.5 sm:px-4 sm:py-3 transition-all"
                      [class]="msg.status === 'sending'
                        ? 'bg-secondary/10 border border-secondary/25'
                        : msg.status === 'error'
@@ -167,11 +182,11 @@
       </div>
 
       <!-- Input area -->
-      <div class="border-t border-outline bg-surface-container-high flex-shrink-0"
-           [class]="compact() ? 'px-3 py-3 sm:px-5 sm:py-4' : 'px-8 py-5'">
+      <div class="border-t border-outline bg-surface-container-high flex-shrink-0 px-2.5 py-2 sm:px-5 sm:py-4"
+           [class]="compact() ? '' : 'px-8 py-5'">
 
         <!-- Quick options: una sola fila, scroll horizontal tipo carrusel -->
-        <div class="pb-2 mb-3 -mx-1 px-1 overflow-x-auto overflow-y-hidden overscroll-x-contain snap-x snap-mandatory scrollbar-thin"
+        <div class="pb-2 mb-2 -mx-0.5 px-0.5 overflow-x-auto overflow-y-hidden overscroll-x-contain snap-x snap-mandatory"
              style="scrollbar-width: thin; scrollbar-color: #c5d4e0 transparent;">
           <div class="flex flex-nowrap gap-2 w-max max-w-none min-w-0">
             @for (opt of chatQuickOptions; track opt.label) {
@@ -182,7 +197,7 @@
                 class="snap-start shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border max-w-[min(85vw,20rem)]
                        border-outline bg-surface text-on-surface hover:bg-primary/10
                        hover:border-primary transition-colors cursor-pointer text-left text-xs
-                       disabled:opacity-40 disabled:cursor-not-allowed font-label">
+                       disabled:opacity-40 disabled:cursor-not-allowed font-label min-h-9">
                 <span class="material-symbols-outlined shrink-0" style="font-size: 0.8rem; font-variation-settings: 'FILL' 1;">{{ opt.icon }}</span>
                 <span class="truncate">{{ opt.label }}</span>
               </button>
@@ -190,57 +205,56 @@
           </div>
         </div>
 
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 sm:gap-3">
-          <div class="flex-1 relative">
+        <div class="flex items-end gap-2">
+          <button
+            type="button"
+            (click)="toggleChatVoiceInput()"
+            [disabled]="chatBusy() || !sttAvailable()"
+            [attr.aria-label]="sttListening() ? 'Detener dictado por voz' : 'Iniciar dictado por voz'"
+            class="size-11 shrink-0 rounded-full flex items-center justify-center transition-all
+                   cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            [class]="sttListening()
+              ? 'bg-primary hover:opacity-90'
+              : 'bg-surface-container-highest hover:bg-surface-container'">
+            <span class="material-symbols-outlined"
+                  [class]="sttListening() ? 'text-on-primary' : 'text-on-surface-variant'"
+                  style="font-size: 1.25rem; font-variation-settings: 'FILL' 1;">
+              {{ sttListening() ? 'stop_circle' : 'mic' }}
+            </span>
+          </button>
+          <label class="relative flex-1 min-w-0">
+            <span class="sr-only">Mensaje para R-One</span>
             <textarea
-              [rows]="compact() ? 3 : 5"
+              rows="1"
               maxlength="500"
-              placeholder="Escribe un mensaje para R-One..."
+              placeholder="Escribe un mensaje…"
               [ngModel]="chatInput()"
               (ngModelChange)="chatInput.set($event)"
               (keydown)="onChatKeydown($event)"
               [disabled]="chatBusy()"
-              class="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-secondary outline-none
-                     px-4 pt-3 pb-3 text-on-surface font-body rounded-t-xl transition-colors
-                     placeholder:text-on-surface-variant resize-none leading-relaxed
+              class="w-full min-h-11 max-h-28 field-sizing-content resize-none
+                     bg-surface-container-low border border-outline focus:border-secondary outline-none
+                     px-3.5 py-2.5 pr-12 text-sm text-on-surface font-body rounded-2xl
+                     placeholder:text-on-surface-variant leading-snug
                      disabled:opacity-50 disabled:cursor-not-allowed"
-              [class]="compact() ? 'text-sm' : 'text-base'"
             ></textarea>
-            <span class="absolute bottom-3 right-3 text-xs font-mono text-on-surface-variant">
+            <span class="pointer-events-none absolute bottom-2 right-3 text-[0.65rem] font-mono text-on-surface-variant">
               {{ chatInput().length }}/500
             </span>
-          </div>
-          <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3">
-            <button
-              (click)="toggleChatVoiceInput()"
-              [disabled]="chatBusy() || !sttAvailable()"
-              [attr.aria-label]="sttListening() ? 'Detener dictado por voz' : 'Iniciar dictado por voz'"
-              class="rounded-2xl flex items-center justify-center transition-all
-                     cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-              [class]="(sttListening()
-                ? 'bg-primary hover:opacity-90'
-                : 'bg-surface-container-highest hover:bg-surface-container')
-                + (compact() ? ' h-11 sm:w-12 sm:h-12' : ' h-14 w-14')">
-              <span class="material-symbols-outlined"
-                    [class]="sttListening() ? 'text-on-primary' : 'text-on-surface-variant'"
-                    style="font-size: 1.3rem; font-variation-settings: 'FILL' 1;">
-                {{ sttListening() ? 'stop_circle' : 'mic' }}
-              </span>
-            </button>
-            <button
-              (click)="sendChat()"
-              [disabled]="chatBusy() || !chatInput().trim()"
-              class="rounded-2xl flex items-center justify-center transition-colors
-                     cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-              [class]="(chatBusy() || !chatInput().trim()
-                ? 'bg-surface-container-highest'
-                : 'bg-primary hover:opacity-90')
-                + (compact() ? ' h-11 sm:w-12 sm:h-12' : ' h-14 w-14')">
-              <span class="material-symbols-outlined"
-                    [class]="chatBusy() || !chatInput().trim() ? 'text-on-surface-variant' : 'text-on-primary'"
-                    style="font-size: 1.3rem; font-variation-settings: 'FILL' 1;">send</span>
-            </button>
-          </div>
+          </label>
+          <button
+            type="button"
+            (click)="sendChat()"
+            [disabled]="chatBusy() || !chatInput().trim()"
+            class="size-11 shrink-0 rounded-full flex items-center justify-center transition-colors
+                   cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            [class]="chatBusy() || !chatInput().trim()
+              ? 'bg-surface-container-highest'
+              : 'bg-primary hover:opacity-90'">
+            <span class="material-symbols-outlined"
+                  [class]="chatBusy() || !chatInput().trim() ? 'text-on-surface-variant' : 'text-on-primary'"
+                  style="font-size: 1.25rem; font-variation-settings: 'FILL' 1;">send</span>
+          </button>
         </div>
         <div class="mt-2 flex flex-col items-center gap-1.5 sm:flex-row sm:justify-between sm:gap-x-3">
           <p class="hidden sm:block text-xs text-on-surface-variant">
@@ -289,40 +303,137 @@
   @if (activeTab() === 'decir') {
     <div class="flex-1 flex flex-col min-h-0">
 
-      <!-- Input fijo de oración -->
-      <div class="flex-shrink-0 border-b border-outline bg-surface-container-high"
-           [class]="compact() ? 'px-3 py-3 sm:px-5 sm:py-4' : 'px-6 py-5'">
+      @if (decirShowHistory()) {
+        <div
+          #decirScroll
+          class="flex-1 min-h-0 overflow-y-auto px-2.5 py-3 sm:px-5 space-y-3"
+          style="scrollbar-width: thin; scrollbar-color: #c5d4e0 transparent;">
+          @if (decirHistory().length === 0) {
+            <p class="text-xs text-on-surface-variant text-center py-6">
+              Aún no se ha dicho ninguna oración.
+            </p>
+          }
+          @for (entry of decirHistory(); track $index) {
+            <div class="flex justify-end">
+              <div class="max-w-[92%] sm:max-w-[72%]">
+                <div class="rounded-2xl rounded-tr-sm px-3.5 py-2.5 border"
+                     [class]="entry.status === 'sending'
+                       ? 'bg-primary/10 border-primary/20'
+                       : entry.status === 'error'
+                         ? 'bg-error/10 border-error/25'
+                         : 'bg-primary/15 border-primary/20'">
+                  <p class="text-sm text-on-surface leading-relaxed whitespace-pre-wrap">{{ entry.text }}</p>
+                </div>
+                <div class="flex items-center justify-end gap-1.5 mt-1 pr-1">
+                  <span class="text-xs font-mono text-on-surface-variant">{{ entry.timestamp }}</span>
+                  @if (entry.status === 'sending') {
+                    <span class="text-xs font-semibold text-primary">Enviando…</span>
+                  } @else if (entry.status === 'error') {
+                    <span class="text-xs font-semibold text-error">Error</span>
+                  } @else {
+                    <span class="material-symbols-outlined text-secondary" style="font-size: 0.8rem;">volume_up</span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="flex-1 min-h-0 flex flex-col overflow-hidden">
+          <div class="flex items-center gap-2 px-2.5 pt-2 pb-2 sm:px-5 flex-shrink-0">
+            <p class="hidden sm:block text-sm font-semibold text-on-surface shrink-0">Frases rápidas</p>
+            <input
+              [ngModel]="quickPhraseSearch()"
+              (ngModelChange)="quickPhraseSearch.set($event)"
+              placeholder="Buscar…"
+              class="flex-1 min-w-0 min-h-10 bg-surface-container-low border border-outline rounded-lg px-3 py-2 text-xs text-on-surface placeholder:text-on-surface-variant"/>
+            <button
+              type="button"
+              (click)="openManage()"
+              class="shrink-0 min-h-10 text-xs font-semibold px-2.5 py-2 rounded-lg border border-outline bg-surface-container hover:border-primary/40 hover:bg-primary/8 cursor-pointer">
+              Gestionar
+            </button>
+          </div>
+          @if (phrasesLoadError()) {
+            <p class="text-xs text-error px-2.5 sm:px-5 pb-2">No se pudieron cargar las frases. Puedes escribir y decir igual.</p>
+          }
+          <div class="flex-1 min-h-0 overflow-y-auto px-2.5 pb-2 sm:px-5"
+               style="scrollbar-width: thin; scrollbar-color: #c5d4e0 transparent;">
+            <div class="grid grid-cols-2 lg:grid-cols-3 gap-2">
+              @for (opt of filteredDecirQuickOptions(); track opt.id) {
+                <div
+                  class="flex items-start gap-1 rounded-xl border
+                         border-outline bg-surface-container
+                         hover:border-primary/40 hover:bg-primary/8
+                         transition-all">
+                  <button
+                    type="button"
+                    (click)="applyDecirQuick(opt)"
+                    [disabled]="decirBusy()"
+                    class="flex-1 min-w-0 flex flex-col items-start gap-1 p-2.5 sm:p-3
+                           cursor-pointer text-left min-h-11
+                           disabled:opacity-40 disabled:cursor-not-allowed
+                           active:scale-[0.97]">
+                    <span class="text-xs font-label text-on-surface leading-snug">
+                      @if (opt.icon) {
+                        <span class="material-symbols-outlined text-primary/70"
+                              style="font-size: 0.8rem; font-variation-settings: 'FILL' 1;">{{ opt.icon }}</span>
+                      }
+                      {{ opt.title }}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="openPhraseDetail(opt)"
+                    [attr.aria-label]="'Ver texto de ' + opt.title"
+                    class="flex-shrink-0 mt-1 mr-1 size-11 flex items-center justify-center rounded-lg text-on-surface-variant
+                           hover:text-primary hover:bg-primary/10 cursor-pointer">
+                    <span class="material-symbols-outlined" style="font-size: 1rem;">visibility</span>
+                  </button>
+                </div>
+              }
+              @if (filteredDecirQuickOptions().length === 0 && !phrasesLoadError()) {
+                <div class="col-span-full text-xs text-on-surface-variant border border-dashed border-outline rounded-lg px-3 py-4 text-center">
+                  No hay frases que coincidan con la búsqueda.
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
 
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 sm:gap-3">
-          <div class="flex-1 relative">
+      <div class="border-t border-outline bg-surface-container-high flex-shrink-0 px-2.5 py-2 sm:px-5 sm:py-4">
+        <div class="flex items-end gap-2">
+          <label class="relative flex-1 min-w-0">
+            <span class="sr-only">Texto para que el robot lo diga</span>
             <textarea
-              [rows]="compact() ? 3 : 5"
+              rows="1"
               maxlength="400"
-              placeholder="Escribe lo que el robot debe decir..."
+              placeholder="Escribe lo que debe decir…"
               [ngModel]="decirInput()"
               (ngModelChange)="decirInput.set($event)"
               (keydown)="onDecirKeydown($event)"
               [disabled]="decirBusy()"
-              class="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary outline-none
-                     px-4 pt-3 pb-3 text-on-surface font-body rounded-t-xl transition-colors
-                     placeholder:text-on-surface-variant resize-none leading-relaxed
+              class="w-full min-h-11 max-h-28 field-sizing-content resize-none
+                     bg-surface-container-low border border-outline focus:border-primary outline-none
+                     px-3.5 py-2.5 pr-12 text-sm text-on-surface font-body rounded-2xl
+                     placeholder:text-on-surface-variant leading-snug
                      disabled:opacity-50 disabled:cursor-not-allowed"
-              [class]="compact() ? 'text-sm' : 'text-base'"
             ></textarea>
-            <span class="absolute bottom-3 right-3 text-xs font-mono text-on-surface-variant">{{ decirInput().length }}/400</span>
-          </div>
+            <span class="pointer-events-none absolute bottom-2 right-3 text-[0.65rem] font-mono text-on-surface-variant">{{ decirInput().length }}/400</span>
+          </label>
           <button
+            type="button"
             (click)="sendDecir()"
             [disabled]="decirBusy() || !decirInput().trim()"
-            class="rounded-2xl flex items-center justify-center
+            class="size-11 shrink-0 rounded-full flex items-center justify-center
                    transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-            [class]="(decirBusy() || !decirInput().trim()
+            [class]="decirBusy() || !decirInput().trim()
               ? 'bg-surface-container-highest'
-              : 'bg-primary text-on-primary hover:opacity-90')
-              + (compact() ? ' h-11 sm:w-12 sm:h-12' : ' h-14 w-14')">
+              : 'bg-primary hover:opacity-90'">
             <span class="material-symbols-outlined"
                   [class]="decirBusy() || !decirInput().trim() ? 'text-on-surface-variant' : 'text-on-primary'"
-                  style="font-size: 1.3rem; font-variation-settings: 'FILL' 1;">
+                  style="font-size: 1.25rem; font-variation-settings: 'FILL' 1;">
               {{ decirBusy() ? 'progress_activity' : 'volume_up' }}
             </span>
           </button>
@@ -330,112 +441,6 @@
         <p class="hidden sm:block text-xs text-on-surface-variant mt-2">
           Enter para enviar &nbsp;·&nbsp; Shift+Enter nueva línea
         </p>
-      </div>
-
-      <!-- Historial scrollable -->
-      <div class="flex-1 overflow-y-auto"
-           style="scrollbar-width: thin; scrollbar-color: #c5d4e0 transparent;">
-
-        <!-- Cajitas de frases rápidas -->
-        <div [class]="compact() ? 'px-3 pt-3 sm:px-5' : 'px-6 pt-5'">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-            <p class="text-sm font-semibold text-on-surface">Frases rápidas</p>
-            <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
-              <input
-                [ngModel]="quickPhraseSearch()"
-                (ngModelChange)="quickPhraseSearch.set($event)"
-                placeholder="Buscar frase..."
-                class="w-full sm:w-64 bg-surface-container-low border border-outline rounded-lg px-3 py-2 text-xs text-on-surface placeholder:text-on-surface-variant"/>
-              <button
-                type="button"
-                (click)="openManage()"
-                class="text-xs font-semibold px-3 py-2 rounded-lg border border-outline bg-surface-container hover:border-primary/40 hover:bg-primary/8 cursor-pointer">
-                Gestionar frases
-              </button>
-            </div>
-          </div>
-          @if (phrasesLoadError()) {
-            <p class="text-xs text-error mb-3">No se pudieron cargar las frases. Puedes escribir y decir igual.</p>
-          }
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
-            @for (opt of filteredDecirQuickOptions(); track opt.id) {
-              <div
-                class="flex items-start gap-1 rounded-xl border
-                       border-outline bg-surface-container
-                       hover:border-primary/40 hover:bg-primary/8
-                       transition-all">
-                <button
-                  type="button"
-                  (click)="applyDecirQuick(opt)"
-                  [disabled]="decirBusy()"
-                  class="flex-1 min-w-0 flex flex-col items-start gap-2 p-3
-                         cursor-pointer text-left
-                         disabled:opacity-40 disabled:cursor-not-allowed
-                         active:scale-[0.97]">
-                  <span class="text-xs font-label text-on-surface leading-snug">
-                    @if (opt.icon) {
-                      <span class="material-symbols-outlined text-primary/70"
-                            style="font-size: 0.8rem; font-variation-settings: 'FILL' 1;">{{ opt.icon }}</span>
-                    }
-                    {{ opt.title }}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  (click)="openPhraseDetail(opt)"
-                  [attr.aria-label]="'Ver texto de ' + opt.title"
-                  class="flex-shrink-0 mt-2 mr-2 p-1.5 rounded-lg text-on-surface-variant
-                         hover:text-primary hover:bg-primary/10 cursor-pointer">
-                  <span class="material-symbols-outlined" style="font-size: 1rem;">visibility</span>
-                </button>
-              </div>
-            }
-            @if (filteredDecirQuickOptions().length === 0 && !phrasesLoadError()) {
-              <div class="col-span-full text-xs text-on-surface-variant border border-dashed border-outline rounded-lg px-3 py-4 text-center">
-                No hay frases que coincidan con la búsqueda.
-              </div>
-            }
-          </div>
-          @if (decirHistory().length > 0) {
-            <div class="border-t border-outline mb-1"></div>
-          }
-        </div>
-
-
-        <div class="divide-y divide-outline-variant">
-          @for (entry of decirHistory(); track $index) {
-            <div class="flex items-start gap-3 hover:bg-surface-container-highest transition-colors"
-                 [class]="compact() ? 'px-3 py-3 sm:px-5' : 'px-6 py-4'">
-              <div class="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center mt-0.5"
-                   [class]="entry.status === 'sending'
-                     ? 'bg-primary/10 border border-primary/20'
-                     : entry.status === 'error'
-                       ? 'bg-error/10 border border-error/20'
-                       : 'bg-secondary/10 border border-secondary/20'">
-                @if (entry.status === 'sending') {
-                  <span class="material-symbols-outlined text-primary animate-spin" style="font-size: 0.9rem;">progress_activity</span>
-                } @else if (entry.status === 'error') {
-                  <span class="material-symbols-outlined text-error" style="font-size: 0.9rem;">error_outline</span>
-                } @else {
-                  <span class="material-symbols-outlined text-secondary" style="font-size: 0.9rem; font-variation-settings: 'FILL' 1;">volume_up</span>
-                }
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-on-surface leading-relaxed" [class]="compact() ? 'text-xs sm:text-sm' : 'text-sm'">{{ entry.text }}</p>
-                <div class="flex items-center gap-2 mt-0.5">
-                  <span class="text-xs font-mono text-on-surface-variant">{{ entry.timestamp }}</span>
-                  @if (entry.status === 'sending') {
-                    <span class="text-xs font-semibold text-primary">Enviando...</span>
-                  } @else if (entry.status === 'error') {
-                    <span class="text-xs font-semibold text-error">Error</span>
-                  } @else {
-                    <span class="text-xs font-semibold text-on-secondary-container">Dicho</span>
-                  }
-                </div>
-              </div>
-            </div>
-          }
-        </div>
       </div>
     </div>
     @if (detailPhrase(); as detail) {
@@ -450,7 +455,7 @@
             </button>
           </div>
           <div class="px-5 py-4">
-            <p class="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant mb-2">Texto hablado</p>
+            <p class="text-xs font-semibold tracking-wide text-on-surface-variant mb-2">Texto hablado</p>
             <p class="text-sm text-on-surface leading-relaxed whitespace-pre-wrap">{{ detail.text }}</p>
           </div>
         </div>

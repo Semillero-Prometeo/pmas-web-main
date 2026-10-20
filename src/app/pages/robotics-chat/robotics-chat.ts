@@ -135,6 +135,7 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   formText = signal('');
   formIcon = signal('');
   detailPhrase = signal<Phrase | null>(null);
+  decirShowHistory = signal(false);
 
   readonly filteredDecirQuickOptions = computed(() =>
     filterSpeakPhrases(this.phrases(), this.quickPhraseSearch()),
@@ -327,6 +328,15 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
     this.decirHistory.set([]);
   }
 
+  openDecirHistory() {
+    this.decirShowHistory.set(true);
+    this.shouldScrollDecir = true;
+  }
+
+  closeDecirHistory() {
+    this.decirShowHistory.set(false);
+  }
+
   applyDecirQuick(phrase: Phrase) {
     this.speakDecir(phrase.text);
   }
@@ -343,19 +353,23 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
     const spoken = text.trim();
     if (!spoken || this.decirBusy()) return;
     const entry: SentenceEntry = { text: spoken, timestamp: this.now(), status: 'sending' };
-    this.decirHistory.update((history) => [entry, ...history]);
+    this.decirHistory.update((history) => [...history, entry]);
     this.decirBusy.set(true);
     this.shouldScrollDecir = true;
     this.http.post<{ status: string }>(`${GATEWAY_URL}/voice/speak`, { message: spoken }).subscribe({
       next: () => {
         this.decirHistory.update((history) =>
-          history.map((item, index) => (index === 0 ? { ...item, status: 'done' } : item)),
+          history.map((item, index) =>
+            index === history.length - 1 ? { ...item, status: 'done' } : item,
+          ),
         );
         this.decirBusy.set(false);
       },
       error: () => {
         this.decirHistory.update((history) =>
-          history.map((item, index) => (index === 0 ? { ...item, status: 'error' } : item)),
+          history.map((item, index) =>
+            index === history.length - 1 ? { ...item, status: 'error' } : item,
+          ),
         );
         this.decirBusy.set(false);
       },
@@ -490,6 +504,11 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
       const el = this.chatScroll.nativeElement;
       el.scrollTop = el.scrollHeight;
       this.shouldScrollChat = false;
+    }
+    if (this.shouldScrollDecir && this.decirScroll) {
+      const el = this.decirScroll.nativeElement;
+      el.scrollTop = el.scrollHeight;
+      this.shouldScrollDecir = false;
     }
   }
 
