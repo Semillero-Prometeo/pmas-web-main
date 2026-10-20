@@ -340,16 +340,27 @@
         <div [class]="compact() ? 'px-3 pt-3 sm:px-5' : 'px-6 pt-5'">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
             <p class="text-sm font-semibold text-on-surface">Frases rápidas</p>
-            <input
-              [ngModel]="quickPhraseSearch()"
-              (ngModelChange)="quickPhraseSearch.set($event)"
-              placeholder="Buscar frase..."
-              class="w-full sm:w-64 bg-surface-container-low border border-outline rounded-lg px-3 py-2 text-xs text-on-surface placeholder:text-on-surface-variant"/>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
-            @for (opt of filteredDecirQuickOptions(); track opt.label) {
+            <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
+              <input
+                [ngModel]="quickPhraseSearch()"
+                (ngModelChange)="quickPhraseSearch.set($event)"
+                placeholder="Buscar frase..."
+                class="w-full sm:w-64 bg-surface-container-low border border-outline rounded-lg px-3 py-2 text-xs text-on-surface placeholder:text-on-surface-variant"/>
               <button
-                (click)="applyDecirQuick(opt.label)"
+                type="button"
+                (click)="openManage()"
+                class="text-xs font-semibold px-3 py-2 rounded-lg border border-outline bg-surface-container hover:border-primary/40 hover:bg-primary/8 cursor-pointer">
+                Gestionar frases
+              </button>
+            </div>
+          </div>
+          @if (phrasesLoadError()) {
+            <p class="text-xs text-error mb-3">No se pudieron cargar las frases. Puedes escribir y decir igual.</p>
+          }
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
+            @for (opt of filteredDecirQuickOptions(); track opt.id) {
+              <button
+                (click)="applyDecirQuick(opt)"
                 [disabled]="decirBusy()"
                 class="flex flex-col items-start gap-2 p-3 rounded-xl border
                        border-outline bg-surface-container
@@ -357,15 +368,16 @@
                        transition-all cursor-pointer text-left
                        disabled:opacity-40 disabled:cursor-not-allowed
                        active:scale-[0.97]">
-                
                 <span class="text-xs font-label text-on-surface leading-snug">
-                  <span class="material-symbols-outlined text-primary/70"
-                      style="font-size: 0.8rem; font-variation-settings: 'FILL' 1;">{{ opt.icon }}</span>
-
-                  {{ opt.label }}</span>
+                  @if (opt.icon) {
+                    <span class="material-symbols-outlined text-primary/70"
+                          style="font-size: 0.8rem; font-variation-settings: 'FILL' 1;">{{ opt.icon }}</span>
+                  }
+                  {{ opt.title }}
+                </span>
               </button>
             }
-            @if (filteredDecirQuickOptions().length === 0) {
+            @if (filteredDecirQuickOptions().length === 0 && !phrasesLoadError()) {
               <div class="col-span-full text-xs text-on-surface-variant border border-dashed border-outline rounded-lg px-3 py-4 text-center">
                 No hay frases que coincidan con la búsqueda.
               </div>
@@ -413,6 +425,65 @@
         </div>
       </div>
     </div>
+    @if (manageOpen()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-rail/80"
+           role="dialog" aria-labelledby="manage-phrases-title">
+        <div class="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-surface rounded-xl border border-outline">
+          <div class="flex items-center justify-between px-5 py-4 border-b border-outline bg-surface-container">
+            <h3 id="manage-phrases-title" class="font-headline font-bold text-base text-on-surface">Gestionar frases</h3>
+            <button type="button" (click)="closeManage()" class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high cursor-pointer">
+              <span class="material-symbols-outlined" style="font-size: 1.125rem;">close</span>
+            </button>
+          </div>
+          <div class="px-5 py-4 space-y-4">
+            @if (manageError()) {
+              <p class="text-sm text-error">{{ manageError() }}</p>
+            }
+            <div class="grid grid-cols-1 gap-3">
+              <label class="text-xs font-semibold text-on-surface-variant">Título
+                <input [ngModel]="formTitle()" (ngModelChange)="formTitle.set($event)" maxlength="80"
+                       class="mt-1 w-full bg-background border border-outline rounded-lg px-3 py-2 text-sm text-on-surface outline-none"/>
+              </label>
+              <label class="text-xs font-semibold text-on-surface-variant">Texto hablado
+                <textarea [ngModel]="formText()" (ngModelChange)="formText.set($event)" maxlength="2000" rows="4"
+                          class="mt-1 w-full bg-background border border-outline rounded-lg px-3 py-2 text-sm text-on-surface outline-none resize-y"></textarea>
+              </label>
+              <label class="text-xs font-semibold text-on-surface-variant">Ícono Material (opcional)
+                <input [ngModel]="formIcon()" (ngModelChange)="formIcon.set($event)" placeholder="waving_hand"
+                       class="mt-1 w-full bg-background border border-outline rounded-lg px-3 py-2 text-sm text-on-surface outline-none"/>
+              </label>
+              <button type="button" (click)="savePhrase()" [disabled]="manageBusy()"
+                      class="rounded-lg px-3 py-2 text-sm font-semibold bg-primary text-on-primary disabled:opacity-40 cursor-pointer">
+                {{ editingId() === null ? 'Crear frase' : 'Guardar cambios' }}
+              </button>
+            </div>
+            <ul class="divide-y divide-outline-variant border border-outline rounded-lg">
+              @for (phrase of phrases(); track phrase.id) {
+                <li class="flex flex-col sm:flex-row sm:items-center gap-2 px-3 py-3">
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-on-surface">
+                      @if (phrase.icon) {
+                        <span class="material-symbols-outlined text-primary/70 align-middle"
+                              style="font-size: 0.9rem;">{{ phrase.icon }}</span>
+                      }
+                      {{ phrase.title }}
+                    </p>
+                    <p class="text-xs text-on-surface-variant">{{ phrase.active ? 'Activa' : 'Inactiva' }}</p>
+                  </div>
+                  <div class="flex gap-2">
+                    <button type="button" (click)="startEdit(phrase)" class="text-xs px-2 py-1 rounded-lg border border-outline cursor-pointer">Editar</button>
+                    <button type="button" (click)="setPhraseActive(phrase, !phrase.active)" [disabled]="manageBusy()"
+                            class="text-xs px-2 py-1 rounded-lg border border-outline cursor-pointer">
+                      {{ phrase.active ? 'Desactivar' : 'Activar' }}
+                    </button>
+                  </div>
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+      </div>
+    }
   }
 
 </div>

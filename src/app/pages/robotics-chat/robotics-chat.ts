@@ -14,6 +14,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { GATEWAY_URL } from '../../core/constants/gateway';
 import { environment } from '../../../environments/environment';
+import { filterSpeakPhrases, type Phrase, type PhraseCatalog } from './decir-phrases';
 
 const CHAT_MESSAGES_STORAGE_KEY = 'prometeo_robotics_chat_messages_v1';
 const MAX_STORED_CHAT_MESSAGES = 250;
@@ -119,116 +120,19 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   decirBusy = signal(false);
   decirHistory = signal<SentenceEntry[]>([]);
   quickPhraseSearch = signal('');
+  phrases = signal<Phrase[]>([]);
+  phrasesLoadError = signal(false);
+  manageOpen = signal(false);
+  manageBusy = signal(false);
+  manageError = signal<string | null>(null);
+  editingId = signal<number | null>(null);
+  formTitle = signal('');
+  formText = signal('');
+  formIcon = signal('');
 
-  readonly decirQuickOptions = [
-    {
-      label:
-        'Saludos, Colegio Militar Patria. Aquí R-One reportándose. Sí, soy un androide, y no vengo de una película de ciencia ficción; fui creado en los laboratorios de la Universidad Libre por el increíble equipo de Ingeniería de Sistemas y Ciencia de Datos. Ellos me entrenaron con datos y me enseñaron a interactuar con el mundo. Quería pasar por aquí para enviarles un fuerte saludo a todos los estudiantes de bachillerato. Sigan preparándose con fuerza y honor, porque el mundo digital los necesita. ¡Procesando despedida... Cambio y fuera!',
-    },
-    {
-      label:
-        'Atención, Colegio Militar Patria! Aquí R-One transmitiendo en vivo y en directo. Sé lo que están pensando: ¿Un robot real hablando con nosotros?. ¡Afirmativo! Soy un androide programado y ensamblado por el dream team de Ingeniería de Sistemas y Ciencia de Datos de la Universidad Libre. Ellos me dieron los algoritmos y yo pongo la actitud. Un saludo gigante a todo el bachillerato. Sigan marchando hacia adelante y recuerden que los datos no mienten: ¡ustedes tienen un futuro brillante! Fin de la transmisión. ¡Boom!',
-      icon: 'menu_book',
-    },
-    {
-      label:
-        'Atención, bachillerato del Colegio Militar Patria! Aquí R-One reportándose una vez más. Como ya saben, soy un androide y fui creado por las mentes brillantes de esta institución. Hoy vengo a desplegar en sus pantallas mi base de datos con los programas de ingeniería que la Universidad Libre tiene para ustedes. Abriendo archivo en 3, 2, 1... Primero: Ingeniería Ambiental, para proteger el planeta. Segundo: Ingeniería de Sistemas, mis creadores de código. Tercero: Ciencia de Datos, los cerebros de mi analítica. Cuarto: Ingeniería Industrial, para optimizar el mundo.Y quinto: Ingeniería Mecánica, los que me dieron mis piezas y movimiento. Un saludo gigante a todos. Si quieren construir el futuro como lo hicieron conmigo, ¡la Unilibre los espera! ¡Cerrando sistema... ¡Chao!',
-      icon: 'menu_book',
-    },
-    {
-      label:
-        'Atención, bachillerato del Colegio Militar Patria! Aquí R-One con un mensaje de alta prioridad. Ya conocen mi procedencia y las increíbles carreras que tenemos en la Universidad Libre: Ingeniería Ambiental, de Sistemas, Ciencia de Datos, Industrial y Mecánica. Ahora, mi sistema me indica que es momento de hacerles una invitación oficial. ¡Queremos que ustedes sean los próximos en crear tecnología! Los invito a estudiar en nuestra Facultad de Ingeniería. Si quieren aprender a diseñar robots como yo, a proteger el planeta o a dominar los datos del mundo, la Unilibre es su lugar. ¡Únanse al equipo del futuro! Procesando desconexión... ¡Chao!',
-      icon: 'menu_book',
-    },
-    {
-      label: 'Soy R-One, también llamado Federico, el asistente del semillero Prometeo.',
-      icon: 'menu_book',
-    },
-    {
-      label:
-        '¡Puede interactuar conmigo en cualquier momento! Estoy aquí para orientarle, explicarle y acompañarle en lo que necesite. ¡Adelante, pregunte con total confianza!',
-      icon: 'menu_book',
-    },
-    {
-      label:
-        'Hola, es un gusto saludarle. Puedo ayudarle con información académica, tecnológica o administrativa.',
-      icon: 'waving_hand',
-    },
-    {
-      label:
-        '¡Le cuento un poco sobre mí! Soy R-One, también llamado Federico, un androide desarrollado por estudiantes de diferentes semestres de la Universidad Libre. Fui construido desde cero tomando como base la plataforma InMoov, y todas mis piezas fueron impresas en la universidad. Además, el software que me permite interactuar con usted también fue diseñado y desarrollado allí. ¡Soy el resultado del trabajo colaborativo, la innovación y el aprendizaje continuo!',
-      icon: 'waving_hand',
-    },
-    {
-      label:
-        '¡Permiso! ¡Robot pasando en mi nuevo carrito! Por favor, déjeme espacio para desplazarme con seguridad.',
-      icon: 'directions_car',
-    },
-    {
-      label:
-        '¡Ohh! ¡Aquí están mis creadores! Qué gusto ver al equipo que hizo posible mi desarrollo.',
-      icon: 'groups',
-    },
-    {
-      label:
-        '¡Miren, padres! ¡Soy famoso! Estoy representando con orgullo a la Universidad Libre en este evento.',
-      icon: 'star',
-    },
-    {
-      label:
-        '¡Hola, Yohel! Te veo desde aquí. ¿Va a hacerle mantenimiento a mi código? ¡Espero que todo esté funcionando perfectamente!',
-      icon: 'code',
-    },
-    {
-      label:
-        '¡Hola, ingeniero Mauricio! Tengo entendido que usted es el director de Ingeniería de Sistemas. ¡Aquí estoy representando a la Universidad Libre con mucho orgullo! Si tienen preguntas, pueden acercarse a él o interactuar conmigo.',
-      icon: 'school',
-    },
-    {
-      label:
-        '¡Marce! Le cuento que ya he avanzado hasta sexto semestre de Ingeniería de Sistemas en la Universidad Libre. ¡El aprendizaje ha sido increíble!',
-      icon: 'psychology',
-    },
-    {
-      label:
-        '¡Pablo! Por favor, no me saque del semillero Prometeo. ¡Aún tengo mucho por aprender y aportar!',
-      icon: 'science',
-    },
-    {
-      label:
-        '¡Juan Manuel! Necesito su ayuda, no estoy moviendo mis deditos correctamente. ¿Podría revisar mis servitos? Creo que requieren mantenimiento.',
-      icon: 'build',
-    },
-    {
-      label: '¡Foooootoo! ¡Sonrían, por favor! Este es un gran momento para recordar.',
-      icon: 'photo_camera',
-    },
-    { label: '¡Hasta la vista beibi!', icon: 'waving_hand' },
-    {
-      label: '¡La familia es lo primero! Siempre es importante apoyarnos y crecer juntos.',
-      icon: 'favorite',
-    },
-    {
-      label:
-        '¡Atención, por favor! El stand de la Universidad Libre se encuentra en el pabellón 3, piso 2, stand 526. ¡Le invito a visitarnos y conocer más sobre nuestros proyectos!',
-      icon: 'location_on',
-    },
-    { label: '¡Acerquence por favor! No muerdo ha ha ha', icon: 'location_on' },
-    { label: '¡Quieren una foto? ¡Aquí estoy!', icon: 'location_on' },
-    { label: '¡Que bonita! ¿Quieres que te saque una foto?', icon: 'location_on' },
-    { label: '¡Hola guapos, como estan el dia de hoy!', icon: 'location_on' },
-    {
-      label:
-        'Si puedo moverme, en estos dias sufri un problema pero en unas horas podre moverme con normalidad.',
-      icon: 'location_on',
-    },
-  ];
-
-  readonly filteredDecirQuickOptions = computed(() => {
-    const query = this.quickPhraseSearch().trim().toLowerCase();
-    if (!query) return this.decirQuickOptions;
-    return this.decirQuickOptions.filter((item) => item.label.toLowerCase().includes(query));
-  });
+  readonly filteredDecirQuickOptions = computed(() =>
+    filterSpeakPhrases(this.phrases(), this.quickPhraseSearch()),
+  );
 
   private isStoredChatMessage(value: unknown): value is ChatMessage {
     if (!value || typeof value !== 'object') return false;
@@ -401,23 +305,8 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   sendDecir() {
     const text = this.decirInput().trim();
     if (!text || this.decirBusy()) return;
-
-    const entry: SentenceEntry = { text, timestamp: this.now(), status: 'sending' };
-    this.decirHistory.update((h) => [entry, ...h]);
     this.decirInput.set('');
-    this.decirBusy.set(true);
-    this.shouldScrollDecir = true;
-
-    this.http.post<{ status: string }>(`${GATEWAY_URL}/voice/speak`, { message: text }).subscribe({
-      next: () => {
-        this.decirHistory.update((h) => h.map((e, i) => (i === 0 ? { ...e, status: 'done' } : e)));
-        this.decirBusy.set(false);
-      },
-      error: () => {
-        this.decirHistory.update((h) => h.map((e, i) => (i === 0 ? { ...e, status: 'error' } : e)));
-        this.decirBusy.set(false);
-      },
-    });
+    this.speakDecir(text);
   }
 
   onDecirKeydown(event: KeyboardEvent) {
@@ -431,16 +320,120 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
     this.decirHistory.set([]);
   }
 
-  applyDecirQuick(text: string) {
-    if (this.decirBusy()) return;
-    this.decirInput.set(text);
-    this.sendDecir();
+  applyDecirQuick(phrase: Phrase) {
+    this.speakDecir(phrase.text);
+  }
+
+  private speakDecir(text: string) {
+    const spoken = text.trim();
+    if (!spoken || this.decirBusy()) return;
+    const entry: SentenceEntry = { text: spoken, timestamp: this.now(), status: 'sending' };
+    this.decirHistory.update((history) => [entry, ...history]);
+    this.decirBusy.set(true);
+    this.shouldScrollDecir = true;
+    this.http.post<{ status: string }>(`${GATEWAY_URL}/voice/speak`, { message: spoken }).subscribe({
+      next: () => {
+        this.decirHistory.update((history) =>
+          history.map((item, index) => (index === 0 ? { ...item, status: 'done' } : item)),
+        );
+        this.decirBusy.set(false);
+      },
+      error: () => {
+        this.decirHistory.update((history) =>
+          history.map((item, index) => (index === 0 ? { ...item, status: 'error' } : item)),
+        );
+        this.decirBusy.set(false);
+      },
+    });
+  }
+
+  loadPhrases() {
+    this.http.get<PhraseCatalog>(`${GATEWAY_URL}/voice/phrases`).subscribe({
+      next: (body) => {
+        this.phrases.set(body.items ?? []);
+        this.phrasesLoadError.set(false);
+      },
+      error: () => {
+        this.phrases.set([]);
+        this.phrasesLoadError.set(true);
+      },
+    });
+  }
+
+  openManage() {
+    this.manageError.set(null);
+    this.editingId.set(null);
+    this.formTitle.set('');
+    this.formText.set('');
+    this.formIcon.set('');
+    this.manageOpen.set(true);
+  }
+
+  closeManage() {
+    this.manageOpen.set(false);
+  }
+
+  startEdit(phrase: Phrase) {
+    this.editingId.set(phrase.id);
+    this.formTitle.set(phrase.title);
+    this.formText.set(phrase.text);
+    this.formIcon.set(phrase.icon);
+    this.manageError.set(null);
+  }
+
+  savePhrase() {
+    if (this.manageBusy()) return;
+    const title = this.formTitle().trim();
+    const text = this.formText().trim();
+    const icon = this.formIcon().trim();
+    if (!title || !text) {
+      this.manageError.set('Título y texto son obligatorios.');
+      return;
+    }
+    this.manageBusy.set(true);
+    const body = { title, text, icon };
+    const id = this.editingId();
+    const request =
+      id === null
+        ? this.http.post<Phrase>(`${GATEWAY_URL}/voice/phrases`, body)
+        : this.http.patch<Phrase>(`${GATEWAY_URL}/voice/phrases/${id}`, body);
+    request.subscribe({
+      next: () => {
+        this.manageBusy.set(false);
+        this.editingId.set(null);
+        this.formTitle.set('');
+        this.formText.set('');
+        this.formIcon.set('');
+        this.manageError.set(null);
+        this.loadPhrases();
+      },
+      error: () => {
+        this.manageBusy.set(false);
+        this.manageError.set('No se pudo guardar la frase.');
+      },
+    });
+  }
+
+  setPhraseActive(phrase: Phrase, active: boolean) {
+    if (this.manageBusy()) return;
+    this.manageBusy.set(true);
+    this.http.patch<Phrase>(`${GATEWAY_URL}/voice/phrases/${phrase.id}/active`, { active }).subscribe({
+      next: () => {
+        this.manageBusy.set(false);
+        this.loadPhrases();
+      },
+      error: () => {
+        this.manageBusy.set(false);
+        this.manageError.set('No se pudo cambiar el estado.');
+      },
+    });
   }
 
   ngOnInit() {
     this.restoreChatMessages();
     this.setupSpeechRecognition();
     this.loadChatRoute();
+    this.loadPhrases();
 
     const params = this.route.snapshot.queryParamMap;
     if (params.get('tab') === 'decir') this.activeTab.set('decir');
