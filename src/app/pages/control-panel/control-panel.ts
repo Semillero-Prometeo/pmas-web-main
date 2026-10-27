@@ -2,6 +2,7 @@ import { Component, signal, computed, inject, OnInit, ViewChild, ElementRef, Aft
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { GATEWAY_URL } from '../../core/constants/gateway';
+import { HardwareRuntimeService } from '../../core/services/hardware-runtime.service';
 import { HealthService } from '../../core/services/health.service';
 import { catchError, forkJoin, map, of } from 'rxjs';
 import {
@@ -15,7 +16,7 @@ import {
   SequenceCategory,
 } from './sequence-groups';
 import { formatArduinoStatus } from './arduino-status';
-import { catalogSequenceCount, panelKpis, phaseLabel, sourceHint } from './panel-kpis';
+import { catalogSequenceCount, panelKpis } from './panel-kpis';
 
 interface MotionBlock {
   arduino_id: number;
@@ -55,22 +56,7 @@ interface SequenceLog {
   message?: string;
 }
 
-interface RuntimeStep {
-  id: number | null;
-  name: string;
-  mode: 'normal' | 'neutro' | 'espera';
-  source: 'turno' | 'panel' | 'estudio';
-}
-
-interface RuntimeSnapshot {
-  busy: boolean;
-  source: 'turno' | 'panel' | 'estudio' | null;
-  current: RuntimeStep | null;
-  queue: RuntimeStep[];
-}
-
 const EXECUTION_LOG_STORAGE_KEY = 'prometeo_execution_logs_v1';
-const IDLE_RUNTIME: RuntimeSnapshot = { busy: false, source: null, current: null, queue: [] };
 
 @Component({
   selector: 'app-control-panel',
@@ -82,7 +68,7 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
 
   private http = inject(HttpClient);
   health = inject(HealthService);
-  private runtimeTimer: ReturnType<typeof setTimeout> | null = null;
+  hardware = inject(HardwareRuntimeService);
   private arduinoTimer: ReturnType<typeof setTimeout> | null = null;
   private logCounter = 0;
   readonly hasNeutroTrack = hasNeutroTrack;
@@ -94,18 +80,16 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
   movementSearch = signal('');
   selectedGroupFilter = signal('ALL');
 
-  runtime = signal<RuntimeSnapshot>(IDLE_RUNTIME);
-  runtimeUnreachable = signal(false);
   readonly categoryIcons = CATEGORY_ICONS;
-  playLocked = computed(() => this.runtimeUnreachable() || this.runtime().busy);
+  playLocked = computed(() => this.hardware.playLocked());
 
   commandLogs = signal<SequenceLog[]>([]);
   sequenceCount = computed(() => catalogSequenceCount(this.sequenceGroups()));
   kpis = computed(() =>
     panelKpis({
-      runtimeUnreachable: this.runtimeUnreachable(),
-      busy: this.runtime().busy,
-      source: this.runtime().source,
+      runtimeUnreachable: this.hardware.unreachable(),
+      busy: this.hardware.runtime().busy,
+      source: this.hardware.runtime().source,
       sequenceLoading: this.sequenceLoading(),
       sequenceError: this.sequenceError(),
       sequenceCount: this.sequenceCount(),
@@ -145,15 +129,10 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
     this.restoreLogsFromStorage();
     this.health.checkAll();
     this.loadSequences();
-    this.pollRuntime();
     this.pollArduinos();
   }
 
   ngOnDestroy() {
-    if (this.runtimeTimer) {
-      clearTimeout(this.runtimeTimer);
-      this.runtimeTimer = null;
-    }
     if (this.arduinoTimer) {
       clearTimeout(this.arduinoTimer);
       this.arduinoTimer = null;
@@ -241,7 +220,6 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
             status: 'ack',
             message: 'Solicitado',
           });
-          this.pollRuntime();
         },
         error: (err: { error?: { message?: string } }) => {
           this.appendLog({
@@ -252,45 +230,6 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
           });
         },
       });
-  }
-
-  stopHardware() {
-    this.http.post(`${GATEWAY_URL}/sequence/stop`, {}).subscribe({
-      next: () => {
-        this.appendLog({
-          group: 'HARDWARE',
-          sequenceName: 'stop',
-          status: 'ack',
-          message: 'Detenido',
-        });
-        this.pollRuntime();
-      },
-      error: () =>
-        this.appendLog({
-          group: 'HARDWARE',
-          sequenceName: 'stop',
-          status: 'error',
-          message: 'No se pudo detener',
-        }),
-    });
-  }
-
-  private pollRuntime() {
-    if (this.runtimeTimer) {
-      clearTimeout(this.runtimeTimer);
-      this.runtimeTimer = null;
-    }
-    this.http.get<RuntimeSnapshot>(`${GATEWAY_URL}/sequence/runtime`).subscribe({
-      next: (res) => {
-        this.runtimeUnreachable.set(false);
-        this.runtime.set(res);
-        this.runtimeTimer = setTimeout(() => this.pollRuntime(), res.busy ? 500 : 3000);
-      },
-      error: () => {
-        this.runtimeUnreachable.set(true);
-        this.runtimeTimer = setTimeout(() => this.pollRuntime(), 500);
-      },
-    });
   }
 
   private groupLabelForSequence(sequenceName: string): string {
@@ -397,9 +336,6 @@ export class ControlPanel implements OnInit, AfterViewChecked, OnDestroy {
   updateGroupFilter(value: string) {
     this.selectedGroupFilter.set(value);
   }
-
-  phaseLabel = phaseLabel;
-  sourceHint = sourceHint;
 
   estadoCardClass(): string {
     switch (this.kpis().estado) {

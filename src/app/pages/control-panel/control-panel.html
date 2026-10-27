@@ -187,54 +187,6 @@
       <div class="xl:col-span-1">
         <div class="space-y-4 xl:sticky xl:top-24">
           <section class="bg-surface rounded-xl border border-outline overflow-hidden">
-            <header class="px-4 py-3 bg-surface-container-high border-b border-outline flex items-center justify-between gap-2">
-              <div class="flex items-center gap-2 min-w-0">
-                <span class="material-symbols-outlined text-secondary" style="font-size: 1.25rem;">memory</span>
-                <h3 class="font-headline text-base font-bold tracking-tight text-on-surface">En hardware</h3>
-              </div>
-              <button
-                type="button"
-                (click)="stopHardware()"
-                class="flex min-h-10 items-center gap-1.5 py-2 px-3 rounded-lg bg-error text-on-error text-sm font-semibold cursor-pointer">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">stop</span>
-                Detener
-              </button>
-            </header>
-            <div class="p-4 space-y-3 text-sm text-on-surface">
-              @if (runtimeUnreachable()) {
-                <p class="rounded-lg bg-error-container px-3 py-2 text-on-error-container">No hay estado del robot. Detener sigue disponible.</p>
-              } @else {
-                <p class="flex items-start gap-2">
-                  <span class="material-symbols-outlined text-secondary shrink-0" style="font-size: 1.1rem;">alt_route</span>
-                  <span><span class="font-semibold">Quién manda:</span> {{ sourceHint(runtime().source) }}</span>
-                </p>
-                <p class="flex items-start gap-2">
-                  <span class="material-symbols-outlined text-secondary shrink-0" style="font-size: 1.1rem;">play_circle</span>
-                  <span>
-                    <span class="font-semibold">Qué hace:</span>
-                    {{ runtime().current ? (runtime().current!.name + ' · ' + phaseLabel(runtime().current!.mode)) : phaseLabel(null) }}
-                  </span>
-                </p>
-                <div>
-                  <p class="mb-1 flex items-center gap-2 font-semibold">
-                    <span class="material-symbols-outlined text-secondary" style="font-size: 1.1rem;">queue</span>
-                    Siguiente en cola
-                  </p>
-                  @if (runtime().queue.length === 0) {
-                    <p class="pl-7 text-on-surface-variant">Nada pendiente.</p>
-                  } @else {
-                    <ol class="pl-7 space-y-1 text-on-surface-variant">
-                      @for (step of runtime().queue; track $index) {
-                        <li>{{ step.name }} · {{ phaseLabel(step.mode) }}</li>
-                      }
-                    </ol>
-                  }
-                </div>
-              }
-            </div>
-          </section>
-
-          <section class="bg-surface rounded-xl border border-outline overflow-hidden">
             <header class="flex items-center justify-between px-4 py-3 bg-surface-container-high border-b border-outline">
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-secondary" style="font-size: 1.25rem;">receipt_long</span>

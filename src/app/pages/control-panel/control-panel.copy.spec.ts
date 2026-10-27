@@ -9,7 +9,7 @@ describe('control panel dashboard copy', () => {
   it('is a Spanish operator dashboard', () => {
     expect(html).toContain('Panel de control');
     expect(html).toContain('Registro');
-    expect(html).toContain('En hardware');
+    expect(html).not.toContain('En hardware');
     expect(html).toContain('kpis().estado');
     expect(html).toContain('kpis().origen');
     expect(html).toContain('kpis().secuencias');
@@ -22,11 +22,11 @@ describe('control panel dashboard copy', () => {
     expect(html).not.toContain('Signal');
   });
 
-  it('keeps the busy lock and always offers Detener', () => {
+  it('keeps the busy lock and leaves Detener to the shell drawer', () => {
     expect(html).toMatch(/executePhase\(sequence\.name, 'normal'\)[\s\S]*\[disabled\]="playLocked\(\)"/);
     expect(html).toMatch(/executePhase\(sequence\.name, 'neutro'\)[\s\S]*\[disabled\]="playLocked\(\)"/);
-    expect(html).toContain('stopHardware()');
-    expect(html).not.toMatch(/stopHardware\(\)"[\s\S]*disabled/);
+    expect(html).not.toContain('stopHardware()');
+    expect(html).not.toContain('En hardware');
   });
 
   it('paints Libre with emerald container, not the navy rail', () => {
