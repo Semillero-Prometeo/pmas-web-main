@@ -7,6 +7,7 @@ import {
   ViewChild,
   AfterViewChecked,
   OnInit,
+  OnDestroy,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -20,6 +21,12 @@ import {
   type Phrase,
   type PhraseCatalog,
 } from './decir-phrases';
+import {
+  microphoneDetail as buildMicrophoneDetail,
+  microphoneLevel as buildMicrophoneLevel,
+  microphoneStripLabel,
+  type MicrophoneListeningStatus,
+} from './microphone-status';
 
 const CHAT_MESSAGES_STORAGE_KEY = 'prometeo_robotics_chat_messages_v1';
 const MAX_STORED_CHAT_MESSAGES = 250;
@@ -79,7 +86,7 @@ interface SpeechRecognitionLike {
   imports: [FormsModule, RouterLink],
   templateUrl: './robotics-chat.html',
 })
-export class RoboticsChat implements OnInit, AfterViewChecked {
+export class RoboticsChat implements OnInit, AfterViewChecked, OnDestroy {
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
   auth = inject(AuthService);
@@ -100,6 +107,20 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
   sttAvailable = signal(false);
   sttListening = signal(false);
   sttError = signal<string | null>(null);
+  micStatus = signal<MicrophoneListeningStatus | null>(null);
+  micPollFailed = signal(false);
+  micDetailOpen = signal(false);
+  private micTimer: ReturnType<typeof setInterval> | null = null;
+
+  readonly microphoneLabel = computed(() =>
+    microphoneStripLabel({ httpFailed: this.micPollFailed(), status: this.micStatus() }),
+  );
+  readonly microphoneLevel = computed(() =>
+    buildMicrophoneLevel({ httpFailed: this.micPollFailed(), status: this.micStatus() }),
+  );
+  readonly microphoneDetail = computed(() =>
+    buildMicrophoneDetail({ httpFailed: this.micPollFailed(), status: this.micStatus() }),
+  );
 
   readonly chatQuickOptions: { label: string; prompt: string; icon: string }[] = [
     {
@@ -466,6 +487,33 @@ export class RoboticsChat implements OnInit, AfterViewChecked {
 
     const params = this.route.snapshot.queryParamMap;
     if (params.get('tab') === 'decir') this.activeTab.set('decir');
+    this.startMicrophoneStatusPoll();
+  }
+
+  ngOnDestroy() {
+    if (this.micTimer !== null) {
+      clearInterval(this.micTimer);
+      this.micTimer = null;
+    }
+  }
+
+  startMicrophoneStatusPoll() {
+    this.refreshMicrophoneStatus();
+    this.micTimer = setInterval(() => this.refreshMicrophoneStatus(), 500);
+  }
+
+  refreshMicrophoneStatus() {
+    this.http.get<MicrophoneListeningStatus>(`${GATEWAY_URL}/audio/listening-status`).subscribe({
+      next: (status) => {
+        this.micStatus.set(status);
+        this.micPollFailed.set(false);
+      },
+      error: () => this.micPollFailed.set(true),
+    });
+  }
+
+  toggleMicrophoneDetail() {
+    this.micDetailOpen.update((open) => !open);
   }
 
   loadChatRoute() {
