@@ -1,0 +1,77 @@
+<button
+  type="button"
+  (click)="runtime.toggleDrawer()"
+  class="fixed z-[57] right-4 flex size-12 items-center justify-center rounded-full border border-outline shadow-lg cursor-pointer"
+  [class]="runtime.runtime().busy
+    ? 'bg-secondary text-on-secondary'
+    : 'bg-surface text-on-surface'"
+  [class.bottom-20]="compact"
+  [class.md:bottom-6]="compact"
+  [class.bottom-6]="!compact"
+  aria-label="En hardware">
+  <span class="material-symbols-outlined" style="font-size: 1.5rem;">memory</span>
+</button>
+
+@if (runtime.drawerOpen()) {
+  <div class="fixed inset-0 z-[58] flex justify-end items-end md:items-stretch" role="dialog" aria-modal="true" aria-label="En hardware">
+    <div class="absolute inset-0 bg-rail/50" (click)="runtime.closeDrawer()"></div>
+    <div
+      class="relative z-10 flex flex-col w-full md:w-[22rem] max-h-[70dvh] md:max-h-none md:h-full
+             bg-surface text-on-surface border-t md:border-t-0 md:border-l border-outline
+             rounded-t-2xl md:rounded-none"
+      [class.mb-[4.5rem]]="compact"
+      [class.md:mb-0]="compact">
+      <header class="flex items-center gap-2 px-4 py-3 border-b border-outline bg-surface-container-high shrink-0">
+        <span class="material-symbols-outlined text-secondary" style="font-size: 1.25rem;">memory</span>
+        <div class="min-w-0 flex-1">
+          <h2 class="font-headline text-base font-bold tracking-tight">En hardware</h2>
+          <p class="text-xs text-on-surface-variant truncate">{{ sourceHint(runtime.runtime().source) }}</p>
+        </div>
+        <button
+          type="button"
+          (click)="runtime.stopHardware()"
+          class="flex min-h-10 items-center gap-1.5 py-2 px-3 rounded-lg bg-error text-on-error text-sm font-semibold cursor-pointer">
+          <span class="material-symbols-outlined" style="font-size: 1.1rem;">stop</span>
+          Detener
+        </button>
+        <button type="button" (click)="runtime.closeDrawer()" class="p-2 rounded-lg hover:bg-surface-container cursor-pointer" aria-label="Cerrar">
+          <span class="material-symbols-outlined" style="font-size: 1.25rem;">close</span>
+        </button>
+      </header>
+
+      <div class="flex-1 min-h-0 overflow-y-auto p-4 space-y-3 text-sm">
+        @if (runtime.stopError(); as err) {
+          <p class="rounded-lg bg-error-container px-3 py-2 text-on-error-container">{{ err }}</p>
+        }
+        @if (runtime.unreachable()) {
+          <p class="rounded-lg bg-error-container px-3 py-2 text-on-error-container">No hay estado del robot. Detener sigue disponible.</p>
+        } @else {
+          @if (!runtime.runtime().current && runtime.runtime().queue.length === 0) {
+            <p class="text-on-surface-variant">Nada pendiente.</p>
+          }
+          @if (runtime.runtime().current; as current) {
+            <article class="rounded-xl border border-secondary/40 bg-secondary/10 p-3 space-y-2">
+              <p class="font-semibold">{{ current.name }} · {{ phaseLabel(current.mode) }}</p>
+              <p class="text-xs text-on-surface-variant">{{ formatDurationMs(current.remaining_ms) }} / {{ formatDurationMs(current.duration_ms) }}</p>
+              @if (current.mode !== 'espera' && current.blocks.length > 0) {
+                <ul class="space-y-1 text-xs">
+                  @for (block of current.blocks; track $index) {
+                    <li [class]="block.fired ? 'text-on-surface' : 'text-on-surface-variant'">
+                      {{ block.nombre }} · pca {{ block.pca }} · servo {{ block.servo }} · pos {{ block.pos }} · {{ formatDurationMs(block.dur * 1000) }}
+                    </li>
+                  }
+                </ul>
+              }
+            </article>
+          }
+          @for (step of runtime.runtime().queue; track $index) {
+            <article class="rounded-xl border border-outline p-3">
+              <p>{{ step.name }} · {{ phaseLabel(step.mode) }}</p>
+              <p class="text-xs text-on-surface-variant">{{ formatDurationMs(step.duration_ms) }}</p>
+            </article>
+          }
+        }
+      </div>
+    </div>
+  </div>
+}
